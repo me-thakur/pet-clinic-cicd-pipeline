@@ -1,0 +1,126 @@
+# Docker Compose Configuration for CI/CD Environment
+# This configuration provides automated MySQL setup for continuous integration
+# Requirements: 1.4, 2.2
+
+version: '3.8'
+
+services:
+  mysql-ci:
+    image: mysql:8.0
+    container_name: mysql-privilege-ci
+    restart: unless-stopped
+    
+    environment:
+      # Database initialization
+      MYSQL_ROOT_PASSWORD: ci_root_password_change_in_production
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: ci_user
+      MYSQL_PASSWORD: ci_password_change_in_production
+      
+      # MySQL configuration via environment variables
+      # These settings are applied at startup
+      MYSQL_INITDB_SKIP_TZINFO: 1
+    
+    ports:
+      - "3306:3306"
+    
+    volumes:
+      # Mount custom configuration
+      - ./mysql-ci.cnf:/etc/mysql/conf.d/mysql-ci.cnf:ro
+      
+      # Mount initialization scripts
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+      
+      # Persistent data volume for CI (optional, can be removed for ephemeral testing)
+      - mysql_ci_data:/var/lib/mysql
+      
+      # Mount test data and schema files
+      - ./test-data:/test-data:ro
+    
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --log-bin=mysql-bin
+      --binlog-format=ROW
+      --log-bin-trust-function-creators=1
+      --max-connections=300
+      --innodb-buffer-pool-size=512M
+      --innodb-flush-log-at-trx-commit=1
+      --sql-mode=STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+      --general-log=1
+      --general-log-file=/var/log/mysql/general.log
+      --slow-query-log=1
+      --slow-query-log-file=/var/log/mysql/slow.log
+      --long-query-time=1
+    
+    networks:
+      - ci-network
+    
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      timeout: 20s
+      retries: 10
+      interval: 10s
+      start_period: 40s
+    
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Application service for testing (example)
+  app-test:
+    image: python:3.11-slim
+    container_name: mysql-privilege-app-test
+    depends_on:
+      mysql-ci:
+        condition: service_healthy
+    
+    environment:
+      # Database connection settings
+      DB_HOST: mysql-ci
+      DB_PORT: 3306
+      DB_NAME: testdb
+      DB_USER: ci_user
+      DB_PASSWORD: ci_password_change_in_production
+      
+      # CI environment markers
+      CI: "true"
+      ENVIRONMENT: "ci"
+      
+      # Python environment
+      PYTHONPATH: /app
+      PYTHONUNBUFFERED: 1
+    
+    volumes:
+      - .:/app:ro
+      - ./test-results:/app/test-results
+    
+    working_dir: /app
+    
+    command: >
+      bash -c "
+        pip install -r requirements.txt &&
+        python -m pytest tests/ -v --junitxml=test-results/junit.xml
+      "
+    
+    networks:
+      - ci-network
+
+volumes:
+  mysql_ci_data:
+    driver: local
+
+networks:
+  ci-network:
+    driver: bridge
+
+# CI/CD specific notes:
+# 1. log-bin-trust-function-creators=1 is set via command line for immediate effect
+# 2. Health checks ensure MySQL is ready before running tests
+# 3. Environment variables clearly mark this as CI environment
+# 4. Logging is configured for CI pipeline consumption
+# 5. Test results are exported to a volume for CI system pickup
+# 6. Network isolation provides security in CI environment
+# 7. Passwords should be overridden via CI environment variables

@@ -1,0 +1,92 @@
+# Security Configuration for CI/CD Environment
+# This configuration provides balanced security for automated testing
+# Requirements: 1.4, 2.2
+
+[mysqld]
+# Authentication and user management
+default_authentication_plugin = mysql_native_password  # For CI tool compatibility
+
+# Password validation (moderate for CI)
+# validate_password.policy = MEDIUM
+# validate_password.length = 8
+# validate_password.number_count = 1
+# validate_password.mixed_case_count = 1
+# validate_password.special_char_count = 0
+
+# Connection security (controlled for CI)
+max_connect_errors = 100
+max_user_connections = 100
+max_connections = 300
+
+# File system security (restricted)
+secure_file_priv = /var/lib/mysql-files/  # Restrict file operations to specific directory
+local_infile = 0                          # Disable LOAD DATA LOCAL INFILE for security
+
+# Network security (container-aware)
+bind_address = 0.0.0.0    # Allow connections from other containers
+skip_name_resolve = 1     # Skip DNS lookups for performance and security
+
+# SSL/TLS (recommended for CI)
+# require_secure_transport = OFF  # Allow non-SSL for CI simplicity
+# ssl_ca = /etc/mysql/ssl/ca.pem
+# ssl_cert = /etc/mysql/ssl/server-cert.pem
+# ssl_key = /etc/mysql/ssl/server-key.pem
+
+# Privilege and access control
+# CRITICAL: Allow function creation without SUPER privileges for CI testing
+log_bin_trust_function_creators = 1
+
+# Prevent automatic user creation
+sql_mode = "STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
+
+# Audit and logging (minimal for CI performance)
+general_log = 0           # Disabled for performance
+slow_query_log = 1        # Enable slow query logging for performance monitoring
+long_query_time = 1.0     # Log queries taking longer than 1 second
+
+# Binary logging security
+binlog_format = ROW       # Most secure format for replication
+sync_binlog = 1          # Ensure binary log durability
+
+# Performance schema (enabled for monitoring)
+performance_schema = ON
+
+# Memory and resource limits (CI-appropriate)
+max_allowed_packet = 64M
+thread_stack = 256K
+sort_buffer_size = 2M
+read_buffer_size = 128K
+read_rnd_buffer_size = 256K
+myisam_sort_buffer_size = 8M
+
+# Temporary table limits
+tmp_table_size = 64M
+max_heap_table_size = 64M
+
+# Query cache (disabled in MySQL 8.0+)
+# query_cache_type = 0
+# query_cache_size = 0
+
+# InnoDB security settings
+innodb_flush_log_at_trx_commit = 1  # Full ACID compliance for testing
+innodb_file_per_table = 1           # Isolate table data
+
+# Replication security (for testing replication scenarios)
+gtid_mode = ON
+enforce_gtid_consistency = ON
+
+# CI-specific security notes:
+# 1. log_bin_trust_function_creators = 1 allows CI tests to create functions
+# 2. Network access allowed for container communication
+# 3. File operations restricted to specific directory
+# 4. Moderate password policies for CI accounts
+# 5. SSL optional but recommended for sensitive CI environments
+# 6. Logging optimized for CI performance while maintaining security audit trail
+# 7. Resource limits appropriate for CI container environments
+
+# Security recommendations for CI:
+# 1. Use dedicated CI database users with minimal required privileges
+# 2. Rotate CI database passwords regularly
+# 3. Monitor CI database access logs
+# 4. Isolate CI database from production networks
+# 5. Use encrypted connections when possible

@@ -397,6 +397,73 @@ environment {
 
 ## Database Issues
 
+### MySQL Privilege Configuration Issues
+
+#### Symptoms
+- ERROR 1419: You do not have the SUPER privilege and binary logging is enabled
+- Function creation failures in different environments
+- Privilege validation errors
+
+#### Solutions
+
+**1. Environment Detection Issues**
+```bash
+# Check current environment detection
+mysql-privilege-config detect-environment
+
+# Manually set environment if detection fails
+export MYSQL_PRIVILEGE_ENVIRONMENT=production
+mysql-privilege-config configure --environment production
+```
+
+**2. Function Creation Errors (ERROR 1419)**
+```bash
+# Check current log_bin_trust_function_creators setting
+mysql -h $DB_HOST -u $DB_USER -p -e "SELECT @@log_bin_trust_function_creators;"
+
+# For development/CI environments (enable)
+mysql-privilege-config apply-security --environment development
+
+# For production (use DEFINER with proper privileges)
+mysql-privilege-config apply-security --environment production --strict
+```
+
+**3. Privilege Validation Failures**
+```bash
+# Run comprehensive privilege validation
+mysql-privilege-config validate --environment production --verbose
+
+# Check specific user privileges
+mysql -h $DB_HOST -u root -p -e "SHOW GRANTS FOR 'petclinic'@'%';"
+
+# Fix privilege issues
+mysql-privilege-config fix-privileges --user petclinic --environment production
+```
+
+**4. Configuration Template Issues**
+```bash
+# Validate configuration templates
+mysql-privilege-config validate-config --template local-development
+mysql-privilege-config validate-config --template ci
+mysql-privilege-config validate-config --template production
+
+# Apply correct template
+mysql-privilege-config apply-template --template production --host $DB_HOST
+```
+
+#### Debugging MySQL Privilege Configuration
+```bash
+# Enable debug logging
+export MYSQL_PRIVILEGE_LOG_LEVEL=DEBUG
+mysql-privilege-config --debug validate
+
+# Check configuration status
+mysql-privilege-config status --environment production
+
+# Test function creation capability
+mysql-privilege-config test-functions --environment production
+```
+
 ### RDS Connection Problems
 
 #### Symptoms

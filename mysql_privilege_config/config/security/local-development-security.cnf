@@ -1,0 +1,52 @@
+# Security Configuration for Local Development Environment
+# This configuration balances development ease with basic security
+# Requirements: 1.4, 2.1
+
+[mysqld]
+# Authentication and user management
+default_authentication_plugin = mysql_native_password  # For compatibility
+
+# Password validation (relaxed for development)
+# validate_password.policy = LOW
+# validate_password.length = 6
+# validate_password.number_count = 0
+# validate_password.mixed_case_count = 0
+# validate_password.special_char_count = 0
+
+# Connection security (permissive for development)
+max_connect_errors = 1000
+max_user_connections = 50
+
+# File system security
+secure_file_priv = ""  # Allow file operations from any directory (development only)
+local_infile = 1       # Allow LOAD DATA LOCAL INFILE (development convenience)
+
+# Network security (local only)
+bind_address = 127.0.0.1  # Only accept local connections
+skip_networking = 0        # Allow network connections
+skip_name_resolve = 1      # Skip DNS lookups for performance
+
+# SSL/TLS (optional for development)
+# ssl = 0  # Disable SSL for development simplicity
+
+# Privilege and access control
+# Allow function creation without SUPER privileges (key setting)
+log_bin_trust_function_creators = 1
+
+# Automatic user creation (development convenience)
+# sql_mode includes NO_AUTO_CREATE_USER to prevent this in production
+
+# Logging for development debugging
+general_log = 1
+general_log_file = /usr/local/var/mysql/general.log
+
+# Development-specific security notes:
+# 1. These settings prioritize development convenience
+# 2. Network access is restricted to localhost only
+# 3. File operations are allowed for data import/export
+# 4. Password policies are relaxed for development accounts
+# 5. SSL is optional to simplify local development setup
+# 6. General logging is enabled for debugging
+
+# WARNING: These settings are NOT suitable for production use
+# Always use production-specific security configurations in live environments

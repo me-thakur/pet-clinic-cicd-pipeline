@@ -1,0 +1,4 @@
+# file: /Users/Vivek/Desktop/Cloud & Devops/pet-clinic-cicd-pipeline/mysql_privilege_config/core/models.py
+# hypothesis_version: 6.151.3
+
+[3306, 'add_definer_clauses', 'add_error_handling', 'additional_settings', 'allow_dynamic_sql', 'balanced', 'binary_logging', 'ci', 'critical', 'database', 'debug', 'environment', 'error', 'exponential_backoff', 'host', 'info', 'linear_backoff', 'local', 'localhost', 'no_retry', 'permissive', 'port', 'production', 'restrictive', 'retry_attempts', 'security_level', 'timeout_seconds', 'username', 'warning', 'wrap_in_transactions']

@@ -1,0 +1,4 @@
+# file: /Users/Vivek/Desktop/Cloud & Devops/pet-clinic-cicd-pipeline/mysql_privilege_config/validators/privilege_validator.py
+# hypothesis_version: 6.151.3
+
+['1', 'CREATE FUNCTION', 'CREATE ROUTINE', 'GRANT ALL PRIVILEGES', 'ON', 'SELECT VERSION()', 'SUPER', 'TRUE', 'Unknown', 'autocommit', 'charset', 'collation', 'connection_timeout', 'database', 'errno', 'host', 'password', 'port', 'production', 'user', 'utf8mb4', 'utf8mb4_unicode_ci']

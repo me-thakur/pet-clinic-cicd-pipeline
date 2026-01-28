@@ -1,0 +1,78 @@
+# MySQL Configuration Template for Local Development
+# This configuration prioritizes development ease while maintaining basic security
+# Requirements: 1.4, 2.1
+
+[mysqld]
+# Basic server configuration
+port = 3306
+bind-address = 127.0.0.1
+socket = /tmp/mysql.sock
+
+# Data directory (adjust path as needed)
+datadir = /usr/local/var/mysql
+
+# Binary logging configuration
+# Enable binary logging for development consistency with production
+log-bin = mysql-bin
+binlog_format = ROW
+expire_logs_days = 7
+
+# CRITICAL: Allow function creation without SUPER privileges
+# This is the key setting that resolves ERROR 1419 in development
+log_bin_trust_function_creators = 1
+
+# Character set and collation
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# InnoDB configuration for development
+innodb_buffer_pool_size = 256M
+innodb_log_file_size = 64M
+innodb_flush_log_at_trx_commit = 2  # Relaxed for development performance
+
+# Query cache (if using MySQL 5.7)
+query_cache_type = 1
+query_cache_size = 32M
+
+# Connection limits (generous for development)
+max_connections = 200
+max_user_connections = 180
+
+# Timeout settings (relaxed for development)
+wait_timeout = 28800
+interactive_timeout = 28800
+
+# SQL mode (permissive for development)
+sql_mode = "ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
+
+# Security settings (basic for development)
+# Allow local file loading for data import/export
+local_infile = 1
+
+# Logging for development debugging
+general_log = 1
+general_log_file = /usr/local/var/mysql/general.log
+slow_query_log = 1
+slow_query_log_file = /usr/local/var/mysql/slow.log
+long_query_time = 2
+
+# Performance schema (enabled for development monitoring)
+performance_schema = ON
+
+[mysql]
+# Client configuration
+default-character-set = utf8mb4
+
+[client]
+# Default client settings
+default-character-set = utf8mb4
+port = 3306
+socket = /tmp/mysql.sock
+
+# Development-specific comments and notes:
+# 1. log_bin_trust_function_creators = 1 allows creation of functions, procedures, 
+#    and triggers without SUPER privileges when binary logging is enabled
+# 2. This configuration is optimized for development ease and debugging
+# 3. Security settings are relaxed compared to production
+# 4. Binary logging is enabled to match production behavior
+# 5. Performance settings are tuned for development workloads

@@ -25,6 +25,7 @@ A comprehensive, enterprise-grade CI/CD pipeline for deploying a pet clinic mana
 - **🏥 Pet Clinic Application**: Java Spring Boot frontend and backend
 - **🔧 Jenkins CI/CD**: Automated build, test, and deployment pipeline
 - **☁️ AWS Infrastructure**: CloudFormation-managed cloud resources
+- **🗄️ MySQL Privilege Configuration**: Automated database security management system
 - **🔒 Security**: HTTPS, secrets management, and hardening
 - **📊 Monitoring**: CloudWatch metrics, logging, and alerting
 - **💾 Backup**: Automated backup and disaster recovery
@@ -50,6 +51,10 @@ aws configure
 # Set environment variables
 export GITHUB_TOKEN="your-github-token"
 export JENKINS_ADMIN_PASSWORD="secure-password"
+export DB_PASSWORD="database-password"
+
+# Install MySQL privilege configuration system
+pip install -e mysql_privilege_config/
 
 # Deploy infrastructure
 ./scripts/deploy-infrastructure.sh
@@ -68,6 +73,7 @@ echo "Jenkins URL: http://$(aws cloudformation describe-stacks --stack-name pet-
 
 ### ✅ Enterprise Infrastructure
 - **High Availability**: Multi-AZ deployment with auto-scaling
+- **Database Security**: Automated MySQL privilege management across environments
 - **Security**: VPC isolation, security groups, encrypted storage
 - **Monitoring**: CloudWatch dashboards, alarms, and notifications
 - **Backup**: Automated backups with retention policies
@@ -95,6 +101,15 @@ pet-clinic-cicd-pipeline/
 │   ├── database.yaml           # RDS configuration
 │   ├── storage.yaml            # S3 and EFS setup
 │   └── iam.yaml                # IAM roles and policies
+├── 📁 mysql_privilege_config/  # MySQL privilege management system
+│   ├── cli.py                  # Command-line interface
+│   ├── core/                   # Core models and exceptions
+│   ├── detectors/              # Environment detection
+│   ├── managers/               # Configuration management
+│   ├── validators/             # Privilege validation
+│   ├── executors/              # Script execution
+│   ├── utils/                  # Utilities and error handling
+│   └── config/                 # Environment configurations
 ├── 📁 jenkins-config/          # Jenkins configuration
 │   ├── jenkins-casc.yaml       # Configuration as Code
 │   ├── plugins.txt             # Required plugins
@@ -129,6 +144,8 @@ pet-clinic-cicd-pipeline/
 ├── 📁 docs/                    # Documentation
 │   ├── DEPLOYMENT.md           # Deployment guide
 │   ├── ARCHITECTURE.md         # Architecture details
+│   ├── MYSQL-PRIVILEGE-CONFIGURATION.md # MySQL security guide
+│   ├── SECURITY-TROUBLESHOOTING.md # Security troubleshooting
 │   └── TROUBLESHOOTING.md      # Common issues
 └── 📄 README.md                # This file
 ```
@@ -145,13 +162,14 @@ pet-clinic-cicd-pipeline/
 ### Application Stack
 - **Backend**: Java 11, Spring Boot, Spring Data JPA
 - **Frontend**: Spring Boot, Thymeleaf, Bootstrap
-- **Database**: MySQL 8.0 (AWS RDS)
+- **Database**: MySQL 8.0 (AWS RDS) with automated privilege management
 - **Build Tool**: Maven
 - **Testing**: JUnit, jqwik (property-based testing)
 
 ### Security & Operations
-- **Security**: HTTPS/TLS, AWS IAM, security groups
+- **Security**: HTTPS/TLS, AWS IAM, security groups, MySQL privilege management
 - **Secrets Management**: AWS Systems Manager Parameter Store
+- **Database Security**: Environment-specific privilege configurations
 - **Backup**: Jenkins ThinBackup, S3 synchronization
 - **Logging**: Logback, CloudWatch Logs
 - **Alerting**: SNS, email, Slack integration
@@ -160,9 +178,11 @@ pet-clinic-cicd-pipeline/
 
 - **[Deployment Guide](docs/DEPLOYMENT.md)** - Complete deployment instructions
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - Detailed system architecture
+- **[MySQL Privilege Configuration](docs/MYSQL-PRIVILEGE-CONFIGURATION.md)** - Database security management
 - **[Local Development](docs/LOCAL-DEVELOPMENT.md)** - Local setup and development
 - **[Cloud Deployment](docs/CLOUD-DEPLOYMENT.md)** - AWS cloud deployment
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Security Troubleshooting](docs/SECURITY-TROUBLESHOOTING.md)** - MySQL security issues
 - **[API Documentation](docs/API.md)** - REST API reference
 - **[Security Guide](docs/SECURITY.md)** - Security best practices
 
@@ -190,6 +210,67 @@ pet-clinic-cicd-pipeline/
 
 # Configure monitoring
 ./scripts/setup-monitoring.sh
+```
+
+## 🗄️ MySQL Privilege Configuration
+
+The system includes an automated MySQL privilege management component that ensures proper database security across different environments.
+
+### Environment-Specific Security
+
+| Environment | Security Level | log_bin_trust_function_creators | Use Case |
+|-------------|----------------|--------------------------------|----------|
+| **Local Development** | Permissive | ON | Rapid development and testing |
+| **CI/CD** | Balanced | ON | Automated testing with security |
+| **Production** | Restrictive | OFF | Maximum security compliance |
+
+### Key Features
+
+- **🔍 Environment Detection**: Automatically identifies deployment environment
+- **⚙️ Configuration Management**: Template-based security configurations
+- **✅ Privilege Validation**: Validates MySQL privileges and reports issues
+- **🔧 Script Execution**: Executes database scripts with retry logic
+- **🚨 Error Handling**: Comprehensive error resolution strategies
+
+### Quick Usage
+
+```bash
+# Install the MySQL privilege configuration system
+pip install -e mysql_privilege_config/
+
+# Configure for your environment
+mysql-privilege-config configure --environment production \
+  --host your-db-host \
+  --user petclinic \
+  --password your-password
+
+# Validate configuration
+mysql-privilege-config validate --environment production
+
+# Apply security settings
+mysql-privilege-config apply-security --environment production
+```
+
+### CLI Commands
+
+```bash
+# Environment detection
+mysql-privilege-config detect-environment
+
+# Configuration management
+mysql-privilege-config configure --environment [local|ci|production]
+
+# Privilege validation
+mysql-privilege-config validate --environment production --verbose
+
+# Security application
+mysql-privilege-config apply-security --environment production
+
+# Function testing
+mysql-privilege-config test-functions --environment local
+
+# Status checking
+mysql-privilege-config status --environment production
 ```
 
 ## 🧪 Testing
@@ -238,6 +319,7 @@ The project includes comprehensive testing at multiple levels:
 
 ### Security Features
 - **Network Security**: VPC isolation, security groups, NACLs
+- **Database Security**: Automated MySQL privilege management and validation
 - **Data Encryption**: At rest and in transit
 - **Access Control**: IAM roles, least privilege principle
 - **Secrets Management**: Encrypted parameter store
@@ -291,6 +373,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **AWS Permissions**: Ensure proper IAM permissions
 - **Jenkins Plugins**: Check plugin compatibility
 - **Network Connectivity**: Verify security group rules
+- **MySQL Privileges**: Use `mysql-privilege-config validate` for database issues
 
 ## 🏆 Acknowledgments
 
@@ -304,6 +387,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - ✅ **Infrastructure**: Complete and tested
 - ✅ **Application**: Fully functional pet clinic system
 - ✅ **CI/CD Pipeline**: Automated build, test, deploy
+- ✅ **MySQL Privilege Management**: Automated database security across environments
 - ✅ **Security**: Hardened and compliant
 - ✅ **Monitoring**: Comprehensive observability
 - ✅ **Documentation**: Complete guides and references

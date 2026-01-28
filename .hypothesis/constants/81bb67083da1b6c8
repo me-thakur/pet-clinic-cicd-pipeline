@@ -1,0 +1,4 @@
+# file: /Users/Vivek/Desktop/Cloud & Devops/pet-clinic-cicd-pipeline/mysql_privilege_config/managers/config_manager.py
+# hypothesis_version: 6.151.3
+
+[';', 'CREATE FUNCTION', 'CREATE PROCEDURE', 'OFF', 'ON', 'add_definer_clauses', 'add_error_handling', 'additional_settings', 'autocommit', 'charset', 'collation', 'connection_timeout', 'database', 'environment', 'host', 'log_bin', 'password', 'port', 'read only', 'readonly', 'security_level', 'user', 'utf8mb4', 'utf8mb4_unicode_ci', 'wrap_in_transactions']

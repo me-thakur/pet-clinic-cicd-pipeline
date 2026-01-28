@@ -188,7 +188,26 @@ chmod +x jenkins-pipelines/setup-webhooks.sh
 ./jenkins-pipelines/setup-webhooks.sh
 ```
 
-#### Step 5: Deploy Pet Clinic Application
+#### Step 5: Configure MySQL Privilege System
+
+```bash
+# Install MySQL privilege configuration system
+pip install -e mysql_privilege_config/
+
+# Configure for production environment
+mysql-privilege-config configure --environment production \
+  --host $DB_HOST \
+  --user petclinic \
+  --password $DB_PASSWORD
+
+# Validate MySQL privilege configuration
+mysql-privilege-config validate --environment production
+
+# Apply security configurations
+mysql-privilege-config apply-security --environment production
+```
+
+#### Step 7: Monitoring and Security Setup
 
 ```bash
 # Build and deploy the application
@@ -212,7 +231,7 @@ chmod +x ../deployment-scripts/health-check.sh
 
 ### Phase 3: Monitoring and Security Setup
 
-#### Step 6: Configure Monitoring
+#### Step 8: Configure Monitoring
 
 ```bash
 # Setup CloudWatch monitoring
@@ -228,7 +247,7 @@ aws cloudformation create-stack \
   --region us-east-1
 ```
 
-#### Step 7: Configure Security
+#### Step 9: Configure Security
 
 ```bash
 # Setup SSL certificates
@@ -244,7 +263,7 @@ chmod +x security-config/secrets-management.sh
 ./security-config/secrets-management.sh
 ```
 
-#### Step 8: Setup Backup System
+#### Step 10: Setup Backup System
 
 ```bash
 # Configure Jenkins backups
@@ -283,6 +302,13 @@ JENKINS_URL=http://your-jenkins-url
 DB_PASSWORD=DatabasePassword123!
 DB_HOST=your-rds-endpoint
 DB_NAME=petclinic
+
+# MySQL Privilege Configuration
+MYSQL_PRIVILEGE_ENVIRONMENT=production
+MYSQL_PRIVILEGE_HOST=your-rds-endpoint
+MYSQL_PRIVILEGE_USER=petclinic
+MYSQL_PRIVILEGE_PASSWORD=DatabasePassword123!
+MYSQL_PRIVILEGE_SECURITY_LEVEL=restrictive
 
 # Application Configuration
 APP_ENV=production

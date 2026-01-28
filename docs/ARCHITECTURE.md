@@ -57,9 +57,10 @@ The Pet Clinic CI/CD Pipeline is a comprehensive, enterprise-grade system that d
 3. **Infrastructure**: AWS CloudFormation managed resources
 4. **Application**: Java Spring Boot microservices
 5. **Database**: AWS RDS MySQL with Multi-AZ deployment
-6. **Storage**: S3 for artifacts/backups, EFS for shared scripts
-7. **Monitoring**: CloudWatch with custom dashboards and alerts
-8. **Security**: Multi-layered security with encryption and access controls
+6. **MySQL Privilege Configuration**: Automated MySQL privilege management system
+7. **Storage**: S3 for artifacts/backups, EFS for shared scripts
+8. **Monitoring**: CloudWatch with custom dashboards and alerts
+9. **Security**: Multi-layered security with encryption and access controls
 
 ## Architecture Patterns
 
@@ -530,6 +531,57 @@ jenkins:
 ```
 
 ## Data Architecture
+
+### MySQL Privilege Configuration System
+
+The system includes an automated MySQL privilege configuration management component that ensures proper database security across different environments:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                MySQL Privilege Configuration                   │
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │              Environment Detection                      │   │
+│  │  • Automatic environment identification                 │   │
+│  │  • Configuration template selection                     │   │
+│  │  • Security level determination                         │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                   │                             │
+│                                   ▼                             │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │              Configuration Management                   │   │
+│  │  • Template-based configuration                        │   │
+│  │  • Environment-specific security settings              │   │
+│  │  • Automated privilege validation                      │   │
+│  │  • Configuration drift detection                       │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                   │                             │
+│                                   ▼                             │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │              Script Execution                           │   │
+│  │  • Database initialization scripts                     │   │
+│  │  • User creation and privilege assignment              │   │
+│  │  • Function and procedure deployment                   │   │
+│  │  • Retry logic and error handling                      │   │
+│  └─────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### Environment-Specific Security Configurations
+
+| Environment | Security Level | log_bin_trust_function_creators | Use Case |
+|-------------|----------------|--------------------------------|----------|
+| **Local Development** | Permissive | ON | Rapid development and testing |
+| **CI/CD** | Balanced | ON | Automated testing with security |
+| **Production** | Restrictive | OFF | Maximum security compliance |
+
+#### Core Components
+
+1. **EnvironmentDetector**: Automatically identifies the deployment environment
+2. **DatabaseConfigManager**: Central orchestrator for configuration management
+3. **PrivilegeValidator**: Validates MySQL privileges and reports issues
+4. **ScriptExecutor**: Executes database scripts with retry logic
+5. **ErrorHandler**: Provides comprehensive error resolution strategies
 
 ### Database Design
 

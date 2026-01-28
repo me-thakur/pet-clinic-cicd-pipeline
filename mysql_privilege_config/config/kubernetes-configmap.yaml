@@ -1,0 +1,303 @@
+# Kubernetes ConfigMap for MySQL Production Configuration
+# This ConfigMap provides production-ready MySQL configuration with security focus
+# Requirements: 1.4, 2.3
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-privilege-config
+  namespace: production  # Adjust namespace as needed
+  labels:
+    app: mysql-privilege-manager
+    environment: production
+    component: database-config
+data:
+  # Main MySQL configuration file
+  mysql.cnf: |
+    [mysqld]
+    # Server identification and basic settings
+    server-id = 1
+    port = 3306
+    bind_address = 0.0.0.0
+    
+    # Data directory (mounted from persistent volume)
+    datadir = /var/lib/mysql
+    
+    # Binary logging configuration (REQUIRED for production)
+    log-bin = mysql-bin
+    binlog_format = ROW
+    binlog_expire_logs_seconds = 2592000  # 30 days retention
+    max_binlog_size = 1G
+    sync_binlog = 1  # Durability for production
+    
+    # CRITICAL: Function creation privilege setting
+    # In production, this should be carefully controlled
+    # Set to 1 only if functions are created by trusted applications
+    log_bin_trust_function_creators = 0  # RESTRICTIVE: Requires SUPER privilege
+    
+    # Character set configuration
+    character-set-server = utf8mb4
+    collation-server = utf8mb4_unicode_ci
+    
+    # InnoDB configuration for production
+    innodb_buffer_pool_size = 2G  # Adjust based on available memory
+    innodb_log_file_size = 256M
+    innodb_flush_log_at_trx_commit = 1  # Full ACID compliance
+    innodb_file_per_table = 1
+    innodb_flush_method = O_DIRECT
+    innodb_io_capacity = 200
+    innodb_io_capacity_max = 2000
+    
+    # Connection limits (conservative for production)
+    max_connections = 500
+    max_user_connections = 450
+    max_connect_errors = 100
+    
+    # Timeout settings (production appropriate)
+    wait_timeout = 7200  # 2 hours
+    interactive_timeout = 7200
+    connect_timeout = 10
+    net_read_timeout = 30
+    net_write_timeout = 60
+    
+    # SQL mode (strict for production)
+    sql_mode = "STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE"
+    
+    # Security settings (RESTRICTIVE for production)
+    local_infile = 0  # Disable local file loading
+    symbolic_links = 0  # Disable symbolic links
+    secure_file_priv = /var/lib/mysql-files/  # Restrict file operations
+    
+    # SSL/TLS configuration (enable in production)
+    # ssl_ca = /etc/mysql/ssl/ca.pem
+    # ssl_cert = /etc/mysql/ssl/server-cert.pem
+    # ssl_key = /etc/mysql/ssl/server-key.pem
+    # require_secure_transport = ON
+    
+    # Performance schema (enabled for monitoring)
+    performance_schema = ON
+    performance_schema_max_table_instances = 12500
+    performance_schema_max_table_handles = 40000
+    
+    # Logging configuration (minimal for production performance)
+    general_log = 0  # Disabled for performance
+    slow_query_log = 1
+    slow_query_log_file = /var/log/mysql/slow.log
+    long_query_time = 2.0
+    log_queries_not_using_indexes = 1
+    
+    # Error logging
+    log_error = /var/log/mysql/error.log
+    log_error_verbosity = 2
+    
+    # Replication settings (for production clusters)
+    gtid_mode = ON
+    enforce_gtid_consistency = ON
+    log_slave_updates = ON
+    read_only = 0  # Set to 1 for read replicas
+    
+    # Memory and cache settings
+    table_open_cache = 4000
+    table_definition_cache = 2000
+    thread_cache_size = 16
+    query_cache_type = 0  # Disabled in MySQL 8.0+
+    tmp_table_size = 128M
+    max_heap_table_size = 128M
+    
+    # MyISAM settings (if used)
+    key_buffer_size = 32M
+    
+    [mysql]
+    default-character-set = utf8mb4
+    
+    [client]
+    default-character-set = utf8mb4
+
+  # Alternative configuration with relaxed function creation (use with caution)
+  mysql-relaxed.cnf: |
+    [mysqld]
+    # This configuration allows function creation without SUPER privileges
+    # USE ONLY when applications require function creation and are trusted
+    
+    # Include all settings from main config above, but override:
+    log_bin_trust_function_creators = 1  # PERMISSIVE: Allows function creation
+    
+    # Additional security measures when using relaxed function creation:
+    # 1. Ensure all application users have minimal required privileges
+    # 2. Regularly audit created functions, procedures, and triggers
+    # 3. Monitor binary logs for suspicious function creation
+    # 4. Consider using DEFINER clauses to control execution context
+
+  # Environment-specific initialization script
+  init-production.sql: |
+    -- Production MySQL initialization script
+    -- This script sets up users and privileges for production environment
+    
+    -- Create application user with minimal privileges
+    CREATE USER IF NOT EXISTS 'app_user'@'%' IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
+    
+    -- Grant only necessary privileges (NO SUPER privilege)
+    GRANT SELECT, INSERT, UPDATE, DELETE ON app_database.* TO 'app_user'@'%';
+    GRANT CREATE ROUTINE, ALTER ROUTINE ON app_database.* TO 'app_user'@'%';
+    GRANT EXECUTE ON app_database.* TO 'app_user'@'%';
+    
+    -- Create read-only user for reporting
+    CREATE USER IF NOT EXISTS 'readonly_user'@'%' IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
+    GRANT SELECT ON app_database.* TO 'readonly_user'@'%';
+    
+    -- Create backup user with specific privileges
+    CREATE USER IF NOT EXISTS 'backup_user'@'%' IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
+    GRANT SELECT, LOCK TABLES, SHOW VIEW, EVENT, TRIGGER ON *.* TO 'backup_user'@'%';
+    
+    -- Flush privileges to ensure changes take effect
+    FLUSH PRIVILEGES;
+    
+    -- Verify log_bin_trust_function_creators setting
+    SELECT @@log_bin_trust_function_creators as function_creators_enabled;
+    
+    -- Show current binary logging status
+    SHOW VARIABLES LIKE 'log_bin';
+    SHOW VARIABLES LIKE 'binlog_format';
+
+---
+# Secret for MySQL passwords (create separately)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-privilege-secrets
+  namespace: production
+  labels:
+    app: mysql-privilege-manager
+    environment: production
+type: Opaque
+data:
+  # Base64 encoded passwords - replace with actual values
+  root-password: Q0hBTkdFX1RISVNfUk9PVF9QQVNTV09SRA==  # CHANGE_THIS_ROOT_PASSWORD
+  app-password: Q0hBTkdFX1RISVNfQVBQX1BBU1NXT1JE    # CHANGE_THIS_APP_PASSWORD
+  readonly-password: Q0hBTkdFX1RISVNfUkVBRE9OTFlfUEFTU1dPUkQ=  # CHANGE_THIS_READONLY_PASSWORD
+  backup-password: Q0hBTkdFX1RISVNfQkFDS1VQX1BBU1NXT1JE  # CHANGE_THIS_BACKUP_PASSWORD
+
+---
+# Production MySQL Deployment Example
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql-privilege-production
+  namespace: production
+  labels:
+    app: mysql-privilege-manager
+    environment: production
+spec:
+  serviceName: mysql-privilege-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-privilege-manager
+      environment: production
+  template:
+    metadata:
+      labels:
+        app: mysql-privilege-manager
+        environment: production
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+          name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-privilege-secrets
+              key: root-password
+        - name: MYSQL_DATABASE
+          value: "app_database"
+        volumeMounts:
+        - name: mysql-config
+          mountPath: /etc/mysql/conf.d
+          readOnly: true
+        - name: mysql-init
+          mountPath: /docker-entrypoint-initdb.d
+          readOnly: true
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        - name: mysql-logs
+          mountPath: /var/log/mysql
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          exec:
+            command:
+            - mysqladmin
+            - ping
+            - -h
+            - localhost
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - mysql
+            - -h
+            - localhost
+            - -e
+            - "SELECT 1"
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          timeoutSeconds: 1
+      volumes:
+      - name: mysql-config
+        configMap:
+          name: mysql-privilege-config
+          items:
+          - key: mysql.cnf
+            path: mysql.cnf
+      - name: mysql-init
+        configMap:
+          name: mysql-privilege-config
+          items:
+          - key: init-production.sql
+            path: init-production.sql
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 100Gi
+  - metadata:
+      name: mysql-logs
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+
+---
+# Service for MySQL
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-privilege-service
+  namespace: production
+  labels:
+    app: mysql-privilege-manager
+    environment: production
+spec:
+  ports:
+  - port: 3306
+    targetPort: 3306
+    name: mysql
+  selector:
+    app: mysql-privilege-manager
+    environment: production
+  type: ClusterIP

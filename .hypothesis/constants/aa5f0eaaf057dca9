@@ -1,0 +1,4 @@
+# file: /Users/Vivek/Desktop/Cloud & Devops/pet-clinic-cicd-pipeline/mysql_privilege_config/executors/script_executor.py
+# hypothesis_version: 6.151.3
+
+[1000, 1419, '(', ')', '--.*$', '/\\*.*?\\*/', ';', 'ALTER', 'BEGIN', 'CONCAT(', 'CONCAT_WS(', 'CREATE', 'CREATE FUNCTION', 'CREATE PROCEDURE', 'CREATE TRIGGER', 'DEFINER', 'DEFINER = root@', 'DELETE', 'DESCRIBE', 'DETERMINISTIC', 'DROP', 'DROP DATABASE', 'DROP SCHEMA', 'END', 'EXECUTE', 'GRANT', 'GRANT ALL', 'INSERT', 'PREPARE', 'RETURNS', 'REVOKE', 'SELECT', 'SET', 'SHOW', 'START TRANSACTION', 'UPDATE', 'USE', '\\s+', 'add_definer_clauses', 'add_error_handling', 'autocommit', 'charset', 'collation', 'connection', 'connection_timeout', 'database', 'deadlock', 'host', 'lock wait timeout', 'lost connection', 'password', 'port', 'server has gone away', 'timeout', 'user', 'utf8mb4', 'utf8mb4_unicode_ci', 'wrap_in_transactions']

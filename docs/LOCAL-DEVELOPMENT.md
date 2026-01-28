@@ -187,6 +187,27 @@ mysql -u petclinic -ppetclinic123 petclinic_dev < src/main/resources/schema.sql
 mysql -u petclinic -ppetclinic123 petclinic_dev < src/main/resources/data.sql
 ```
 
+#### Setup MySQL Privilege Configuration
+```bash
+# Install MySQL privilege configuration system
+pip install -e mysql_privilege_config/
+
+# Configure for local development environment
+mysql-privilege-config configure --environment local \
+  --host localhost \
+  --user petclinic \
+  --password petclinic123
+
+# Apply local development security settings
+mysql-privilege-config apply-security --environment local
+
+# Validate configuration
+mysql-privilege-config validate --environment local
+
+# Test function creation (should work in local environment)
+mysql-privilege-config test-functions --environment local
+```
+
 ### 3. Application Configuration
 
 #### Backend Configuration
@@ -295,6 +316,13 @@ PROFILE=dev
 
 # Testing Configuration
 TEST_DB_NAME=petclinic_test
+
+# MySQL Privilege Configuration
+MYSQL_PRIVILEGE_ENVIRONMENT=local
+MYSQL_PRIVILEGE_HOST=localhost
+MYSQL_PRIVILEGE_USER=petclinic
+MYSQL_PRIVILEGE_PASSWORD=petclinic123
+MYSQL_PRIVILEGE_SECURITY_LEVEL=permissive
 
 # Development Tools
 MAVEN_OPTS="-Xmx1024m -XX:MaxPermSize=256m"
@@ -841,6 +869,12 @@ mysql -u petclinic -ppetclinic123 -h localhost -e "SELECT 1"
 # Check MySQL service status
 systemctl status mysql  # Linux
 brew services list | grep mysql  # macOS
+
+# Test MySQL privilege configuration
+mysql-privilege-config validate --environment local --verbose
+
+# Fix privilege issues if any
+mysql-privilege-config fix-privileges --user petclinic --environment local
 ```
 
 #### Memory Issues

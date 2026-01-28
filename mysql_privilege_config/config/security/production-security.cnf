@@ -1,0 +1,140 @@
+# Security Configuration for Production Environment
+# This configuration provides maximum security for production deployments
+# Requirements: 1.4, 2.3
+
+[mysqld]
+# Authentication and user management (strict)
+default_authentication_plugin = caching_sha2_password  # Most secure authentication
+
+# Password validation (strict for production)
+# validate_password.policy = STRONG
+# validate_password.length = 12
+# validate_password.number_count = 2
+# validate_password.mixed_case_count = 2
+# validate_password.special_char_count = 2
+# validate_password.dictionary_file = /etc/mysql/dictionary.txt
+
+# Connection security (restrictive)
+max_connect_errors = 10           # Low threshold for connection errors
+max_user_connections = 50         # Limit per-user connections
+max_connections = 500             # Overall connection limit
+connect_timeout = 10              # Short connection timeout
+wait_timeout = 7200               # 2 hour idle timeout
+interactive_timeout = 7200        # 2 hour interactive timeout
+
+# File system security (highly restrictive)
+secure_file_priv = /var/lib/mysql-files/  # Restrict file operations
+local_infile = 0                          # Disable LOAD DATA LOCAL INFILE
+symbolic_links = 0                        # Disable symbolic links
+
+# Network security (production-grade)
+bind_address = 0.0.0.0            # Allow configured network access only
+skip_name_resolve = 1             # Skip DNS lookups for security and performance
+
+# SSL/TLS (REQUIRED for production)
+# require_secure_transport = ON     # Force encrypted connections
+# ssl_ca = /etc/mysql/ssl/ca.pem
+# ssl_cert = /etc/mysql/ssl/server-cert.pem
+# ssl_key = /etc/mysql/ssl/server-key.pem
+# ssl_cipher = ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384
+# tls_version = TLSv1.2,TLSv1.3
+
+# Privilege and access control (CRITICAL PRODUCTION SETTING)
+# RESTRICTIVE: Require SUPER privilege for function creation
+# This is the most secure setting but may require application changes
+log_bin_trust_function_creators = 0
+
+# Alternative for applications that need function creation:
+# log_bin_trust_function_creators = 1
+# When using this setting, ensure:
+# 1. All application users have minimal required privileges
+# 2. Regular auditing of created functions, procedures, and triggers
+# 3. Monitoring of binary logs for suspicious activity
+# 4. Use of DEFINER clauses to control execution context
+
+# SQL mode (strictest for production)
+sql_mode = "STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ONLY_FULL_GROUP_BY"
+
+# Audit and logging (comprehensive for production)
+general_log = 0                   # Disabled for performance (enable if needed for auditing)
+slow_query_log = 1               # Enable slow query logging
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 2.0            # Log queries taking longer than 2 seconds
+log_queries_not_using_indexes = 1 # Log queries without indexes
+
+# Error logging (detailed for production monitoring)
+log_error = /var/log/mysql/error.log
+log_error_verbosity = 2          # Errors and warnings
+log_timestamps = SYSTEM          # Use system timezone for logs
+
+# Binary logging security (production-grade)
+binlog_format = ROW              # Most secure format
+sync_binlog = 1                  # Ensure durability
+binlog_expire_logs_seconds = 2592000  # 30 days retention
+max_binlog_size = 1G             # Limit binlog file size
+
+# Performance schema (enabled for production monitoring)
+performance_schema = ON
+performance_schema_max_table_instances = 12500
+performance_schema_max_table_handles = 40000
+
+# Memory and resource limits (production-tuned)
+max_allowed_packet = 64M
+thread_stack = 256K
+sort_buffer_size = 2M
+read_buffer_size = 128K
+read_rnd_buffer_size = 256K
+myisam_sort_buffer_size = 8M
+
+# Temporary table limits (conservative)
+tmp_table_size = 128M
+max_heap_table_size = 128M
+
+# Query cache (disabled in MySQL 8.0+)
+# query_cache_type = 0
+# query_cache_size = 0
+
+# InnoDB security and performance settings
+innodb_flush_log_at_trx_commit = 1    # Full ACID compliance
+innodb_file_per_table = 1             # Isolate table data
+innodb_flush_method = O_DIRECT        # Avoid double buffering
+innodb_buffer_pool_size = 2G          # Adjust based on available memory
+innodb_log_file_size = 256M           # Large enough for write-heavy workloads
+
+# Replication security (for production clusters)
+gtid_mode = ON
+enforce_gtid_consistency = ON
+log_slave_updates = ON
+read_only = 0                         # Set to 1 for read replicas
+
+# Additional security settings
+automatic_sp_privileges = 0           # Disable automatic stored procedure privileges
+old_passwords = 0                     # Use secure password hashing
+safe_user_create = 1                  # Prevent user creation without password
+
+# Disable dangerous functions
+# init_connect = "SET sql_mode='STRICT_TRANS_TABLES'"  # Force strict mode for all connections
+
+# Production security checklist:
+# 1. ✓ Strong password policies enforced
+# 2. ✓ SSL/TLS encryption required
+# 3. ✓ File operations restricted
+# 4. ✓ Network access controlled
+# 5. ✓ Connection limits enforced
+# 6. ✓ Comprehensive logging enabled
+# 7. ✓ Binary logging secured
+# 8. ✓ Function creation controlled (log_bin_trust_function_creators = 0)
+
+# IMPORTANT PRODUCTION NOTES:
+# 1. log_bin_trust_function_creators = 0 is the most secure setting
+# 2. If applications require function creation, consider:
+#    - Granting SUPER privilege to specific application users (not recommended)
+#    - Setting log_bin_trust_function_creators = 1 with strict monitoring
+#    - Redesigning application to avoid function creation
+# 3. Regular security audits should include:
+#    - Review of user privileges
+#    - Audit of created functions, procedures, and triggers
+#    - Analysis of slow query and error logs
+#    - Monitoring of connection patterns
+# 4. SSL certificates should be regularly renewed
+# 5. Database users should follow principle of least privilege

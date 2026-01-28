@@ -1,0 +1,4 @@
+# file: /Users/Vivek/Desktop/Cloud & Devops/pet-clinic-cicd-pipeline/mysql_privilege_config/utils/logging_config.py
+# hypothesis_version: 6.151.3
+
+[1024, '%Y-%m-%d %H:%M:%S', ', ', 'FAILED', 'SUCCESS', 'mysql.connector', 'utf-8']

@@ -1,0 +1,4 @@
+# file: /Users/Vivek/Desktop/Cloud & Devops/pet-clinic-cicd-pipeline/mysql_privilege_config/detectors/environment_detector.py
+# hypothesis_version: 6.151.3
+
+['/.dockerenv', '/proc/1/cgroup', '0', 'APP_ENV', 'AZURE_PIPELINES', 'BAMBOO_BUILD_NUMBER', 'BUILDKITE', 'CI', 'CIRCLECI', 'CODEBUILD_BUILD_ID', 'CONTAINER', 'DEPLOYMENT_STAGE', 'DOCKER_CONTAINER', 'DRONE', 'ENV', 'ENVIRONMENT', 'GITHUB_ACTIONS', 'GITLAB_CI', 'HOME', 'HOSTNAME', 'JENKINS_HOME', 'JENKINS_URL', 'LANG', 'LC_ALL', 'Linux', 'NODE_ENV', 'PATH', 'PWD', 'RAILS_ENV', 'SEMAPHORE', 'SHELL', 'STAGE', 'TEAMCITY_VERSION', 'TERM', 'TF_BUILD', 'TRAVIS', 'USER', 'ci_variables_found', 'ci_vars_found', 'container_indicators', 'containerd', 'detected_environment', 'detection_failed', 'docker', 'env_vars', 'error', 'false', 'files', 'is_ci', 'is_containerized', 'kubepods', 'linux_container', 'lxc', 'no', 'off', 'platform', 'production', 'python_version']
