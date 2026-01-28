@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VeterinarianController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Pet Clinic Backend</a> &gt; <a href="index.source.html" class="el_package">com.petclinic.backend.controller</a> &gt; <span class="el_source">VeterinarianController.java</span></div><h1>VeterinarianController.java</h1><pre class="source lang-java linenums">package com.petclinic.backend.controller;
+
+import com.petclinic.backend.model.Veterinarian;
+import com.petclinic.backend.repository.VeterinarianRepository;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * REST Controller for Veterinarian management
+ * Provides CRUD operations and search functionality for veterinarians
+ * Validates: Requirements 8.1, 8.2, 8.3, 8.4
+ */
+@RestController
+@RequestMapping(&quot;/api/veterinarians&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+<span class="nc" id="L24">public class VeterinarianController {</span>
+
+    @Autowired
+    private VeterinarianRepository veterinarianRepository;
+
+    /**
+     * Get all veterinarians with pagination
+     * GET /api/veterinarians
+     */
+    @GetMapping
+    public ResponseEntity&lt;Page&lt;Veterinarian&gt;&gt; getAllVeterinarians(Pageable pageable) {
+        try {
+<span class="nc" id="L36">            Page&lt;Veterinarian&gt; veterinarians = veterinarianRepository.findAll(pageable);</span>
+<span class="nc" id="L37">            return ResponseEntity.ok(veterinarians);</span>
+<span class="nc" id="L38">        } catch (Exception e) {</span>
+<span class="nc" id="L39">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Get veterinarian by ID
+     * GET /api/veterinarians/{id}
+     */
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Veterinarian&gt; getVeterinarianById(@PathVariable Long id) {
+        try {
+<span class="nc" id="L50">            Optional&lt;Veterinarian&gt; veterinarian = veterinarianRepository.findById(id);</span>
+<span class="nc" id="L51">            return veterinarian.map(ResponseEntity::ok)</span>
+<span class="nc" id="L52">                             .orElse(ResponseEntity.notFound().build());</span>
+<span class="nc" id="L53">        } catch (Exception e) {</span>
+<span class="nc" id="L54">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Create new veterinarian
+     * POST /api/veterinarians
+     */
+    @PostMapping
+    public ResponseEntity&lt;Veterinarian&gt; createVeterinarian(@Valid @RequestBody Veterinarian veterinarian) {
+        try {
+            // Ensure ID is null for new entities
+<span class="nc" id="L66">            veterinarian.setId(null);</span>
+<span class="nc" id="L67">            Veterinarian savedVeterinarian = veterinarianRepository.save(veterinarian);</span>
+<span class="nc" id="L68">            return ResponseEntity.status(HttpStatus.CREATED).body(savedVeterinarian);</span>
+<span class="nc" id="L69">        } catch (Exception e) {</span>
+<span class="nc" id="L70">            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();</span>
+        }
+    }
+
+    /**
+     * Update existing veterinarian
+     * PUT /api/veterinarians/{id}
+     */
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Veterinarian&gt; updateVeterinarian(@PathVariable Long id, @Valid @RequestBody Veterinarian veterinarianDetails) {
+        try {
+<span class="nc" id="L81">            Optional&lt;Veterinarian&gt; optionalVeterinarian = veterinarianRepository.findById(id);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            if (optionalVeterinarian.isEmpty()) {</span>
+<span class="nc" id="L83">                return ResponseEntity.notFound().build();</span>
+            }
+
+<span class="nc" id="L86">            Veterinarian veterinarian = optionalVeterinarian.get();</span>
+<span class="nc" id="L87">            veterinarian.setFirstName(veterinarianDetails.getFirstName());</span>
+<span class="nc" id="L88">            veterinarian.setLastName(veterinarianDetails.getLastName());</span>
+<span class="nc" id="L89">            veterinarian.setSpecialties(veterinarianDetails.getSpecialties());</span>
+<span class="nc" id="L90">            veterinarian.setLicenseNumber(veterinarianDetails.getLicenseNumber());</span>
+
+<span class="nc" id="L92">            Veterinarian updatedVeterinarian = veterinarianRepository.save(veterinarian);</span>
+<span class="nc" id="L93">            return ResponseEntity.ok(updatedVeterinarian);</span>
+<span class="nc" id="L94">        } catch (Exception e) {</span>
+<span class="nc" id="L95">            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();</span>
+        }
+    }
+
+    /**
+     * Delete veterinarian
+     * DELETE /api/veterinarians/{id}
+     */
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteVeterinarian(@PathVariable Long id) {
+        try {
+<span class="nc bnc" id="L106" title="All 2 branches missed.">            if (!veterinarianRepository.existsById(id)) {</span>
+<span class="nc" id="L107">                return ResponseEntity.notFound().build();</span>
+            }
+<span class="nc" id="L109">            veterinarianRepository.deleteById(id);</span>
+<span class="nc" id="L110">            return ResponseEntity.noContent().build();</span>
+<span class="nc" id="L111">        } catch (Exception e) {</span>
+<span class="nc" id="L112">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Search veterinarians by first name (case-insensitive)
+     * GET /api/veterinarians/search/by-first-name?name={name}
+     */
+    @GetMapping(&quot;/search/by-first-name&quot;)
+    public ResponseEntity&lt;List&lt;Veterinarian&gt;&gt; searchByFirstName(@RequestParam String name) {
+        try {
+<span class="nc" id="L123">            List&lt;Veterinarian&gt; veterinarians = veterinarianRepository.findByFirstNameContainingIgnoreCase(name);</span>
+<span class="nc" id="L124">            return ResponseEntity.ok(veterinarians);</span>
+<span class="nc" id="L125">        } catch (Exception e) {</span>
+<span class="nc" id="L126">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Search veterinarians by last name (case-insensitive)
+     * GET /api/veterinarians/search/by-last-name?name={name}
+     */
+    @GetMapping(&quot;/search/by-last-name&quot;)
+    public ResponseEntity&lt;List&lt;Veterinarian&gt;&gt; searchByLastName(@RequestParam String name) {
+        try {
+<span class="nc" id="L137">            List&lt;Veterinarian&gt; veterinarians = veterinarianRepository.findByLastNameContainingIgnoreCase(name);</span>
+<span class="nc" id="L138">            return ResponseEntity.ok(veterinarians);</span>
+<span class="nc" id="L139">        } catch (Exception e) {</span>
+<span class="nc" id="L140">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Search veterinarians by specialty
+     * GET /api/veterinarians/search/by-specialty?specialty={specialty}
+     */
+    @GetMapping(&quot;/search/by-specialty&quot;)
+    public ResponseEntity&lt;List&lt;Veterinarian&gt;&gt; searchBySpecialty(@RequestParam String specialty) {
+        try {
+<span class="nc" id="L151">            List&lt;Veterinarian&gt; veterinarians = veterinarianRepository.findBySpecialtiesContainingIgnoreCase(specialty);</span>
+<span class="nc" id="L152">            return ResponseEntity.ok(veterinarians);</span>
+<span class="nc" id="L153">        } catch (Exception e) {</span>
+<span class="nc" id="L154">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Find veterinarian by license number
+     * GET /api/veterinarians/search/by-license?license={license}
+     */
+    @GetMapping(&quot;/search/by-license&quot;)
+    public ResponseEntity&lt;Veterinarian&gt; searchByLicenseNumber(@RequestParam String license) {
+        try {
+<span class="nc" id="L165">            Optional&lt;Veterinarian&gt; veterinarian = veterinarianRepository.findByLicenseNumber(license);</span>
+<span class="nc" id="L166">            return veterinarian.map(ResponseEntity::ok)</span>
+<span class="nc" id="L167">                             .orElse(ResponseEntity.notFound().build());</span>
+<span class="nc" id="L168">        } catch (Exception e) {</span>
+<span class="nc" id="L169">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Get veterinarians with multiple specialties
+     * GET /api/veterinarians/multi-specialty
+     */
+    @GetMapping(&quot;/multi-specialty&quot;)
+    public ResponseEntity&lt;List&lt;Veterinarian&gt;&gt; getVeterinariansWithMultipleSpecialties() {
+        try {
+<span class="nc" id="L180">            List&lt;Veterinarian&gt; veterinarians = veterinarianRepository.findVeterinariansWithMultipleSpecialties();</span>
+<span class="nc" id="L181">            return ResponseEntity.ok(veterinarians);</span>
+<span class="nc" id="L182">        } catch (Exception e) {</span>
+<span class="nc" id="L183">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Get available veterinarians (those with fewer visits)
+     * GET /api/veterinarians/available?maxVisits={maxVisits}
+     */
+    @GetMapping(&quot;/available&quot;)
+    public ResponseEntity&lt;List&lt;Veterinarian&gt;&gt; getAvailableVeterinarians(@RequestParam(defaultValue = &quot;50&quot;) int maxVisits) {
+        try {
+<span class="nc" id="L194">            List&lt;Veterinarian&gt; veterinarians = veterinarianRepository.findAvailableVeterinarians(maxVisits);</span>
+<span class="nc" id="L195">            return ResponseEntity.ok(veterinarians);</span>
+<span class="nc" id="L196">        } catch (Exception e) {</span>
+<span class="nc" id="L197">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Get veterinarian statistics
+     * GET /api/veterinarians/statistics
+     */
+    @GetMapping(&quot;/statistics&quot;)
+    public ResponseEntity&lt;Object[]&gt; getVeterinarianStatistics() {
+        try {
+<span class="nc" id="L208">            Object[] stats = veterinarianRepository.getVeterinarianStatistics();</span>
+<span class="nc" id="L209">            return ResponseEntity.ok(stats);</span>
+<span class="nc" id="L210">        } catch (Exception e) {</span>
+<span class="nc" id="L211">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Get most common specialties
+     * GET /api/veterinarians/common-specialties?limit={limit}
+     */
+    @GetMapping(&quot;/common-specialties&quot;)
+    public ResponseEntity&lt;List&lt;Object[]&gt;&gt; getMostCommonSpecialties(@RequestParam(defaultValue = &quot;10&quot;) int limit) {
+        try {
+<span class="nc" id="L222">            List&lt;Object[]&gt; specialties = veterinarianRepository.findMostCommonSpecialties(</span>
+<span class="nc" id="L223">                org.springframework.data.domain.PageRequest.of(0, limit));</span>
+<span class="nc" id="L224">            return ResponseEntity.ok(specialties);</span>
+<span class="nc" id="L225">        } catch (Exception e) {</span>
+<span class="nc" id="L226">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Advanced search with multiple criteria
+     * GET /api/veterinarians/search
+     */
+    @GetMapping(&quot;/search&quot;)
+    public ResponseEntity&lt;Page&lt;Veterinarian&gt;&gt; searchVeterinarians(
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName,
+            @RequestParam(required = false) String specialty,
+            @RequestParam(required = false) String licenseNumber,
+            Pageable pageable) {
+        try {
+<span class="nc" id="L242">            Page&lt;Veterinarian&gt; veterinarians = veterinarianRepository.searchVeterinarians(</span>
+                firstName, lastName, specialty, licenseNumber, pageable);
+<span class="nc" id="L244">            return ResponseEntity.ok(veterinarians);</span>
+<span class="nc" id="L245">        } catch (Exception e) {</span>
+<span class="nc" id="L246">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

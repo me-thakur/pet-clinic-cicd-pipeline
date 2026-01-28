@@ -1,0 +1,299 @@
+# CloudWatch Dashboard Configuration for Pet Clinic CI/CD Pipeline
+# This CloudFormation template creates a comprehensive monitoring dashboard
+# Requirements: 9.4, 9.5
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudWatch Dashboard for Pet Clinic CI/CD Pipeline'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+    Description: Environment name
+  
+  InstanceId:
+    Type: String
+    Description: EC2 Instance ID for monitoring
+  
+  RDSInstanceId:
+    Type: String
+    Description: RDS Instance ID for database monitoring
+  
+  LoadBalancerFullName:
+    Type: String
+    Description: Application Load Balancer full name
+    Default: ""
+
+Resources:
+  PetClinicDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub '${Environment}-PetClinic-Dashboard'
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "text",
+              "x": 0,
+              "y": 0,
+              "width": 24,
+              "height": 1,
+              "properties": {
+                "markdown": "# Pet Clinic CI/CD Pipeline - ${Environment} Environment\n\nComprehensive monitoring dashboard for the Pet Clinic application and infrastructure."
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 1,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/EC2", "CPUUtilization", "InstanceId", "${InstanceId}" ],
+                  [ "CWAgent", "mem_used_percent", "InstanceId", "${InstanceId}" ],
+                  [ ".", "disk_used_percent", ".", ".", "device", "/dev/xvda1", "fstype", "ext4", "path", "/" ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "EC2 Instance Resources",
+                "period": 300,
+                "yAxis": {
+                  "left": {
+                    "min": 0,
+                    "max": 100
+                  }
+                }
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12,
+              "y": 1,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/EC2", "StatusCheckFailed_Instance", "InstanceId", "${InstanceId}" ],
+                  [ ".", "StatusCheckFailed_System", ".", "." ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "EC2 Status Checks",
+                "period": 300,
+                "yAxis": {
+                  "left": {
+                    "min": 0,
+                    "max": 1
+                  }
+                }
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 7,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", "${RDSInstanceId}" ],
+                  [ ".", "DatabaseConnections", ".", "." ],
+                  [ ".", "ReadLatency", ".", "." ],
+                  [ ".", "WriteLatency", ".", "." ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "RDS Database Performance",
+                "period": 300
+              }
+            },
+            {
+              "type": "metric",
+              "x": 12,
+              "y": 7,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "AWS/RDS", "FreeStorageSpace", "DBInstanceIdentifier", "${RDSInstanceId}" ],
+                  [ ".", "FreeableMemory", ".", "." ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "RDS Storage and Memory",
+                "period": 300
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 13,
+              "width": 8,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "PetClinic/Application", "ErrorCount" ],
+                  [ ".", "ResponseTime" ],
+                  [ ".", "RequestCount" ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "Application Metrics",
+                "period": 300
+              }
+            },
+            {
+              "type": "metric",
+              "x": 8,
+              "y": 13,
+              "width": 8,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "PetClinic/Jenkins", "ServiceStatus" ],
+                  [ ".", "BuildFailureRate" ],
+                  [ ".", "QueueLength" ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "Jenkins Metrics",
+                "period": 300
+              }
+            },
+            {
+              "type": "metric",
+              "x": 16,
+              "y": 13,
+              "width": 8,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "PetClinic/Security", "SecurityEvents" ],
+                  [ ".", "FailedLoginAttempts" ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "Security Metrics",
+                "period": 300
+              }
+            },
+            {
+              "type": "metric",
+              "x": 0,
+              "y": 19,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "metrics": [
+                  [ "PetClinic/Backup", "BackupFailures" ],
+                  [ ".", "LastBackupAge" ],
+                  [ ".", "BackupSize" ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "title": "Backup Metrics",
+                "period": 3600
+              }
+            },
+            {
+              "type": "log",
+              "x": 12,
+              "y": 19,
+              "width": 12,
+              "height": 6,
+              "properties": {
+                "query": "SOURCE '/aws/petclinic/errors'\n| fields @timestamp, @message\n| filter @message like /ERROR/\n| sort @timestamp desc\n| limit 20",
+                "region": "${AWS::Region}",
+                "title": "Recent Error Logs",
+                "view": "table"
+              }
+            },
+            {
+              "type": "number",
+              "x": 0,
+              "y": 25,
+              "width": 6,
+              "height": 3,
+              "properties": {
+                "metrics": [
+                  [ "AWS/EC2", "CPUUtilization", "InstanceId", "${InstanceId}" ]
+                ],
+                "view": "singleValue",
+                "region": "${AWS::Region}",
+                "title": "Current CPU %",
+                "period": 300,
+                "stat": "Average"
+              }
+            },
+            {
+              "type": "number",
+              "x": 6,
+              "y": 25,
+              "width": 6,
+              "height": 3,
+              "properties": {
+                "metrics": [
+                  [ "CWAgent", "mem_used_percent", "InstanceId", "${InstanceId}" ]
+                ],
+                "view": "singleValue",
+                "region": "${AWS::Region}",
+                "title": "Current Memory %",
+                "period": 300,
+                "stat": "Average"
+              }
+            },
+            {
+              "type": "number",
+              "x": 12,
+              "y": 25,
+              "width": 6,
+              "height": 3,
+              "properties": {
+                "metrics": [
+                  [ "AWS/RDS", "CPUUtilization", "DBInstanceIdentifier", "${RDSInstanceId}" ]
+                ],
+                "view": "singleValue",
+                "region": "${AWS::Region}",
+                "title": "Database CPU %",
+                "period": 300,
+                "stat": "Average"
+              }
+            },
+            {
+              "type": "number",
+              "x": 18,
+              "y": 25,
+              "width": 6,
+              "height": 3,
+              "properties": {
+                "metrics": [
+                  [ "PetClinic/Application", "ErrorCount" ]
+                ],
+                "view": "singleValue",
+                "region": "${AWS::Region}",
+                "title": "Error Count (5min)",
+                "period": 300,
+                "stat": "Sum"
+              }
+            }
+          ]
+        }
+
+Outputs:
+  DashboardName:
+    Description: 'Name of the created dashboard'
+    Value: !Ref PetClinicDashboard
+  
+  DashboardUrl:
+    Description: 'URL to access the dashboard'
+    Value: !Sub 'https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${Environment}-PetClinic-Dashboard'

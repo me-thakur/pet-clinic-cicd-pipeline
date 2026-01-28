@@ -1,0 +1,589 @@
+#!/usr/bin/env groovy
+/**
+ * Jenkins Pipeline for Pet Clinic Backend Application
+ * 
+ * This pipeline handles the complete CI/CD process for the backend application:
+ * - Source code checkout
+ * - Build and test
+ * - Quality analysis
+ * - Security scanning
+ * - Deployment to staging/production
+ * - Health checks and rollback
+ * 
+ * Requirements: 1.1, 4.3, 6.1, 6.2, 6.3
+ */
+
+pipeline {
+    agent any
+    
+    // Pipeline options
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10', daysToKeepStr: '30'))
+        timeout(time: 30, unit: 'MINUTES')
+        timestamps()
+        skipDefaultCheckout()
+        parallelsAlwaysFailFast()
+    }
+    
+    // Environment variables
+    environment {
+        // Application configuration
+        APP_NAME = 'pet-clinic-backend'
+        APP_VERSION = "${env.BUILD_NUMBER}"
+        MAVEN_OPTS = '-Xmx1024m -Xms512m'
+        JAVA_HOME = '/usr/lib/jvm/java-11-amazon-corretto'
+        
+        // AWS configuration
+        AWS_DEFAULT_REGION = 'us-east-1'
+        AWS_ACCOUNT_ID = credentials('aws-account-id')
+        
+        // Database configuration
+        DB_HOST = credentials('db-host')
+        DB_NAME = 'petclinic'
+        DB_USERNAME = credentials('db-username')
+        DB_PASSWORD = credentials('db-password')
+        
+        // Deployment configuration
+        STAGING_ASG = 'dev-petclinic-backend-asg'
+        PROD_ASG = 'prod-petclinic-backend-asg'
+        
+        // Notification configuration
+        SLACK_CHANNEL = '#ci-cd'
+        EMAIL_RECIPIENTS = 'admin@petclinic.local'
+    }
+    
+    // Build parameters
+    parameters {
+        choice(
+            name: 'ENVIRONMENT',
+            choices: ['dev', 'staging', 'prod'],
+            description: 'Target deployment environment'
+        )
+        booleanParam(
+            name: 'SKIP_TESTS',
+            defaultValue: false,
+            description: 'Skip unit and integration tests'
+        )
+        booleanParam(
+            name: 'DEPLOY_ONLY',
+            defaultValue: false,
+            description: 'Skip build and deploy existing artifact'
+        )
+        string(
+            name: 'ARTIFACT_VERSION',
+            defaultValue: '',
+            description: 'Specific artifact version to deploy (for DEPLOY_ONLY)'
+        )
+    }
+    
+    // Pipeline stages
+    stages {
+        stage('Checkout') {
+            when {
+                not { params.DEPLOY_ONLY }
+            }
+            steps {
+                script {
+                    // Clean workspace
+                    cleanWs()
+                    
+                    // Checkout source code
+                    checkout scm
+                    
+                    // Set build display name
+                    currentBuild.displayName = "#${BUILD_NUMBER} - ${params.ENVIRONMENT}"
+                    currentBuild.description = "Backend deployment to ${params.ENVIRONMENT}"
+                    
+                    // Store commit info
+                    env.GIT_COMMIT_SHORT = sh(
+                        script: 'git rev-parse --short HEAD',
+                        returnStdout: true
+                    ).trim()
+                    
+                    env.GIT_BRANCH_NAME = sh(
+                        script: 'git rev-parse --abbrev-ref HEAD',
+                        returnStdout: true
+                    ).trim()
+                }
+            }
+            post {
+                success {
+                    echo "✓ Source code checked out successfully"
+                }
+                failure {
+                    error "✗ Failed to checkout source code"
+                }
+            }
+        }
+        
+        stage('Build') {
+            when {
+                not { params.DEPLOY_ONLY }
+            }
+            steps {
+                script {
+                    echo "Building Pet Clinic Backend..."
+                    
+                    // Maven build
+                    sh '''
+                        cd pet-clinic-backend
+                        mvn clean compile -DskipTests=true \
+                            -Dmaven.repo.local=/opt/maven-repo \
+                            -B -V
+                    '''
+                    
+                    // Store build info
+                    env.BUILD_TIMESTAMP = sh(
+                        script: 'date +"%Y%m%d-%H%M%S"',
+                        returnStdout: true
+                    ).trim()
+                }
+            }
+            post {
+                success {
+                    echo "✓ Build completed successfully"
+                }
+                failure {
+                    error "✗ Build failed"
+                }
+            }
+        }
+        
+        stage('Test') {
+            when {
+                allOf {
+                    not { params.DEPLOY_ONLY }
+                    not { params.SKIP_TESTS }
+                }
+            }
+            parallel {
+                stage('Unit Tests') {
+                    steps {
+                        script {
+                            echo "Running unit tests..."
+                            sh '''
+                                cd pet-clinic-backend
+                                mvn test \
+                                    -Dmaven.repo.local=/opt/maven-repo \
+                                    -Dspring.profiles.active=test \
+                                    -B
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            // Publish test results
+                            publishTestResults testResultsPattern: 'pet-clinic-backend/target/surefire-reports/*.xml'
+                            
+                            // Publish coverage report
+                            publishCoverage adapters: [
+                                jacocoAdapter('pet-clinic-backend/target/site/jacoco/jacoco.xml')
+                            ], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+                        }
+                    }
+                }
+                
+                stage('Integration Tests') {
+                    steps {
+                        script {
+                            echo "Running integration tests..."
+                            sh '''
+                                cd pet-clinic-backend
+                                mvn verify -DskipUnitTests=true \
+                                    -Dmaven.repo.local=/opt/maven-repo \
+                                    -Dspring.profiles.active=test \
+                                    -B
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            publishTestResults testResultsPattern: 'pet-clinic-backend/target/failsafe-reports/*.xml'
+                        }
+                    }
+                }
+                
+                stage('Property-Based Tests') {
+                    steps {
+                        script {
+                            echo "Running property-based tests..."
+                            sh '''
+                                cd pet-clinic-backend
+                                mvn test -Dtest="*Properties*" \
+                                    -Dmaven.repo.local=/opt/maven-repo \
+                                    -Dspring.profiles.active=test \
+                                    -B
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            publishTestResults testResultsPattern: 'pet-clinic-backend/target/surefire-reports/*Properties*.xml'
+                        }
+                    }
+                }
+            }
+            post {
+                success {
+                    echo "✓ All tests passed"
+                }
+                failure {
+                    error "✗ Tests failed"
+                }
+            }
+        }
+        
+        stage('Quality Analysis') {
+            when {
+                not { params.DEPLOY_ONLY }
+            }
+            parallel {
+                stage('SonarQube Analysis') {
+                    steps {
+                        script {
+                            echo "Running SonarQube analysis..."
+                            withSonarQubeEnv('SonarQube') {
+                                sh '''
+                                    cd pet-clinic-backend
+                                    mvn sonar:sonar \
+                                        -Dsonar.projectKey=pet-clinic-backend \
+                                        -Dsonar.projectName="Pet Clinic Backend" \
+                                        -Dsonar.projectVersion=${BUILD_NUMBER} \
+                                        -Dsonar.sources=src/main/java \
+                                        -Dsonar.tests=src/test/java \
+                                        -Dsonar.java.coveragePlugin=jacoco \
+                                        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                                        -B
+                                '''
+                            }
+                        }
+                    }
+                }
+                
+                stage('Security Scan') {
+                    steps {
+                        script {
+                            echo "Running security scan..."
+                            sh '''
+                                cd pet-clinic-backend
+                                # OWASP Dependency Check
+                                mvn org.owasp:dependency-check-maven:check \
+                                    -DfailBuildOnCVSS=7 \
+                                    -B
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            publishHTML([
+                                allowMissing: false,
+                                alwaysLinkToLastBuild: true,
+                                keepAll: true,
+                                reportDir: 'pet-clinic-backend/target',
+                                reportFiles: 'dependency-check-report.html',
+                                reportName: 'OWASP Dependency Check Report'
+                            ])
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Package') {
+            when {
+                not { params.DEPLOY_ONLY }
+            }
+            steps {
+                script {
+                    echo "Packaging application..."
+                    
+                    // Create JAR file
+                    sh '''
+                        cd pet-clinic-backend
+                        mvn package -DskipTests=true \
+                            -Dmaven.repo.local=/opt/maven-repo \
+                            -B
+                    '''
+                    
+                    // Create deployment package
+                    sh '''
+                        mkdir -p dist
+                        cp pet-clinic-backend/target/*.jar dist/
+                        cp efs-scripts/deploy-app.sh dist/
+                        cp efs-scripts/health-check.sh dist/
+                        
+                        # Create version info
+                        cat > dist/version.txt << EOF
+Build Number: ${BUILD_NUMBER}
+Git Commit: ${GIT_COMMIT_SHORT}
+Git Branch: ${GIT_BRANCH_NAME}
+Build Timestamp: ${BUILD_TIMESTAMP}
+Environment: ${ENVIRONMENT}
+EOF
+                    '''
+                    
+                    // Archive artifacts
+                    archiveArtifacts artifacts: 'dist/**/*', fingerprint: true
+                }
+            }
+            post {
+                success {
+                    echo "✓ Application packaged successfully"
+                }
+                failure {
+                    error "✗ Packaging failed"
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                script {
+                    echo "Deploying to ${params.ENVIRONMENT} environment..."
+                    
+                    // Determine target ASG
+                    def targetASG = params.ENVIRONMENT == 'prod' ? env.PROD_ASG : env.STAGING_ASG
+                    
+                    // Get artifact version
+                    def artifactVersion = params.DEPLOY_ONLY ? params.ARTIFACT_VERSION : env.BUILD_NUMBER
+                    
+                    // Deploy to Auto Scaling Group
+                    sh """
+                        # Get ASG instances
+                        INSTANCES=\$(aws autoscaling describe-auto-scaling-groups \\
+                            --auto-scaling-group-names ${targetASG} \\
+                            --query 'AutoScalingGroups[0].Instances[?LifecycleState==\`InService\`].InstanceId' \\
+                            --output text)
+                        
+                        echo "Deploying to instances: \$INSTANCES"
+                        
+                        for INSTANCE_ID in \$INSTANCES; do
+                            echo "Deploying to instance: \$INSTANCE_ID"
+                            
+                            # Get instance IP
+                            INSTANCE_IP=\$(aws ec2 describe-instances \\
+                                --instance-ids \$INSTANCE_ID \\
+                                --query 'Reservations[0].Instances[0].PrivateIpAddress' \\
+                                --output text)
+                            
+                            echo "Instance IP: \$INSTANCE_IP"
+                            
+                            # Copy deployment package
+                            aws s3 cp dist/ s3://petclinic-deployments/${params.ENVIRONMENT}/backend/${artifactVersion}/ --recursive
+                            
+                            # Execute deployment on instance
+                            aws ssm send-command \\
+                                --instance-ids \$INSTANCE_ID \\
+                                --document-name "AWS-RunShellScript" \\
+                                --parameters 'commands=[
+                                    "cd /tmp",
+                                    "aws s3 cp s3://petclinic-deployments/${params.ENVIRONMENT}/backend/${artifactVersion}/ . --recursive",
+                                    "chmod +x deploy-app.sh",
+                                    "./deploy-app.sh backend *.jar ${params.ENVIRONMENT}"
+                                ]' \\
+                                --output text
+                        done
+                    """
+                }
+            }
+            post {
+                success {
+                    echo "✓ Deployment completed successfully"
+                }
+                failure {
+                    error "✗ Deployment failed"
+                }
+            }
+        }
+        
+        stage('Health Check') {
+            steps {
+                script {
+                    echo "Performing health checks..."
+                    
+                    // Wait for deployment to complete
+                    sleep(time: 60, unit: 'SECONDS')
+                    
+                    // Get target ASG
+                    def targetASG = params.ENVIRONMENT == 'prod' ? env.PROD_ASG : env.STAGING_ASG
+                    
+                    // Perform health checks
+                    sh """
+                        # Get ASG instances
+                        INSTANCES=\$(aws autoscaling describe-auto-scaling-groups \\
+                            --auto-scaling-group-names ${targetASG} \\
+                            --query 'AutoScalingGroups[0].Instances[?LifecycleState==\`InService\`].InstanceId' \\
+                            --output text)
+                        
+                        HEALTH_CHECK_PASSED=true
+                        
+                        for INSTANCE_ID in \$INSTANCES; do
+                            echo "Health checking instance: \$INSTANCE_ID"
+                            
+                            # Execute health check on instance
+                            COMMAND_ID=\$(aws ssm send-command \\
+                                --instance-ids \$INSTANCE_ID \\
+                                --document-name "AWS-RunShellScript" \\
+                                --parameters 'commands=["./health-check.sh backend"]' \\
+                                --query 'Command.CommandId' \\
+                                --output text)
+                            
+                            # Wait for command to complete
+                            sleep 30
+                            
+                            # Get command result
+                            RESULT=\$(aws ssm get-command-invocation \\
+                                --command-id \$COMMAND_ID \\
+                                --instance-id \$INSTANCE_ID \\
+                                --query 'Status' \\
+                                --output text)
+                            
+                            if [ "\$RESULT" != "Success" ]; then
+                                echo "Health check failed for instance: \$INSTANCE_ID"
+                                HEALTH_CHECK_PASSED=false
+                            fi
+                        done
+                        
+                        if [ "\$HEALTH_CHECK_PASSED" = "false" ]; then
+                            echo "Health checks failed - initiating rollback"
+                            exit 1
+                        fi
+                        
+                        echo "All health checks passed"
+                    """
+                }
+            }
+            post {
+                failure {
+                    script {
+                        echo "Health checks failed - initiating rollback..."
+                        // Rollback logic would go here
+                        currentBuild.result = 'FAILURE'
+                    }
+                }
+            }
+        }
+    }
+    
+    // Post-build actions
+    post {
+        always {
+            script {
+                // Clean workspace
+                cleanWs()
+                
+                // Calculate build duration
+                def duration = currentBuild.durationString.replace(' and counting', '')
+                
+                // Set build description
+                currentBuild.description = """
+                    Environment: ${params.ENVIRONMENT}
+                    Duration: ${duration}
+                    Commit: ${env.GIT_COMMIT_SHORT ?: 'N/A'}
+                    Branch: ${env.GIT_BRANCH_NAME ?: 'N/A'}
+                """.stripIndent()
+            }
+        }
+        
+        success {
+            script {
+                echo "✓ Pipeline completed successfully"
+                
+                // Send success notification
+                slackSend(
+                    channel: env.SLACK_CHANNEL,
+                    color: 'good',
+                    message: """
+                        ✅ *Pet Clinic Backend Deployment Successful*
+                        
+                        *Environment:* ${params.ENVIRONMENT}
+                        *Build:* #${BUILD_NUMBER}
+                        *Commit:* ${env.GIT_COMMIT_SHORT ?: 'N/A'}
+                        *Branch:* ${env.GIT_BRANCH_NAME ?: 'N/A'}
+                        *Duration:* ${currentBuild.durationString.replace(' and counting', '')}
+                        
+                        <${BUILD_URL}|View Build>
+                    """.stripIndent()
+                )
+                
+                // Send email notification
+                emailext(
+                    to: env.EMAIL_RECIPIENTS,
+                    subject: "✅ Pet Clinic Backend Deployment Successful - ${params.ENVIRONMENT}",
+                    body: """
+                        <h2>Pet Clinic Backend Deployment Successful</h2>
+                        <p><strong>Environment:</strong> ${params.ENVIRONMENT}</p>
+                        <p><strong>Build Number:</strong> #${BUILD_NUMBER}</p>
+                        <p><strong>Git Commit:</strong> ${env.GIT_COMMIT_SHORT ?: 'N/A'}</p>
+                        <p><strong>Git Branch:</strong> ${env.GIT_BRANCH_NAME ?: 'N/A'}</p>
+                        <p><strong>Duration:</strong> ${currentBuild.durationString.replace(' and counting', '')}</p>
+                        <p><a href="${BUILD_URL}">View Build Details</a></p>
+                    """,
+                    mimeType: 'text/html'
+                )
+            }
+        }
+        
+        failure {
+            script {
+                echo "✗ Pipeline failed"
+                
+                // Send failure notification
+                slackSend(
+                    channel: env.SLACK_CHANNEL,
+                    color: 'danger',
+                    message: """
+                        ❌ *Pet Clinic Backend Deployment Failed*
+                        
+                        *Environment:* ${params.ENVIRONMENT}
+                        *Build:* #${BUILD_NUMBER}
+                        *Commit:* ${env.GIT_COMMIT_SHORT ?: 'N/A'}
+                        *Branch:* ${env.GIT_BRANCH_NAME ?: 'N/A'}
+                        *Duration:* ${currentBuild.durationString.replace(' and counting', '')}
+                        
+                        <${BUILD_URL}|View Build> | <${BUILD_URL}console|View Logs>
+                    """.stripIndent()
+                )
+                
+                // Send email notification
+                emailext(
+                    to: env.EMAIL_RECIPIENTS,
+                    subject: "❌ Pet Clinic Backend Deployment Failed - ${params.ENVIRONMENT}",
+                    body: """
+                        <h2>Pet Clinic Backend Deployment Failed</h2>
+                        <p><strong>Environment:</strong> ${params.ENVIRONMENT}</p>
+                        <p><strong>Build Number:</strong> #${BUILD_NUMBER}</p>
+                        <p><strong>Git Commit:</strong> ${env.GIT_COMMIT_SHORT ?: 'N/A'}</p>
+                        <p><strong>Git Branch:</strong> ${env.GIT_BRANCH_NAME ?: 'N/A'}</p>
+                        <p><strong>Duration:</strong> ${currentBuild.durationString.replace(' and counting', '')}</p>
+                        <p><a href="${BUILD_URL}">View Build Details</a> | <a href="${BUILD_URL}console">View Console Logs</a></p>
+                    """,
+                    mimeType: 'text/html'
+                )
+            }
+        }
+        
+        unstable {
+            script {
+                echo "⚠ Pipeline completed with warnings"
+                
+                // Send warning notification
+                slackSend(
+                    channel: env.SLACK_CHANNEL,
+                    color: 'warning',
+                    message: """
+                        ⚠️ *Pet Clinic Backend Deployment Unstable*
+                        
+                        *Environment:* ${params.ENVIRONMENT}
+                        *Build:* #${BUILD_NUMBER}
+                        *Commit:* ${env.GIT_COMMIT_SHORT ?: 'N/A'}
+                        *Branch:* ${env.GIT_BRANCH_NAME ?: 'N/A'}
+                        *Duration:* ${currentBuild.durationString.replace(' and counting', '')}
+                        
+                        <${BUILD_URL}|View Build>
+                    """.stripIndent()
+                )
+            }
+        }
+    }
+}

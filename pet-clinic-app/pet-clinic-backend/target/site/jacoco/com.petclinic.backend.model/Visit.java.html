@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Visit.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Pet Clinic Backend</a> &gt; <a href="index.source.html" class="el_package">com.petclinic.backend.model</a> &gt; <span class="el_source">Visit.java</span></div><h1>Visit.java</h1><pre class="source lang-java linenums">package com.petclinic.backend.model;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/**
+ * Visit entity representing a pet visit to the clinic
+ * Validates: Requirements 8.1, 8.2, 8.3
+ */
+@Entity
+@Table(name = &quot;visits&quot;)
+public class Visit {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @NotNull(message = &quot;Visit date is required&quot;)
+    @Column(name = &quot;visit_date&quot;, nullable = false)
+    private LocalDateTime visitDate;
+    
+    @NotBlank(message = &quot;Visit description is required&quot;)
+    @Size(min = 1, max = 500, message = &quot;Description must be between 1 and 500 characters&quot;)
+    @Column(name = &quot;description&quot;, nullable = false, length = 500)
+    private String description;
+    
+    @Size(max = 500, message = &quot;Diagnosis must not exceed 500 characters&quot;)
+    @Column(name = &quot;diagnosis&quot;, length = 500)
+    private String diagnosis;
+    
+    @Size(max = 500, message = &quot;Treatment must not exceed 500 characters&quot;)
+    @Column(name = &quot;treatment&quot;, length = 500)
+    private String treatment;
+    
+    @DecimalMin(value = &quot;0.0&quot;, inclusive = false, message = &quot;Cost must be greater than 0&quot;)
+    @Column(name = &quot;cost&quot;, precision = 10, scale = 2)
+    private BigDecimal cost;
+    
+    @NotNull(message = &quot;Pet is required&quot;)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;pet_id&quot;, nullable = false)
+    @JsonBackReference
+    private Pet pet;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;veterinarian_id&quot;)
+    private Veterinarian veterinarian;
+    
+    @Column(name = &quot;created_at&quot;, nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    
+    @Column(name = &quot;updated_at&quot;)
+    private LocalDateTime updatedAt;
+    
+    // Constructors
+<span class="fc" id="L64">    public Visit() {</span>
+<span class="fc" id="L65">        this.createdAt = LocalDateTime.now();</span>
+<span class="fc" id="L66">        this.updatedAt = LocalDateTime.now();</span>
+<span class="fc" id="L67">    }</span>
+    
+    public Visit(LocalDateTime visitDate, String description, Pet pet) {
+<span class="nc" id="L70">        this();</span>
+<span class="nc" id="L71">        this.visitDate = visitDate;</span>
+<span class="nc" id="L72">        this.description = description;</span>
+<span class="nc" id="L73">        this.pet = pet;</span>
+<span class="nc" id="L74">    }</span>
+    
+    public Visit(LocalDateTime visitDate, String description, String diagnosis, String treatment, BigDecimal cost, Pet pet, Veterinarian veterinarian) {
+<span class="nc" id="L77">        this();</span>
+<span class="nc" id="L78">        this.visitDate = visitDate;</span>
+<span class="nc" id="L79">        this.description = description;</span>
+<span class="nc" id="L80">        this.diagnosis = diagnosis;</span>
+<span class="nc" id="L81">        this.treatment = treatment;</span>
+<span class="nc" id="L82">        this.cost = cost;</span>
+<span class="nc" id="L83">        this.pet = pet;</span>
+<span class="nc" id="L84">        this.veterinarian = veterinarian;</span>
+<span class="nc" id="L85">    }</span>
+    
+    // Getters and Setters
+    public Long getId() {
+<span class="fc" id="L89">        return id;</span>
+    }
+    
+    public void setId(Long id) {
+<span class="nc" id="L93">        this.id = id;</span>
+<span class="nc" id="L94">    }</span>
+    
+    public LocalDateTime getVisitDate() {
+<span class="fc" id="L97">        return visitDate;</span>
+    }
+    
+    public void setVisitDate(LocalDateTime visitDate) {
+<span class="fc" id="L101">        this.visitDate = visitDate;</span>
+<span class="fc" id="L102">        this.updatedAt = LocalDateTime.now();</span>
+<span class="fc" id="L103">    }</span>
+    
+    public String getDescription() {
+<span class="fc" id="L106">        return description;</span>
+    }
+    
+    public void setDescription(String description) {
+<span class="fc" id="L110">        this.description = description;</span>
+<span class="fc" id="L111">        this.updatedAt = LocalDateTime.now();</span>
+<span class="fc" id="L112">    }</span>
+    
+    public String getDiagnosis() {
+<span class="fc" id="L115">        return diagnosis;</span>
+    }
+    
+    public void setDiagnosis(String diagnosis) {
+<span class="fc" id="L119">        this.diagnosis = diagnosis;</span>
+<span class="fc" id="L120">        this.updatedAt = LocalDateTime.now();</span>
+<span class="fc" id="L121">    }</span>
+    
+    public String getTreatment() {
+<span class="fc" id="L124">        return treatment;</span>
+    }
+    
+    public void setTreatment(String treatment) {
+<span class="fc" id="L128">        this.treatment = treatment;</span>
+<span class="fc" id="L129">        this.updatedAt = LocalDateTime.now();</span>
+<span class="fc" id="L130">    }</span>
+    
+    public BigDecimal getCost() {
+<span class="fc" id="L133">        return cost;</span>
+    }
+    
+    public void setCost(BigDecimal cost) {
+<span class="fc" id="L137">        this.cost = cost;</span>
+<span class="fc" id="L138">        this.updatedAt = LocalDateTime.now();</span>
+<span class="fc" id="L139">    }</span>
+    
+    public Pet getPet() {
+<span class="fc" id="L142">        return pet;</span>
+    }
+    
+    public void setPet(Pet pet) {
+<span class="fc" id="L146">        this.pet = pet;</span>
+<span class="fc" id="L147">        this.updatedAt = LocalDateTime.now();</span>
+<span class="fc" id="L148">    }</span>
+    
+    public Veterinarian getVeterinarian() {
+<span class="nc" id="L151">        return veterinarian;</span>
+    }
+    
+    public void setVeterinarian(Veterinarian veterinarian) {
+<span class="nc" id="L155">        this.veterinarian = veterinarian;</span>
+<span class="nc" id="L156">        this.updatedAt = LocalDateTime.now();</span>
+<span class="nc" id="L157">    }</span>
+    
+    public LocalDateTime getCreatedAt() {
+<span class="fc" id="L160">        return createdAt;</span>
+    }
+    
+    public LocalDateTime getUpdatedAt() {
+<span class="fc" id="L164">        return updatedAt;</span>
+    }
+    
+    // Business Methods
+    public boolean isEmergencyVisit() {
+<span class="nc bnc" id="L169" title="All 2 branches missed.">        return description != null &amp;&amp; </span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">               (description.toLowerCase().contains(&quot;emergency&quot;) || </span>
+<span class="nc bnc" id="L171" title="All 2 branches missed.">                description.toLowerCase().contains(&quot;urgent&quot;));</span>
+    }
+    
+    public boolean isCompleted() {
+<span class="nc bnc" id="L175" title="All 6 branches missed.">        return diagnosis != null &amp;&amp; !diagnosis.trim().isEmpty() &amp;&amp;</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">               treatment != null &amp;&amp; !treatment.trim().isEmpty();</span>
+    }
+    
+    public boolean hasCost() {
+<span class="nc bnc" id="L180" title="All 4 branches missed.">        return cost != null &amp;&amp; cost.compareTo(BigDecimal.ZERO) &gt; 0;</span>
+    }
+    
+    public String getVisitSummary() {
+<span class="nc" id="L184">        StringBuilder summary = new StringBuilder();</span>
+<span class="nc" id="L185">        summary.append(&quot;Visit on &quot;).append(visitDate.toLocalDate());</span>
+<span class="nc bnc" id="L186" title="All 2 branches missed.">        if (veterinarian != null) {</span>
+<span class="nc" id="L187">            summary.append(&quot; with Dr. &quot;).append(veterinarian.getLastName());</span>
+        }
+<span class="nc" id="L189">        summary.append(&quot;: &quot;).append(description);</span>
+<span class="nc" id="L190">        return summary.toString();</span>
+    }
+    
+    // Equals and HashCode
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L197" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L198">        Visit visit = (Visit) o;</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">        return Objects.equals(id, visit.id) &amp;&amp;</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">               Objects.equals(visitDate, visit.visitDate) &amp;&amp;</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">               Objects.equals(pet, visit.pet);</span>
+    }
+    
+    @Override
+    public int hashCode() {
+<span class="nc" id="L206">        return Objects.hash(id, visitDate, pet);</span>
+    }
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L211">        return &quot;Visit{&quot; +</span>
+                &quot;id=&quot; + id +
+                &quot;, visitDate=&quot; + visitDate +
+                &quot;, description='&quot; + description + '\'' +
+                &quot;, diagnosis='&quot; + diagnosis + '\'' +
+                &quot;, cost=&quot; + cost +
+<span class="nc" id="L217">                &quot;, completed=&quot; + isCompleted() +</span>
+                '}';
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+<span class="nc" id="L223">        this.updatedAt = LocalDateTime.now();</span>
+<span class="nc" id="L224">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

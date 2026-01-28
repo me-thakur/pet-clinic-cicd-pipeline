@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${owner.id != null ? 'Edit Owner - Pet Clinic' : 'Add Owner - Pet Clinic'}">Owner Form - Pet Clinic</title>
+    
+    <!-- Bootstrap CSS -->
+    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <i class="fas fa-paw"></i> Pet Clinic
+            </a>
+            
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/owners}">Owners</a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user"></i> <span sec:authentication="name">User</span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <form th:action="@{/logout}" method="post" style="display: inline;">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 th:text="${owner.id != null ? 'Edit Owner' : 'Add New Owner'}">Owner Form</h1>
+                <p class="text-muted">Fill in the owner information below</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a th:href="@{/owners}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Owners
+                </a>
+            </div>
+        </div>
+
+        <!-- Owner Form -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0" th:text="${owner.id != null ? 'Edit Owner Information' : 'New Owner Information'}">Owner Form</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:object="${owner}" 
+                              th:action="${owner.id != null ? '/owners/' + owner.id + '/edit' : '/owners/new'}" 
+                              method="post">
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="firstName" class="form-label">First Name *</label>
+                                        <input type="text" class="form-control" 
+                                               th:field="*{firstName}" 
+                                               th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid'" 
+                                               id="firstName" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('firstName')}" 
+                                             th:errors="*{firstName}">First name error</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="lastName" class="form-label">Last Name *</label>
+                                        <input type="text" class="form-control" 
+                                               th:field="*{lastName}" 
+                                               th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid'" 
+                                               id="lastName" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('lastName')}" 
+                                             th:errors="*{lastName}">Last name error</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" 
+                                       th:field="*{email}" 
+                                       th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'" 
+                                       id="email">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" 
+                                     th:errors="*{email}">Email error</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="telephone" class="form-label">Telephone</label>
+                                <input type="tel" class="form-control" 
+                                       th:field="*{telephone}" 
+                                       th:classappend="${#fields.hasErrors('telephone')} ? 'is-invalid'" 
+                                       id="telephone">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('telephone')}" 
+                                     th:errors="*{telephone}">Telephone error</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="address" class="form-label">Address</label>
+                                <textarea class="form-control" 
+                                          th:field="*{address}" 
+                                          th:classappend="${#fields.hasErrors('address')} ? 'is-invalid'" 
+                                          id="address" rows="2"></textarea>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('address')}" 
+                                     th:errors="*{address}">Address error</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" class="form-control" 
+                                       th:field="*{city}" 
+                                       th:classappend="${#fields.hasErrors('city')} ? 'is-invalid'" 
+                                       id="city">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('city')}" 
+                                     th:errors="*{city}">City error</div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{/owners}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> 
+                                    <span th:text="${owner.id != null ? 'Update Owner' : 'Create Owner'}">Save</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+    
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+</body>
+</html>

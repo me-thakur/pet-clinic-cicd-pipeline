@@ -1,0 +1,345 @@
+# SNS Notifications Configuration for Pet Clinic CI/CD Pipeline
+# This CloudFormation template creates SNS topics and subscriptions for alerting
+# Requirements: 9.5
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SNS Topics and Notifications for Pet Clinic CI/CD Pipeline'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+    Description: Environment name
+  
+  AlertEmail:
+    Type: String
+    Description: Email address for alert notifications
+    AllowedPattern: '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+  
+  SlackWebhookUrl:
+    Type: String
+    Description: Slack webhook URL for notifications (optional)
+    Default: ""
+  
+  PagerDutyIntegrationKey:
+    Type: String
+    Description: PagerDuty integration key for critical alerts (optional)
+    Default: ""
+    NoEcho: true
+
+Resources:
+  # SNS Topics
+  CriticalAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${Environment}-PetClinic-CriticalAlerts'
+      DisplayName: !Sub 'Pet Clinic Critical Alerts - ${Environment}'
+      KmsMasterKeyId: alias/aws/sns
+
+  WarningAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${Environment}-PetClinic-WarningAlerts'
+      DisplayName: !Sub 'Pet Clinic Warning Alerts - ${Environment}'
+      KmsMasterKeyId: alias/aws/sns
+
+  InfoAlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${Environment}-PetClinic-InfoAlerts'
+      DisplayName: !Sub 'Pet Clinic Info Alerts - ${Environment}'
+      KmsMasterKeyId: alias/aws/sns
+
+  # Email Subscriptions
+  CriticalAlertsEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref CriticalAlertsTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  WarningAlertsEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref WarningAlertsTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  InfoAlertsEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref InfoAlertsTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  # Lambda Function for Slack Notifications
+  SlackNotificationFunction:
+    Type: AWS::Lambda::Function
+    Condition: HasSlackWebhook
+    Properties:
+      FunctionName: !Sub '${Environment}-PetClinic-SlackNotification'
+      Runtime: python3.9
+      Handler: index.lambda_handler
+      Role: !GetAtt SlackNotificationRole.Arn
+      Environment:
+        Variables:
+          SLACK_WEBHOOK_URL: !Ref SlackWebhookUrl
+          ENVIRONMENT: !Ref Environment
+      Code:
+        ZipFile: |
+          import json
+          import urllib3
+          import os
+          
+          def lambda_handler(event, context):
+              webhook_url = os.environ['SLACK_WEBHOOK_URL']
+              environment = os.environ['ENVIRONMENT']
+              
+              http = urllib3.PoolManager()
+              
+              for record in event['Records']:
+                  sns_message = json.loads(record['Sns']['Message'])
+                  
+                  # Parse CloudWatch alarm
+                  alarm_name = sns_message.get('AlarmName', 'Unknown')
+                  alarm_description = sns_message.get('AlarmDescription', 'No description')
+                  new_state = sns_message.get('NewStateValue', 'Unknown')
+                  reason = sns_message.get('NewStateReason', 'No reason provided')
+                  
+                  # Determine color based on state
+                  color = 'danger' if new_state == 'ALARM' else 'good' if new_state == 'OK' else 'warning'
+                  
+                  # Create Slack message
+                  slack_message = {
+                      'attachments': [
+                          {
+                              'color': color,
+                              'title': f'Pet Clinic Alert - {environment.upper()}',
+                              'fields': [
+                                  {
+                                      'title': 'Alarm',
+                                      'value': alarm_name,
+                                      'short': True
+                                  },
+                                  {
+                                      'title': 'State',
+                                      'value': new_state,
+                                      'short': True
+                                  },
+                                  {
+                                      'title': 'Description',
+                                      'value': alarm_description,
+                                      'short': False
+                                  },
+                                  {
+                                      'title': 'Reason',
+                                      'value': reason,
+                                      'short': False
+                                  }
+                              ],
+                              'footer': 'Pet Clinic Monitoring',
+                              'ts': int(context.aws_request_id[:8], 16)
+                          }
+                      ]
+                  }
+                  
+                  # Send to Slack
+                  encoded_msg = json.dumps(slack_message).encode('utf-8')
+                  resp = http.request('POST', webhook_url, body=encoded_msg, headers={'Content-Type': 'application/json'})
+                  
+                  print(f'Slack notification sent: {resp.status}')
+              
+              return {'statusCode': 200, 'body': 'Notifications sent'}
+
+  SlackNotificationRole:
+    Type: AWS::IAM::Role
+    Condition: HasSlackWebhook
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  SlackNotificationSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasSlackWebhook
+    Properties:
+      TopicArn: !Ref CriticalAlertsTopic
+      Protocol: lambda
+      Endpoint: !GetAtt SlackNotificationFunction.Arn
+
+  SlackNotificationPermission:
+    Type: AWS::Lambda::Permission
+    Condition: HasSlackWebhook
+    Properties:
+      FunctionName: !Ref SlackNotificationFunction
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref CriticalAlertsTopic
+
+  # Lambda Function for PagerDuty Integration
+  PagerDutyNotificationFunction:
+    Type: AWS::Lambda::Function
+    Condition: HasPagerDuty
+    Properties:
+      FunctionName: !Sub '${Environment}-PetClinic-PagerDutyNotification'
+      Runtime: python3.9
+      Handler: index.lambda_handler
+      Role: !GetAtt PagerDutyNotificationRole.Arn
+      Environment:
+        Variables:
+          PAGERDUTY_INTEGRATION_KEY: !Ref PagerDutyIntegrationKey
+          ENVIRONMENT: !Ref Environment
+      Code:
+        ZipFile: |
+          import json
+          import urllib3
+          import os
+          import uuid
+          from datetime import datetime
+          
+          def lambda_handler(event, context):
+              integration_key = os.environ['PAGERDUTY_INTEGRATION_KEY']
+              environment = os.environ['ENVIRONMENT']
+              
+              http = urllib3.PoolManager()
+              
+              for record in event['Records']:
+                  sns_message = json.loads(record['Sns']['Message'])
+                  
+                  # Parse CloudWatch alarm
+                  alarm_name = sns_message.get('AlarmName', 'Unknown')
+                  alarm_description = sns_message.get('AlarmDescription', 'No description')
+                  new_state = sns_message.get('NewStateValue', 'Unknown')
+                  reason = sns_message.get('NewStateReason', 'No reason provided')
+                  
+                  # Only send to PagerDuty for ALARM state
+                  if new_state == 'ALARM':
+                      # Create PagerDuty event
+                      pagerduty_event = {
+                          'routing_key': integration_key,
+                          'event_action': 'trigger',
+                          'dedup_key': f'petclinic-{environment}-{alarm_name}',
+                          'payload': {
+                              'summary': f'Pet Clinic Alert: {alarm_name}',
+                              'source': f'pet-clinic-{environment}',
+                              'severity': 'critical',
+                              'component': 'pet-clinic-infrastructure',
+                              'group': environment,
+                              'class': 'cloudwatch-alarm',
+                              'custom_details': {
+                                  'alarm_name': alarm_name,
+                                  'alarm_description': alarm_description,
+                                  'state': new_state,
+                                  'reason': reason,
+                                  'environment': environment
+                              }
+                          }
+                      }
+                  elif new_state == 'OK':
+                      # Resolve the incident
+                      pagerduty_event = {
+                          'routing_key': integration_key,
+                          'event_action': 'resolve',
+                          'dedup_key': f'petclinic-{environment}-{alarm_name}'
+                      }
+                  else:
+                      continue
+                  
+                  # Send to PagerDuty
+                  encoded_msg = json.dumps(pagerduty_event).encode('utf-8')
+                  resp = http.request(
+                      'POST', 
+                      'https://events.pagerduty.com/v2/enqueue',
+                      body=encoded_msg,
+                      headers={'Content-Type': 'application/json'}
+                  )
+                  
+                  print(f'PagerDuty notification sent: {resp.status}')
+              
+              return {'statusCode': 200, 'body': 'PagerDuty notifications sent'}
+
+  PagerDutyNotificationRole:
+    Type: AWS::IAM::Role
+    Condition: HasPagerDuty
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  PagerDutyNotificationSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: HasPagerDuty
+    Properties:
+      TopicArn: !Ref CriticalAlertsTopic
+      Protocol: lambda
+      Endpoint: !GetAtt PagerDutyNotificationFunction.Arn
+
+  PagerDutyNotificationPermission:
+    Type: AWS::Lambda::Permission
+    Condition: HasPagerDuty
+    Properties:
+      FunctionName: !Ref PagerDutyNotificationFunction
+      Action: lambda:InvokeFunction
+      Principal: sns.amazonaws.com
+      SourceArn: !Ref CriticalAlertsTopic
+
+  # CloudWatch Log Group for Lambda functions
+  SlackNotificationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Condition: HasSlackWebhook
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${Environment}-PetClinic-SlackNotification'
+      RetentionInDays: 14
+
+  PagerDutyNotificationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Condition: HasPagerDuty
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${Environment}-PetClinic-PagerDutyNotification'
+      RetentionInDays: 14
+
+Conditions:
+  HasSlackWebhook: !Not [!Equals [!Ref SlackWebhookUrl, ""]]
+  HasPagerDuty: !Not [!Equals [!Ref PagerDutyIntegrationKey, ""]]
+
+Outputs:
+  CriticalAlertsTopicArn:
+    Description: 'ARN of the critical alerts SNS topic'
+    Value: !Ref CriticalAlertsTopic
+    Export:
+      Name: !Sub '${Environment}-PetClinic-CriticalAlertsTopicArn'
+
+  WarningAlertsTopicArn:
+    Description: 'ARN of the warning alerts SNS topic'
+    Value: !Ref WarningAlertsTopic
+    Export:
+      Name: !Sub '${Environment}-PetClinic-WarningAlertsTopicArn'
+
+  InfoAlertsTopicArn:
+    Description: 'ARN of the info alerts SNS topic'
+    Value: !Ref InfoAlertsTopic
+    Export:
+      Name: !Sub '${Environment}-PetClinic-InfoAlertsTopicArn'
+
+  SlackNotificationFunctionArn:
+    Condition: HasSlackWebhook
+    Description: 'ARN of the Slack notification Lambda function'
+    Value: !GetAtt SlackNotificationFunction.Arn
+
+  PagerDutyNotificationFunctionArn:
+    Condition: HasPagerDuty
+    Description: 'ARN of the PagerDuty notification Lambda function'
+    Value: !GetAtt PagerDutyNotificationFunction.Arn

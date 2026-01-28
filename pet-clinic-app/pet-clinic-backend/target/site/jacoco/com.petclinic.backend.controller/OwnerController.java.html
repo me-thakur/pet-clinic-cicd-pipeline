@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OwnerController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Pet Clinic Backend</a> &gt; <a href="index.source.html" class="el_package">com.petclinic.backend.controller</a> &gt; <span class="el_source">OwnerController.java</span></div><h1>OwnerController.java</h1><pre class="source lang-java linenums">package com.petclinic.backend.controller;
+
+import com.petclinic.backend.model.Owner;
+import com.petclinic.backend.repository.OwnerRepository;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * REST Controller for Owner management
+ * Provides CRUD operations and search functionality for pet owners
+ * Validates: Requirements 8.1, 8.2, 8.3, 8.4
+ */
+@RestController
+@RequestMapping(&quot;/api/owners&quot;)
+@CrossOrigin(origins = &quot;*&quot;)
+<span class="fc" id="L24">public class OwnerController {</span>
+
+    @Autowired
+    private OwnerRepository ownerRepository;
+
+    /**
+     * Get all owners with pagination
+     * GET /api/owners
+     */
+    @GetMapping
+    public ResponseEntity&lt;Page&lt;Owner&gt;&gt; getAllOwners(Pageable pageable) {
+        try {
+<span class="nc" id="L36">            Page&lt;Owner&gt; owners = ownerRepository.findAll(pageable);</span>
+<span class="nc" id="L37">            return ResponseEntity.ok(owners);</span>
+<span class="nc" id="L38">        } catch (Exception e) {</span>
+<span class="nc" id="L39">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Get owner by ID
+     * GET /api/owners/{id}
+     */
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Owner&gt; getOwnerById(@PathVariable Long id) {
+        try {
+<span class="fc" id="L50">            Optional&lt;Owner&gt; owner = ownerRepository.findById(id);</span>
+<span class="fc" id="L51">            return owner.map(ResponseEntity::ok)</span>
+<span class="fc" id="L52">                       .orElse(ResponseEntity.notFound().build());</span>
+<span class="nc" id="L53">        } catch (Exception e) {</span>
+<span class="nc" id="L54">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Create new owner
+     * POST /api/owners
+     */
+    @PostMapping
+    public ResponseEntity&lt;Owner&gt; createOwner(@Valid @RequestBody Owner owner) {
+        try {
+            // Ensure ID is null for new entities
+<span class="nc" id="L66">            owner.setId(null);</span>
+<span class="nc" id="L67">            Owner savedOwner = ownerRepository.save(owner);</span>
+<span class="nc" id="L68">            return ResponseEntity.status(HttpStatus.CREATED).body(savedOwner);</span>
+<span class="nc" id="L69">        } catch (Exception e) {</span>
+<span class="nc" id="L70">            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();</span>
+        }
+    }
+
+    /**
+     * Update existing owner
+     * PUT /api/owners/{id}
+     */
+    @PutMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Owner&gt; updateOwner(@PathVariable Long id, @Valid @RequestBody Owner ownerDetails) {
+        try {
+<span class="nc" id="L81">            Optional&lt;Owner&gt; optionalOwner = ownerRepository.findById(id);</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            if (optionalOwner.isEmpty()) {</span>
+<span class="nc" id="L83">                return ResponseEntity.notFound().build();</span>
+            }
+
+<span class="nc" id="L86">            Owner owner = optionalOwner.get();</span>
+<span class="nc" id="L87">            owner.setFirstName(ownerDetails.getFirstName());</span>
+<span class="nc" id="L88">            owner.setLastName(ownerDetails.getLastName());</span>
+<span class="nc" id="L89">            owner.setAddress(ownerDetails.getAddress());</span>
+<span class="nc" id="L90">            owner.setCity(ownerDetails.getCity());</span>
+<span class="nc" id="L91">            owner.setTelephone(ownerDetails.getTelephone());</span>
+<span class="nc" id="L92">            owner.setEmail(ownerDetails.getEmail());</span>
+
+<span class="nc" id="L94">            Owner updatedOwner = ownerRepository.save(owner);</span>
+<span class="nc" id="L95">            return ResponseEntity.ok(updatedOwner);</span>
+<span class="nc" id="L96">        } catch (Exception e) {</span>
+<span class="nc" id="L97">            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();</span>
+        }
+    }
+
+    /**
+     * Delete owner
+     * DELETE /api/owners/{id}
+     */
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; deleteOwner(@PathVariable Long id) {
+        try {
+<span class="fc bfc" id="L108" title="All 2 branches covered.">            if (!ownerRepository.existsById(id)) {</span>
+<span class="fc" id="L109">                return ResponseEntity.notFound().build();</span>
+            }
+<span class="fc" id="L111">            ownerRepository.deleteById(id);</span>
+<span class="fc" id="L112">            return ResponseEntity.noContent().build();</span>
+<span class="nc" id="L113">        } catch (Exception e) {</span>
+<span class="nc" id="L114">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Search owners by first name (case-insensitive)
+     * GET /api/owners/search/by-first-name?name={name}
+     */
+    @GetMapping(&quot;/search/by-first-name&quot;)
+    public ResponseEntity&lt;List&lt;Owner&gt;&gt; searchByFirstName(@RequestParam String name) {
+        try {
+<span class="fc" id="L125">            List&lt;Owner&gt; owners = ownerRepository.findByFirstNameContainingIgnoreCase(name);</span>
+<span class="fc" id="L126">            return ResponseEntity.ok(owners);</span>
+<span class="nc" id="L127">        } catch (Exception e) {</span>
+<span class="nc" id="L128">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Search owners by last name (case-insensitive)
+     * GET /api/owners/search/by-last-name?name={name}
+     */
+    @GetMapping(&quot;/search/by-last-name&quot;)
+    public ResponseEntity&lt;List&lt;Owner&gt;&gt; searchByLastName(@RequestParam String name) {
+        try {
+<span class="nc" id="L139">            List&lt;Owner&gt; owners = ownerRepository.findByLastNameContainingIgnoreCase(name);</span>
+<span class="nc" id="L140">            return ResponseEntity.ok(owners);</span>
+<span class="nc" id="L141">        } catch (Exception e) {</span>
+<span class="nc" id="L142">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Search owners by email
+     * GET /api/owners/search/by-email?email={email}
+     */
+    @GetMapping(&quot;/search/by-email&quot;)
+    public ResponseEntity&lt;Owner&gt; searchByEmail(@RequestParam String email) {
+        try {
+<span class="fc" id="L153">            Optional&lt;Owner&gt; owner = ownerRepository.findByEmail(email);</span>
+<span class="fc" id="L154">            return owner.map(ResponseEntity::ok)</span>
+<span class="fc" id="L155">                       .orElse(ResponseEntity.notFound().build());</span>
+<span class="nc" id="L156">        } catch (Exception e) {</span>
+<span class="nc" id="L157">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Search owners by city
+     * GET /api/owners/search/by-city?city={city}
+     */
+    @GetMapping(&quot;/search/by-city&quot;)
+    public ResponseEntity&lt;List&lt;Owner&gt;&gt; searchByCity(@RequestParam String city) {
+        try {
+<span class="nc" id="L168">            List&lt;Owner&gt; owners = ownerRepository.findByCityIgnoreCase(city);</span>
+<span class="nc" id="L169">            return ResponseEntity.ok(owners);</span>
+<span class="nc" id="L170">        } catch (Exception e) {</span>
+<span class="nc" id="L171">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Get owners with multiple pets
+     * GET /api/owners/with-multiple-pets
+     */
+    @GetMapping(&quot;/with-multiple-pets&quot;)
+    public ResponseEntity&lt;List&lt;Owner&gt;&gt; getOwnersWithMultiplePets() {
+        try {
+<span class="nc" id="L182">            List&lt;Owner&gt; owners = ownerRepository.findOwnersWithMultiplePets();</span>
+<span class="nc" id="L183">            return ResponseEntity.ok(owners);</span>
+<span class="nc" id="L184">        } catch (Exception e) {</span>
+<span class="nc" id="L185">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+
+    /**
+     * Get owner statistics
+     * GET /api/owners/statistics
+     */
+    @GetMapping(&quot;/statistics&quot;)
+    public ResponseEntity&lt;Object[]&gt; getOwnerStatistics() {
+        try {
+<span class="nc" id="L196">            Object[] stats = ownerRepository.getOwnerStatistics();</span>
+<span class="nc" id="L197">            return ResponseEntity.ok(stats);</span>
+<span class="nc" id="L198">        } catch (Exception e) {</span>
+<span class="nc" id="L199">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

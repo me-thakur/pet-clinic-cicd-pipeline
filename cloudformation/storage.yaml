@@ -1,0 +1,430 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Storage infrastructure for Pet Clinic CI/CD Pipeline - S3 buckets and EFS'
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Environment name for resource tagging
+
+  VPCId:
+    Type: String
+    Description: VPC ID from network stack
+
+  PrivateSubnetId:
+    Type: String
+    Description: Private subnet ID for EFS mount targets
+
+  PublicSubnetId:
+    Type: String
+    Description: Public subnet ID for EFS mount targets
+
+Resources:
+  # KMS Key for S3 Bucket Encryption
+  S3EncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for Pet Clinic S3 bucket encryption
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: Allow Jenkins Service
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${Environment}-jenkins-instance-role'
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey
+              - kms:DescribeKey
+            Resource: '*'
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-pet-clinic-s3-key'
+        - Key: Environment
+          Value: !Ref Environment
+
+  S3EncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub 'alias/${Environment}-pet-clinic-s3-key'
+      TargetKeyId: !Ref S3EncryptionKey
+
+  # S3 Bucket for Jenkins Backups
+  JenkinsBackupBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${Environment}-pet-clinic-jenkins-backup-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref S3EncryptionKey
+            BucketKeyEnabled: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: JenkinsBackupRetention
+            Status: Enabled
+            ExpirationInDays: 90
+            NoncurrentVersionExpirationInDays: 30
+            Transitions:
+              - TransitionInDays: 30
+                StorageClass: STANDARD_IA
+              - TransitionInDays: 60
+                StorageClass: GLACIER
+          - Id: DeleteIncompleteMultipartUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      NotificationConfiguration:
+        CloudWatchConfigurations:
+          - Event: s3:ObjectCreated:*
+            CloudWatchConfiguration:
+              LogGroupName: !Ref BackupLogGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-jenkins-backup-bucket'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+        - Key: Purpose
+          Value: JenkinsBackup
+
+  # S3 Bucket for Application Artifacts
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${Environment}-pet-clinic-artifacts-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref S3EncryptionKey
+            BucketKeyEnabled: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ArtifactRetention
+            Status: Enabled
+            ExpirationInDays: 365
+            NoncurrentVersionExpirationInDays: 90
+            Transitions:
+              - TransitionInDays: 90
+                StorageClass: STANDARD_IA
+              - TransitionInDays: 180
+                StorageClass: GLACIER
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-artifacts-bucket'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+        - Key: Purpose
+          Value: BuildArtifacts
+
+  # S3 Bucket for Application Logs
+  LogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${Environment}-pet-clinic-logs-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref S3EncryptionKey
+            BucketKeyEnabled: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: LogRetention
+            Status: Enabled
+            ExpirationInDays: 2555  # 7 years for compliance
+            Transitions:
+              - TransitionInDays: 30
+                StorageClass: STANDARD_IA
+              - TransitionInDays: 90
+                StorageClass: GLACIER
+              - TransitionInDays: 365
+                StorageClass: DEEP_ARCHIVE
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-logs-bucket'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+        - Key: Purpose
+          Value: ApplicationLogs
+
+  # EFS File System for Installation Scripts
+  EFSFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      CreationToken: !Sub '${Environment}-pet-clinic-efs'
+      PerformanceMode: generalPurpose
+      ThroughputMode: provisioned
+      ProvisionedThroughputInMibps: 10
+      Encrypted: true
+      KmsKeyId: !Ref EFSEncryptionKey
+      FileSystemTags:
+        - Key: Name
+          Value: !Sub '${Environment}-pet-clinic-efs'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+        - Key: Purpose
+          Value: InstallationScripts
+
+  # KMS Key for EFS Encryption
+  EFSEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for Pet Clinic EFS encryption
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+          - Sid: Allow EFS Service
+            Effect: Allow
+            Principal:
+              Service: elasticfilesystem.amazonaws.com
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey
+              - kms:DescribeKey
+            Resource: '*'
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-pet-clinic-efs-key'
+        - Key: Environment
+          Value: !Ref Environment
+
+  EFSEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub 'alias/${Environment}-pet-clinic-efs-key'
+      TargetKeyId: !Ref EFSEncryptionKey
+
+  # EFS Mount Target for Private Subnet
+  EFSMountTargetPrivate:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      SubnetId: !Ref PrivateSubnetId
+      SecurityGroups:
+        - !Ref EFSSecurityGroup
+
+  # EFS Mount Target for Public Subnet
+  EFSMountTargetPublic:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      SubnetId: !Ref PublicSubnetId
+      SecurityGroups:
+        - !Ref EFSSecurityGroup
+
+  # Security Group for EFS
+  EFSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${Environment}-efs-sg'
+      GroupDescription: Security group for EFS file system
+      VpcId: !Ref VPCId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          CidrIp: 10.0.0.0/16
+          Description: NFS from VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-efs-sg'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # EFS Access Point for Jenkins
+  EFSAccessPointJenkins:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      PosixUser:
+        Uid: 1000
+        Gid: 1000
+      RootDirectory:
+        Path: '/jenkins-scripts'
+        CreationInfo:
+          OwnerUid: 1000
+          OwnerGid: 1000
+          Permissions: '755'
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-jenkins-efs-access-point'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # EFS Access Point for Application Scripts
+  EFSAccessPointApp:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref EFSFileSystem
+      PosixUser:
+        Uid: 1001
+        Gid: 1001
+      RootDirectory:
+        Path: '/app-scripts'
+        CreationInfo:
+          OwnerUid: 1001
+          OwnerGid: 1001
+          Permissions: '755'
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-app-efs-access-point'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # CloudWatch Log Group for Backup Operations
+  BackupLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/s3/${Environment}-pet-clinic-backup'
+      RetentionInDays: 30
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # S3 Bucket Policy for Jenkins Backup Bucket
+  JenkinsBackupBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JenkinsBackupBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DenyInsecureConnections
+            Effect: Deny
+            Principal: '*'
+            Action: 's3:*'
+            Resource:
+              - !Sub '${JenkinsBackupBucket}/*'
+              - !Ref JenkinsBackupBucket
+            Condition:
+              Bool:
+                'aws:SecureTransport': 'false'
+          - Sid: AllowJenkinsAccess
+            Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${Environment}-jenkins-instance-role'
+            Action:
+              - 's3:GetObject'
+              - 's3:PutObject'
+              - 's3:DeleteObject'
+              - 's3:ListBucket'
+            Resource:
+              - !Sub '${JenkinsBackupBucket}/*'
+              - !Ref JenkinsBackupBucket
+
+  # Systems Manager Parameters for Storage Resources
+  BackupBucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${Environment}/pet-clinic/storage/backup-bucket'
+      Type: String
+      Value: !Ref JenkinsBackupBucket
+      Description: Jenkins backup S3 bucket name
+      Tags:
+        Environment: !Ref Environment
+        Project: PetClinicCICD
+
+  ArtifactsBucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${Environment}/pet-clinic/storage/artifacts-bucket'
+      Type: String
+      Value: !Ref ArtifactsBucket
+      Description: Build artifacts S3 bucket name
+      Tags:
+        Environment: !Ref Environment
+        Project: PetClinicCICD
+
+  EFSFileSystemParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${Environment}/pet-clinic/storage/efs-id'
+      Type: String
+      Value: !Ref EFSFileSystem
+      Description: EFS file system ID
+      Tags:
+        Environment: !Ref Environment
+        Project: PetClinicCICD
+
+Outputs:
+  BackupBucketName:
+    Description: S3 bucket name for Jenkins backups
+    Value: !Ref JenkinsBackupBucket
+
+  ArtifactsBucketName:
+    Description: S3 bucket name for build artifacts
+    Value: !Ref ArtifactsBucket
+
+  LogsBucketName:
+    Description: S3 bucket name for application logs
+    Value: !Ref LogsBucket
+
+  EFSFileSystemId:
+    Description: EFS file system ID
+    Value: !Ref EFSFileSystem
+
+  EFSFileSystemDNS:
+    Description: EFS file system DNS name
+    Value: !Sub '${EFSFileSystem}.efs.${AWS::Region}.amazonaws.com'
+
+  EFSAccessPointJenkins:
+    Description: EFS access point for Jenkins scripts
+    Value: !Ref EFSAccessPointJenkins
+
+  EFSAccessPointApp:
+    Description: EFS access point for application scripts
+    Value: !Ref EFSAccessPointApp
+
+  S3EncryptionKeyId:
+    Description: KMS key ID for S3 encryption
+    Value: !Ref S3EncryptionKey
+
+  EFSEncryptionKeyId:
+    Description: KMS key ID for EFS encryption
+    Value: !Ref EFSEncryptionKey
+
+  EFSSecurityGroupId:
+    Description: Security group ID for EFS
+    Value: !Ref EFSSecurityGroup

@@ -1,0 +1,129 @@
+# Essential Jenkins Plugins for Pet Clinic CI/CD Pipeline
+# This file lists all required plugins for the Jenkins installation
+
+# Core Pipeline Plugins
+workflow-aggregator:latest
+pipeline-stage-view:latest
+pipeline-graph-analysis:latest
+pipeline-rest-api:latest
+pipeline-milestone-step:latest
+
+# Blue Ocean (Modern UI)
+blueocean:latest
+blueocean-pipeline-api-impl:latest
+blueocean-pipeline-editor:latest
+blueocean-git-pipeline:latest
+blueocean-github-pipeline:latest
+
+# Source Code Management
+git:latest
+github:latest
+github-branch-source:latest
+github-pullrequest:latest
+scm-api:latest
+
+# Build Tools
+maven-plugin:latest
+ant:latest
+gradle:latest
+
+# Testing and Quality
+junit:latest
+jacoco:latest
+sonar:latest
+test-results-analyzer:latest
+performance:latest
+
+# AWS Integration
+aws-credentials:latest
+ec2:latest
+s3:latest
+aws-java-sdk:latest
+pipeline-aws:latest
+
+# Docker Support
+docker-plugin:latest
+docker-workflow:latest
+docker-build-step:latest
+
+# Backup and Maintenance
+thinBackup:latest
+backup:latest
+disk-usage:latest
+
+# Build Environment
+build-timeout:latest
+timestamper:latest
+ws-cleanup:latest
+build-name-setter:latest
+build-user-vars-plugin:latest
+
+# Notifications
+email-ext:latest
+slack:latest
+mailer:latest
+
+# Security
+role-strategy:latest
+matrix-auth:latest
+authorize-project:latest
+build-token-root:latest
+
+# Configuration as Code
+configuration-as-code:latest
+configuration-as-code-support:latest
+
+# Job DSL
+job-dsl:latest
+
+# Monitoring and Logging
+monitoring:latest
+log-parser:latest
+build-monitor-plugin:latest
+radiatorview:latest
+
+# Utility Plugins
+parameterized-trigger:latest
+conditional-buildstep:latest
+copyartifact:latest
+archive-artifacts:latest
+build-pipeline-plugin:latest
+delivery-pipeline-plugin:latest
+
+# Credentials Management
+credentials:latest
+credentials-binding:latest
+plain-credentials:latest
+ssh-credentials:latest
+
+# Node and Agent Management
+ssh-slaves:latest
+node-iterator-api:latest
+
+# UI Enhancements
+dashboard-view:latest
+view-job-filters:latest
+nested-view:latest
+sectioned-view:latest
+
+# Integration Plugins
+http_request:latest
+generic-webhook-trigger:latest
+webhook-step:latest
+
+# Reporting
+htmlpublisher:latest
+warnings-ng:latest
+checkstyle:latest
+pmd:latest
+findbugs:latest
+
+# Deployment
+deploy:latest
+publish-over-ssh:latest
+
+# Additional Utilities
+envinject:latest
+build-environment:latest
+environment-script:latest
+mask-passwords:latest

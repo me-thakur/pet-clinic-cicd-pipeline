@@ -1,0 +1,4 @@
+com/petclinic/backend/repository/PetClinicSearchFilterTest.class
+com/petclinic/backend/controller/OwnerControllerTest.class
+com/petclinic/backend/properties/PetClinicDataPersistenceProperties.class
+com/petclinic/backend/repository/PetClinicDataPersistenceTest.class

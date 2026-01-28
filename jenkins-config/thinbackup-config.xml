@@ -1,0 +1,63 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+Jenkins ThinBackup Plugin Configuration
+This configuration sets up automated daily backups with retention policy:
+- 30 daily backups
+- 12 weekly backups  
+- 12 monthly backups
+-->
+<org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl plugin="thinbackup@1.15">
+  <options>
+    <!-- Backup directory on local filesystem -->
+    <backupPath>/var/lib/jenkins/backups</backupPath>
+    
+    <!-- Number of backup sets to keep -->
+    <nrMaxStoredFull>30</nrMaxStoredFull>
+    
+    <!-- Backup schedule (daily at 2 AM) -->
+    <fullBackupSchedule>0 2 * * *</fullBackupSchedule>
+    
+    <!-- Differential backup schedule (every 6 hours) -->
+    <diffBackupSchedule>0 */6 * * *</diffBackupSchedule>
+    
+    <!-- Cleanup differential backups older than 7 days -->
+    <cleanupDiff>true</cleanupDiff>
+    <maxStoredDiff>28</maxStoredDiff>
+    
+    <!-- Move old backups to ZIP format -->
+    <moveOldBackupsToZipFile>true</moveOldBackupsToZipFile>
+    
+    <!-- Backup build results -->
+    <backupBuildResults>true</backupBuildResults>
+    
+    <!-- Backup build archive -->
+    <backupBuildArchive>false</backupBuildArchive>
+    
+    <!-- Backup user content -->
+    <backupUserContents>true</backupUserContents>
+    
+    <!-- Backup next build number files -->
+    <backupNextBuildNumber>true</backupNextBuildNumber>
+    
+    <!-- Backup workspace -->
+    <backupWorkspace>false</backupWorkspace>
+    
+    <!-- Files to exclude from backup (regex patterns) -->
+    <excludedFilesRegex>.*\.log$|.*\.tmp$|.*workspace.*|.*\.git.*</excludedFilesRegex>
+    
+    <!-- Wait for idle before backup -->
+    <waitForIdle>true</waitForIdle>
+    
+    <!-- Force quiet period before backup -->
+    <forceQuietModeTimeout>120</forceQuietModeTimeout>
+    
+    <!-- Backup additional files -->
+    <backupAdditionalFiles>true</backupAdditionalFiles>
+    <backupAdditionalFilesRegex>config\.xml|.*\.key|secrets/.*</backupAdditionalFilesRegex>
+    
+    <!-- Email notifications -->
+    <emailSuccess>false</emailSuccess>
+    <emailFailure>true</emailFailure>
+    <emailAddress>admin@petclinic.local</emailAddress>
+  </options>
+</org.jvnet.hudson.plugins.thinbackup.ThinBackupPluginImpl>

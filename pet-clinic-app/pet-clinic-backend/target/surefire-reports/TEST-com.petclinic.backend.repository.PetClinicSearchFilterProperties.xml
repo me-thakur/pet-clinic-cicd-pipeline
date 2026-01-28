@@ -1,0 +1,738 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.petclinic.backend.repository.PetClinicSearchFilterProperties" time="10.641" tests="7" errors="7" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="21"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/test-classes:/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/classes:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-web/3.2.1/spring-boot-starter-web-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter/3.2.1/spring-boot-starter-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.2.1/spring-boot-starter-logging-3.2.1.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.21.1/log4j-to-slf4j-2.21.1.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-api/2.21.1/log4j-api-2.21.1.jar:/Users/Vivek/.m2/repository/org/slf4j/jul-to-slf4j/2.0.9/jul-to-slf4j-2.0.9.jar:/Users/Vivek/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/Vivek/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.2.1/spring-boot-starter-json-3.2.1.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.15.3/jackson-datatype-jdk8-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.15.3/jackson-datatype-jsr310-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.15.3/jackson-module-parameter-names-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-tomcat/3.2.1/spring-boot-starter-tomcat-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.17/tomcat-embed-core-10.1.17.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-websocket/10.1.17/tomcat-embed-websocket-10.1.17.jar:/Users/Vivek/.m2/repository/org/springframework/spring-web/6.1.2/spring-web-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-beans/6.1.2/spring-beans-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-webmvc/6.1.2/spring-webmvc-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-context/6.1.2/spring-context-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-expression/6.1.2/spring-expression-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-data-jpa/3.2.1/spring-boot-starter-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-aop/3.2.1/spring-boot-starter-aop-3.2.1.jar:/Users/Vivek/.m2/repository/org/aspectj/aspectjweaver/1.9.21/aspectjweaver-1.9.21.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-jdbc/3.2.1/spring-boot-starter-jdbc-3.2.1.jar:/Users/Vivek/.m2/repository/com/zaxxer/HikariCP/5.0.1/HikariCP-5.0.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jdbc/6.1.2/spring-jdbc-6.1.2.jar:/Users/Vivek/.m2/repository/org/hibernate/orm/hibernate-core/6.4.1.Final/hibernate-core-6.4.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/Users/Vivek/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/Users/Vivek/.m2/repository/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final.jar:/Users/Vivek/.m2/repository/io/smallrye/jandex/3.1.2/jandex-3.1.2.jar:/Users/Vivek/.m2/repository/com/fasterxml/classmate/1.6.0/classmate-1.6.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy/1.14.10/byte-buddy-1.14.10.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.4/jaxb-runtime-4.0.4.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.4/jaxb-core-4.0.4.jar:/Users/Vivek/.m2/repository/org/eclipse/angus/angus-activation/2.0.1/angus-activation-2.0.1.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/txw2/4.0.4/txw2-4.0.4.jar:/Users/Vivek/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/Users/Vivek/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-jpa/3.2.1/spring-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-commons/3.2.1/spring-data-commons-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-orm/6.1.2/spring-orm-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-tx/6.1.2/spring-tx-6.1.2.jar:/Users/Vivek/.m2/repository/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aspects/6.1.2/spring-aspects-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.2.1/spring-boot-starter-validation-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.17/tomcat-embed-el-10.1.17.jar:/Users/Vivek/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-security/3.2.1/spring-boot-starter-security-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aop/6.1.2/spring-aop-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-config/6.2.1/spring-security-config-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-web/6.2.1/spring-security-web-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.2.1/spring-boot-starter-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.2.1/spring-boot-actuator-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator/3.2.1/spring-boot-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-observation/1.12.1/micrometer-observation-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-commons/1.12.1/micrometer-commons-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-jakarta9/1.12.1/micrometer-jakarta9-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-core/1.12.1/micrometer-core-1.12.1.jar:/Users/Vivek/.m2/repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.jar:/Users/Vivek/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/Users/Vivek/.m2/repository/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar:/Users/Vivek/.m2/repository/com/h2database/h2/2.2.224/h2-2.2.224.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.3/jackson-databind-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.3/jackson-annotations-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.3/jackson-core-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.2.1/spring-boot-starter-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test/3.2.1/spring-boot-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.2.1/spring-boot-test-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/com/jayway/jsonpath/json-path/2.8.0/json-path-2.8.0.jar:/Users/Vivek/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.1/jakarta.xml.bind-api-4.0.1.jar:/Users/Vivek/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.2/jakarta.activation-api-2.1.2.jar:/Users/Vivek/.m2/repository/net/minidev/json-smart/2.5.0/json-smart-2.5.0.jar:/Users/Vivek/.m2/repository/net/minidev/accessors-smart/2.5.0/accessors-smart-2.5.0.jar:/Users/Vivek/.m2/repository/org/ow2/asm/asm/9.3/asm-9.3.jar:/Users/Vivek/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/Vivek/.m2/repository/org/awaitility/awaitility/4.2.0/awaitility-4.2.0.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.1/junit-jupiter-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.1/junit-jupiter-api-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.1/junit-jupiter-params-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.1/junit-jupiter-engine-5.10.1.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-core/5.7.0/mockito-core-5.7.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.10/byte-buddy-agent-1.14.10.jar:/Users/Vivek/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-junit-jupiter/5.7.0/mockito-junit-jupiter-5.7.0.jar:/Users/Vivek/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/Users/Vivek/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-core/6.1.2/spring-core-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jcl/6.1.2/spring-jcl-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-test/6.1.2/spring-test-6.1.2.jar:/Users/Vivek/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-test/6.2.1/spring-security-test-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-core/6.2.1/spring-security-core-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-crypto/6.2.1/spring-security-crypto-6.2.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik/1.8.2/jqwik-1.8.2.jar:/Users/Vivek/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-api/1.8.2/jqwik-api-1.8.2.jar:/Users/Vivek/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-commons/1.10.1/junit-platform-commons-1.10.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-web/1.8.2/jqwik-web-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-time/1.8.2/jqwik-time-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-engine/1.8.2/jqwik-engine-1.8.2.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-engine/1.10.1/junit-platform-engine-1.10.1.jar:/Users/Vivek/.m2/repository/org/testcontainers/junit-jupiter/1.19.3/junit-jupiter-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/testcontainers/1.19.3/testcontainers-1.19.3.jar:/Users/Vivek/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/Users/Vivek/.m2/repository/org/apache/commons/commons-compress/1.24.0/commons-compress-1.24.0.jar:/Users/Vivek/.m2/repository/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar:/Users/Vivek/.m2/repository/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-api/3.3.4/docker-java-api-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport-zerodep/3.3.4/docker-java-transport-zerodep-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport/3.3.4/docker-java-transport-3.3.4.jar:/Users/Vivek/.m2/repository/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar:/Users/Vivek/.m2/repository/org/testcontainers/mysql/1.19.3/mysql-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/jdbc/1.19.3/jdbc-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/database-commons/1.19.3/database-commons-1.19.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-devtools/3.2.1/spring-boot-devtools-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot/3.2.1/spring-boot-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.2.1/spring-boot-autoconfigure-3.2.1.jar:"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="Asia/Kolkata"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="IN"/>
+    <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib"/>
+    <property name="sun.java.command" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/surefire/surefirebooter-20260128214732916_3.jar /Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/surefire 2026-01-28T21-47-32_877-jvmRun1 surefire-20260128214732916_1tmp surefire_0-20260128214732916_2tmp"/>
+    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="test" value="PetClinicSearchFilterProperties"/>
+    <property name="surefire.test.class.path" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/test-classes:/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/classes:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-web/3.2.1/spring-boot-starter-web-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter/3.2.1/spring-boot-starter-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.2.1/spring-boot-starter-logging-3.2.1.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.21.1/log4j-to-slf4j-2.21.1.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-api/2.21.1/log4j-api-2.21.1.jar:/Users/Vivek/.m2/repository/org/slf4j/jul-to-slf4j/2.0.9/jul-to-slf4j-2.0.9.jar:/Users/Vivek/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/Vivek/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.2.1/spring-boot-starter-json-3.2.1.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.15.3/jackson-datatype-jdk8-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.15.3/jackson-datatype-jsr310-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.15.3/jackson-module-parameter-names-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-tomcat/3.2.1/spring-boot-starter-tomcat-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.17/tomcat-embed-core-10.1.17.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-websocket/10.1.17/tomcat-embed-websocket-10.1.17.jar:/Users/Vivek/.m2/repository/org/springframework/spring-web/6.1.2/spring-web-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-beans/6.1.2/spring-beans-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-webmvc/6.1.2/spring-webmvc-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-context/6.1.2/spring-context-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-expression/6.1.2/spring-expression-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-data-jpa/3.2.1/spring-boot-starter-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-aop/3.2.1/spring-boot-starter-aop-3.2.1.jar:/Users/Vivek/.m2/repository/org/aspectj/aspectjweaver/1.9.21/aspectjweaver-1.9.21.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-jdbc/3.2.1/spring-boot-starter-jdbc-3.2.1.jar:/Users/Vivek/.m2/repository/com/zaxxer/HikariCP/5.0.1/HikariCP-5.0.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jdbc/6.1.2/spring-jdbc-6.1.2.jar:/Users/Vivek/.m2/repository/org/hibernate/orm/hibernate-core/6.4.1.Final/hibernate-core-6.4.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/Users/Vivek/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/Users/Vivek/.m2/repository/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final.jar:/Users/Vivek/.m2/repository/io/smallrye/jandex/3.1.2/jandex-3.1.2.jar:/Users/Vivek/.m2/repository/com/fasterxml/classmate/1.6.0/classmate-1.6.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy/1.14.10/byte-buddy-1.14.10.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.4/jaxb-runtime-4.0.4.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.4/jaxb-core-4.0.4.jar:/Users/Vivek/.m2/repository/org/eclipse/angus/angus-activation/2.0.1/angus-activation-2.0.1.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/txw2/4.0.4/txw2-4.0.4.jar:/Users/Vivek/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/Users/Vivek/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-jpa/3.2.1/spring-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-commons/3.2.1/spring-data-commons-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-orm/6.1.2/spring-orm-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-tx/6.1.2/spring-tx-6.1.2.jar:/Users/Vivek/.m2/repository/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aspects/6.1.2/spring-aspects-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.2.1/spring-boot-starter-validation-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.17/tomcat-embed-el-10.1.17.jar:/Users/Vivek/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-security/3.2.1/spring-boot-starter-security-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aop/6.1.2/spring-aop-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-config/6.2.1/spring-security-config-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-web/6.2.1/spring-security-web-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.2.1/spring-boot-starter-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.2.1/spring-boot-actuator-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator/3.2.1/spring-boot-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-observation/1.12.1/micrometer-observation-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-commons/1.12.1/micrometer-commons-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-jakarta9/1.12.1/micrometer-jakarta9-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-core/1.12.1/micrometer-core-1.12.1.jar:/Users/Vivek/.m2/repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.jar:/Users/Vivek/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/Users/Vivek/.m2/repository/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar:/Users/Vivek/.m2/repository/com/h2database/h2/2.2.224/h2-2.2.224.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.3/jackson-databind-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.3/jackson-annotations-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.3/jackson-core-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.2.1/spring-boot-starter-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test/3.2.1/spring-boot-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.2.1/spring-boot-test-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/com/jayway/jsonpath/json-path/2.8.0/json-path-2.8.0.jar:/Users/Vivek/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.1/jakarta.xml.bind-api-4.0.1.jar:/Users/Vivek/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.2/jakarta.activation-api-2.1.2.jar:/Users/Vivek/.m2/repository/net/minidev/json-smart/2.5.0/json-smart-2.5.0.jar:/Users/Vivek/.m2/repository/net/minidev/accessors-smart/2.5.0/accessors-smart-2.5.0.jar:/Users/Vivek/.m2/repository/org/ow2/asm/asm/9.3/asm-9.3.jar:/Users/Vivek/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/Vivek/.m2/repository/org/awaitility/awaitility/4.2.0/awaitility-4.2.0.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.1/junit-jupiter-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.1/junit-jupiter-api-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.1/junit-jupiter-params-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.1/junit-jupiter-engine-5.10.1.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-core/5.7.0/mockito-core-5.7.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.10/byte-buddy-agent-1.14.10.jar:/Users/Vivek/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-junit-jupiter/5.7.0/mockito-junit-jupiter-5.7.0.jar:/Users/Vivek/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/Users/Vivek/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-core/6.1.2/spring-core-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jcl/6.1.2/spring-jcl-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-test/6.1.2/spring-test-6.1.2.jar:/Users/Vivek/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-test/6.2.1/spring-security-test-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-core/6.2.1/spring-security-core-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-crypto/6.2.1/spring-security-crypto-6.2.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik/1.8.2/jqwik-1.8.2.jar:/Users/Vivek/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-api/1.8.2/jqwik-api-1.8.2.jar:/Users/Vivek/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-commons/1.10.1/junit-platform-commons-1.10.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-web/1.8.2/jqwik-web-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-time/1.8.2/jqwik-time-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-engine/1.8.2/jqwik-engine-1.8.2.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-engine/1.10.1/junit-platform-engine-1.10.1.jar:/Users/Vivek/.m2/repository/org/testcontainers/junit-jupiter/1.19.3/junit-jupiter-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/testcontainers/1.19.3/testcontainers-1.19.3.jar:/Users/Vivek/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/Users/Vivek/.m2/repository/org/apache/commons/commons-compress/1.24.0/commons-compress-1.24.0.jar:/Users/Vivek/.m2/repository/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar:/Users/Vivek/.m2/repository/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-api/3.3.4/docker-java-api-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport-zerodep/3.3.4/docker-java-transport-zerodep-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport/3.3.4/docker-java-transport-3.3.4.jar:/Users/Vivek/.m2/repository/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar:/Users/Vivek/.m2/repository/org/testcontainers/mysql/1.19.3/mysql-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/jdbc/1.19.3/jdbc-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/database-commons/1.19.3/database-commons-1.19.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-devtools/3.2.1/spring-boot-devtools-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot/3.2.1/spring-boot-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.2.1/spring-boot-autoconfigure-3.2.1.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/Users/Vivek"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2023-10-17"/>
+    <property name="java.home" value="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home"/>
+    <property name="file.separator" value="/"/>
+    <property name="basedir" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="apple.awt.application.name" value="ForkedBooter"/>
+    <property name="surefire.real.class.path" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/surefire/surefirebooter-20260128214732916_3.jar"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.runtime.version" value="21.0.1+12-LTS-29"/>
+    <property name="user.name" value="Vivek"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="26.2"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="/Users/Vivek/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="/var/folders/fk/zkm1gx4s01q35hdcv7wqj2pc0000gn/T/"/>
+    <property name="java.version" value="21.0.1"/>
+    <property name="user.dir" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend"/>
+    <property name="os.arch" value="aarch64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/Users/Vivek/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="21.0.1+12-LTS-29"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="java.class.version" value="65.0"/>
+  </properties>
+  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 12: Owner city filter accuracy" classname="com.petclinic.backend.repository.PetClinicSearchFilterProperties" time="1.072">
+    <error message="Cannot invoke &quot;com.petclinic.backend.repository.OwnerRepository.deleteAll()&quot; because &quot;this.ownerRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+	at com.petclinic.backend.repository.PetClinicSearchFilterProperties.ownerCityFilterAccuracy(PetClinicSearchFilterProperties.java:164)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
+	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
+	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
+	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
+	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
+	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
+	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
+	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrinkSingleParameter(OneAfterTheOtherParameterShrinker.java:43)
+	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrink(OneAfterTheOtherParameterShrinker.java:25)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkOneParameterAfterTheOther(ShrinkingAlgorithm.java:52)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:32)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
+	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
+	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
+]]></error>
+    <system-out><![CDATA[timestamp = 2026-01-28T21:47:34.582351, PetClinicSearchFilterProperties:Feature: pet-clinic-cicd-pipeline, Property 12: Owner city filter accuracy = 
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+
+                              |-----------------------jqwik-----------------------
+tries = 2                     | # of calls to property
+checks = 1                    | # of not rejected calls
+generation = RANDOMIZED       | parameters are randomly generated
+after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
+when-fixed-seed = ALLOW       | fixing the random seed is allowed
+edge-cases#mode = MIXIN       | edge cases are mixed in
+edge-cases#total = 0          | # of all combined edge cases
+edge-cases#tried = 0          | # of edge cases tried in current run
+seed = 3237892565037235547    | random seed to reproduce generated values
+
+Shrunk Sample (45 steps)
+------------------------
+  targetCity: "!"
+  cities: ["!", "!", "!"]
+  firstNames: ["!", "!", "!"]
+
+Original Sample
+---------------
+  targetCity: "飠ꖦ搿"
+  cities: ["⪕৘收ࠒ䩘۰퓓虖", "䤫♵挣蒓ᙛ䮛", "ꖌ섮"]
+  firstNames: ["砿틘㸴뷞㜂킴눏濊", "덎䘃ꁤ庭", "睝놩陱똻쾳ꛌ珐"]
+
+  Original Error
+  --------------
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+
+
+]]></system-out>
+  </testcase>
+  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 12: Owner last name search accuracy" classname="com.petclinic.backend.repository.PetClinicSearchFilterProperties" time="0.903">
+    <error message="Cannot invoke &quot;com.petclinic.backend.repository.OwnerRepository.deleteAll()&quot; because &quot;this.ownerRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+	at com.petclinic.backend.repository.PetClinicSearchFilterProperties.ownerLastNameSearchAccuracy(PetClinicSearchFilterProperties.java:110)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
+	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
+	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
+	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
+	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
+	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
+	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
+	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrinkSingleParameter(OneAfterTheOtherParameterShrinker.java:43)
+	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrink(OneAfterTheOtherParameterShrinker.java:25)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkOneParameterAfterTheOther(ShrinkingAlgorithm.java:52)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:32)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
+	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
+	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
+]]></error>
+    <system-out><![CDATA[timestamp = 2026-01-28T21:47:35.490086, PetClinicSearchFilterProperties:Feature: pet-clinic-cicd-pipeline, Property 12: Owner last name search accuracy = 
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+
+                              |-----------------------jqwik-----------------------
+tries = 8                     | # of calls to property
+checks = 1                    | # of not rejected calls
+generation = RANDOMIZED       | parameters are randomly generated
+after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
+when-fixed-seed = ALLOW       | fixing the random seed is allowed
+edge-cases#mode = MIXIN       | edge cases are mixed in
+edge-cases#total = 0          | # of all combined edge cases
+edge-cases#tried = 0          | # of edge cases tried in current run
+seed = -8816208399570428206   | random seed to reproduce generated values
+
+Shrunk Sample (65 steps)
+------------------------
+  searchTerm: "!"
+  firstNames: ["!", "!", "!"]
+  lastNames: ["!", "!", "!"]
+
+Original Sample
+---------------
+  searchTerm: "立쾃Ֆ퇊Լ흭엞"
+  firstNames: ["빷⻵彙რ繮", "齜᭭ꚰ๿㖈숤겑랰⎣", "॒㞘⒑抓舳ൔ뫓휡葪ꦹ"]
+  lastNames:
+    [
+      "셹瀱ᢻ瓮☵⛕餼삦", "ﱂ쁕颕莴ᵻ捯", 
+      "甥鱿⟝嚵爻ꐱ垎ퟏ詂贬姙῞讟뫹옺D洢᣻덨禞䙘齕ҋ욭㙣㡡ʵ皇㫲＃ცƪⴰᱛ嶍흘ㄦᠰ﨩텝䴄鳧箺뚫먄拘耤樽쩂듀㢚᭠尙ꚭ肧默눨왺觕ڬ쑈谭㷨ඪ뿃砲⟥䳑疈੊ⰶ͎┭黁㽾蘭ꍝ룒꽍᪖岇缛틕ᘷ䃄䧬鑈"
+    ]
+
+  Original Error
+  --------------
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+
+
+]]></system-out>
+  </testcase>
+  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 12: Empty results for non-matching searches" classname="com.petclinic.backend.repository.PetClinicSearchFilterProperties" time="0.345">
+    <error message="Cannot invoke &quot;com.petclinic.backend.repository.OwnerRepository.deleteAll()&quot; because &quot;this.ownerRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+	at com.petclinic.backend.repository.PetClinicSearchFilterProperties.emptyResultsForNonMatchingSearches(PetClinicSearchFilterProperties.java:423)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
+	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
+	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
+	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
+	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
+	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
+	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
+	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrinkSingleParameter(OneAfterTheOtherParameterShrinker.java:43)
+	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrink(OneAfterTheOtherParameterShrinker.java:25)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkOneParameterAfterTheOther(ShrinkingAlgorithm.java:52)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:32)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
+	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
+	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
+]]></error>
+    <system-out><![CDATA[timestamp = 2026-01-28T21:47:35.837060, PetClinicSearchFilterProperties:Feature: pet-clinic-cicd-pipeline, Property 12: Empty results for non-matching searches = 
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+
+                              |-----------------------jqwik-----------------------
+tries = 1                     | # of calls to property
+checks = 1                    | # of not rejected calls
+generation = RANDOMIZED       | parameters are randomly generated
+after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
+when-fixed-seed = ALLOW       | fixing the random seed is allowed
+edge-cases#mode = MIXIN       | edge cases are mixed in
+edge-cases#total = 0          | # of all combined edge cases
+edge-cases#tried = 0          | # of edge cases tried in current run
+seed = 983036763715861256     | random seed to reproduce generated values
+
+Shrunk Sample (26 steps)
+------------------------
+  existingNames: ["!", "!", "!"]
+
+Original Sample
+---------------
+  existingNames:
+    [
+      "縃ꉪ杋噊", "咛鈐", "趹镶ㄓ梼龧侽촊겊", "๮먔衫ﻙ渠즥兝訯", 
+      "孬攛橑푎鵠ꌧ믲Ữ劐쌐짚劑䪆㞑ꫬ偘ၝ솼돾㣺夔뒴㚢拰㸪ႏ腎彑蠻巑愩혾㉔끩釵组㢦冦鍀硫㉋厽╘뚞崮൯⸛鰛⿘ﾼଔՏƷ᷅ꪙ젨ӯᡮ넕䉬환醊ꔷ宇좘㲌࣡탏罃쬚㒅鳂㜕眱͟鿡彝⫣髅疫宸䩇紐泈莡ം刟⃨᫻ᆯể厛⩍琒큓㨛菐퉔곐杝堔瞖ॹ螻儨뺫ᓤꄗꭼ諣洁揺⨿ﰴ䦛⽋榉礫徳箈켘巒빫蹒፟䩆讞茶Ӻꍝϝﴪ탭쮢턆釖膋李⹧썵叾ל䣆垆℞Гӡ✎氃鬣薐礟ኧ赋ﰵ茑䥥밓樮ǈ寢䄏榙梫ꇶ괗㆛妜‛ၯ铛濲諲뷍ᚇ槯倇㡤늘∞鴂ᐖ꼋韱茾Ὡ܁ﺜ歛爕ᡀ郦竦䃈튠㨔洘䱲鸃猦狹ௌ宨蔛〺븃䤴겓䒘ꂉ佮㟏孽眖鵼豏髎㌮ꋞ䙾镨駙卶勛襜ꋷ頙䀜ផﵷ岹鼹示骊諮邇︜䍙ㅩ䰞蠵ᮮ躍둱쐅聯샦ꂋ쵹嶤",
+      "륥༟吏", "⻚Ñ픥", "㽽䀼놤杪ᣦ㼫︜仗끥䓨"
+    ]
+
+  Original Error
+  --------------
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+
+
+]]></system-out>
+  </testcase>
+  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 12: Pet species filter accuracy" classname="com.petclinic.backend.repository.PetClinicSearchFilterProperties" time="3.68">
+    <error message="Cannot invoke &quot;com.petclinic.backend.repository.PetRepository.deleteAll()&quot; because &quot;this.petRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.PetRepository.deleteAll()" because "this.petRepository" is null
+	at com.petclinic.backend.repository.PetClinicSearchFilterProperties.petSpeciesFilterAccuracy(PetClinicSearchFilterProperties.java:289)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
+	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
+	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
+	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
+	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
+	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
+	at net.jqwik.engine.support.JqwikStreamSupport$1.lambda$tryAdvance$0(JqwikStreamSupport.java:36)
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.JqwikStreamSupport$1.lambda$tryAdvance$1(JqwikStreamSupport.java:31)
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.JqwikStreamSupport$1.tryAdvance(JqwikStreamSupport.java:31)
+	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
+	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
+	at net.jqwik.engine.properties.shrinking.PairwiseParameterShrinker.shrinkPair(PairwiseParameterShrinker.java:54)
+	at net.jqwik.engine.properties.shrinking.PairwiseParameterShrinker.shrink(PairwiseParameterShrinker.java:28)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkParametersPairwise(ShrinkingAlgorithm.java:61)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:36)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
+	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
+	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
+]]></error>
+    <system-out><![CDATA[timestamp = 2026-01-28T21:47:39.516492, PetClinicSearchFilterProperties:Feature: pet-clinic-cicd-pipeline, Property 12: Pet species filter accuracy = 
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.PetRepository.deleteAll()" because "this.petRepository" is null
+
+                              |-----------------------jqwik-----------------------
+tries = 6                     | # of calls to property
+checks = 1                    | # of not rejected calls
+generation = RANDOMIZED       | parameters are randomly generated
+after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
+when-fixed-seed = ALLOW       | fixing the random seed is allowed
+edge-cases#mode = MIXIN       | edge cases are mixed in
+edge-cases#total = 0          | # of all combined edge cases
+edge-cases#tried = 0          | # of edge cases tried in current run
+seed = -1873793097291758834   | random seed to reproduce generated values
+
+Shrunk Sample (82 steps)
+------------------------
+  targetSpecies: "!"
+  species: ["!", "!", "!"]
+  petNames: ["!", "!", "!"]
+
+Original Sample
+---------------
+  targetSpecies: "볔ℌ붊돽䢶˱牁"
+  species:
+    [
+      "粒옳剢腁荝Ꝡ冥㾅ﲜ玫犧豟茨ﲪ꨻퍹腪ꪐᒤ뽃ې⼭鰮婸ဝ㴡Ȭ롩ꍎϳ습ૈ耮ꪊ醹븠ﮣ쪯噵䃍༳廒㐗鮂㗖擰깢셧Ꮧ㢬礳蹦⣸㹡绖卫୚⠷⽈⏩齔㯃郝悝ൠ혖࢙⩲㢬泐ⱇ숄롊苺僾䞓䷖代෫ᄒ鉐쨟鷿⹆䰡䶣뻟믢퉝껷Ⱔ泛학翦뤇鮴鹆㣤顁᠉泐濧埲鷯﬈卝䨰䦦席Ҭ꽮픯䶉槠郤刷젤ᾠ䠲崁溢쎣顷ꎟ鬩姵䷬ξ࠭闰뒊蛫ꐹ⃿헽䟼屖೫蒣ᾄ쾡ᲊꬒꕀ캚悯ᇶ䘚뱐左鰺돥悱沘揤묈墸䧺㎗뭨侨벅戠閈幏璟क़锂落ꊾ᪅섫ฌ櫢忽稛뫹⾽릗䥲⺝ꏓ캅慠⯊畘掘ꁴ䌵㼃ὢ㲨Ảዃ煏롸ꝿ㌰龐뵁Ƹᥪꭚ⭞㛗ᔧḟ輱疯峀偺ꈶ芯嬾ꑇූ奤⸧䴠䝬ꏛ阏혵ǐ뫼",
+      "婘鈱㍞౟즼얦蠶", "콰ⸯ瀧᪘", "ㇹ넰旑ꎈؔ꥕", "ﴥ⊍琯湧Ⰱ", "黽"
+    ]
+  petNames:
+    [
+      "蟳ࢗ爄艷郰틒隩", "保㌱酃홀﬷桳넽钙᚛쒐豟췩魻Ρ⳷ቑ歞", "᨟摧ꫡ筸", "咤鉁⎿₯洱둗", 
+      "缵ᆻ槉粐㜶궈檤衸뀔憭ꪠꙏﺗ噴鱒ᖴ뫃↭庝캥헝돴쯪曂៭鷺쨉날煤휪壢摟⾜꧳ඬጒ䐢馟㲹玻ア䶯◫㑸͕払펞ᕘ䰗戠踋ឥ귻鞪矛᳼漘ﮈ〉겴ἠ⪎摩魓켔䜉Ⴑ鄩駵砌庙ṍ鯐扼틘非饗ꀘ)ቊ㡡혽算ⵘ궐壯믘鄛ཆﵞ㘐姬ᥔ鳎序渻鄼親聗馘귯ຮ亅뗇㓂䌌ॸ쇸술암披쪱麯⽮酪䞶韰핶換糢赀ᯓ⧃૨漞ᛚ摏᪆ᔆ꡷ㅟ㪙鵗쳧浔鰱霫儃ꈟ䇕ꣵ즒鹱䲚혰莔▲湯墏כּ蚻칫恨䮵鯿㥰鰈㉊뒝͹檆Ⓩ巣䋫靈鋒㯉烑㓀㾴篲ꎾ蚰戒贎᧋㌼跱铓縧㊂㭩꽓鉕䪏♒딥㨵갢₯顛䉥屼즬ḷ㘷拕惟诓漊접鬭粩⇜῟⳴㾤녢哴筺璌扏็皵╦紏懑쎒葭股৿즇콅尰迦І툐鷷䕈힑麻釘闑䤊誕娝ɞ纀ག輓ﳖ捉賈ꇌ൨⍳狮Ｙን趁鯉氓쫈Ⱥ⅀",
+      "䟅喚躿㶝爢"
+    ]
+
+  Original Error
+  --------------
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.PetRepository.deleteAll()" because "this.petRepository" is null
+
+
+]]></system-out>
+  </testcase>
+  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 12: Pet name search accuracy" classname="com.petclinic.backend.repository.PetClinicSearchFilterProperties" time="2.58">
+    <error message="Cannot invoke &quot;com.petclinic.backend.repository.PetRepository.deleteAll()&quot; because &quot;this.petRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.PetRepository.deleteAll()" because "this.petRepository" is null
+	at com.petclinic.backend.repository.PetClinicSearchFilterProperties.petNameSearchAccuracy(PetClinicSearchFilterProperties.java:230)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
+	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
+	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
+	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
+	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
+	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
+	at net.jqwik.engine.support.JqwikStreamSupport$1.lambda$tryAdvance$0(JqwikStreamSupport.java:36)
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.JqwikStreamSupport$1.lambda$tryAdvance$1(JqwikStreamSupport.java:31)
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.JqwikStreamSupport$1.tryAdvance(JqwikStreamSupport.java:31)
+	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
+	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
+	at net.jqwik.engine.properties.shrinking.PairwiseParameterShrinker.shrinkPair(PairwiseParameterShrinker.java:54)
+	at net.jqwik.engine.properties.shrinking.PairwiseParameterShrinker.shrink(PairwiseParameterShrinker.java:28)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkParametersPairwise(ShrinkingAlgorithm.java:61)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:36)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
+	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
+	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
+]]></error>
+    <system-out><![CDATA[timestamp = 2026-01-28T21:47:42.097701, PetClinicSearchFilterProperties:Feature: pet-clinic-cicd-pipeline, Property 12: Pet name search accuracy = 
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.PetRepository.deleteAll()" because "this.petRepository" is null
+
+                              |-----------------------jqwik-----------------------
+tries = 2                     | # of calls to property
+checks = 1                    | # of not rejected calls
+generation = RANDOMIZED       | parameters are randomly generated
+after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
+when-fixed-seed = ALLOW       | fixing the random seed is allowed
+edge-cases#mode = MIXIN       | edge cases are mixed in
+edge-cases#total = 0          | # of all combined edge cases
+edge-cases#tried = 0          | # of edge cases tried in current run
+seed = 1077787600902788166    | random seed to reproduce generated values
+
+Shrunk Sample (86 steps)
+------------------------
+  searchTerm: "!"
+  petNames: ["!", "!", "!"]
+  species: ["!", "!", "!"]
+
+Original Sample
+---------------
+  searchTerm: "䏆ꉺÁ켼承ᑘ蚓쮉﹄"
+  petNames: ["깋⥷䩧헢ꅺꛤݡ蟂譶䃞", "鑔賾ծ籭䒽ⶂ㼨", "䌶숂", "쨬逰ꍲ呲桚젘", "喲̟㮔⏊뽹䉳䊇ย"]
+  species: ["欽꽭䀣엦乐蛼㈩@", "Ӄ⺰憥섪狍흀", "똲ꪽ떐籅퓰셱ᆦ", "髂⁓룫⺁椄;⻹퉢", "襬陘"]
+
+  Original Error
+  --------------
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.PetRepository.deleteAll()" because "this.petRepository" is null
+
+
+]]></system-out>
+  </testcase>
+  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 12: Pet breed search accuracy" classname="com.petclinic.backend.repository.PetClinicSearchFilterProperties" time="1.337">
+    <error message="Cannot invoke &quot;com.petclinic.backend.repository.PetRepository.deleteAll()&quot; because &quot;this.petRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.PetRepository.deleteAll()" because "this.petRepository" is null
+	at com.petclinic.backend.repository.PetClinicSearchFilterProperties.petBreedSearchAccuracy(PetClinicSearchFilterProperties.java:358)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
+	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
+	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
+	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
+	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
+	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
+	at net.jqwik.engine.support.JqwikStreamSupport$1.lambda$tryAdvance$0(JqwikStreamSupport.java:36)
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.JqwikStreamSupport$1.lambda$tryAdvance$1(JqwikStreamSupport.java:31)
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.JqwikStreamSupport$1.tryAdvance(JqwikStreamSupport.java:31)
+	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
+	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
+	at net.jqwik.engine.properties.shrinking.PairwiseParameterShrinker.shrinkPair(PairwiseParameterShrinker.java:54)
+	at net.jqwik.engine.properties.shrinking.PairwiseParameterShrinker.shrink(PairwiseParameterShrinker.java:28)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkParametersPairwise(ShrinkingAlgorithm.java:61)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:36)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
+	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
+	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
+]]></error>
+    <system-out><![CDATA[timestamp = 2026-01-28T21:47:43.437109, PetClinicSearchFilterProperties:Feature: pet-clinic-cicd-pipeline, Property 12: Pet breed search accuracy = 
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.PetRepository.deleteAll()" because "this.petRepository" is null
+
+                              |-----------------------jqwik-----------------------
+tries = 1                     | # of calls to property
+checks = 1                    | # of not rejected calls
+generation = RANDOMIZED       | parameters are randomly generated
+after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
+when-fixed-seed = ALLOW       | fixing the random seed is allowed
+edge-cases#mode = MIXIN       | edge cases are mixed in
+edge-cases#total = 0          | # of all combined edge cases
+edge-cases#tried = 0          | # of edge cases tried in current run
+seed = 9130655293988276717    | random seed to reproduce generated values
+
+Shrunk Sample (50 steps)
+------------------------
+  searchTerm: "!"
+  breeds: ["", "", ""]
+  petNames: ["!", "!", "!"]
+
+Original Sample
+---------------
+  searchTerm: "ﰾ⒌흖킷㳗"
+  breeds:
+    [
+      "䩮넦릈욐㊘", "", 
+      "ႈ␩㒑ஈ䀤ꕥ⛵⑜묀胱Կ㭠䆞쬔杌ࢴ馵욀㬰ꊬ艑媗哐䵡귷䬶ก싃ꕴᜱ◾鐙 追᱅ʿ㦙这됤ꂻ綔⻵ᚂꨪ긖奀猢⏃穖浫눉䉝ȿ쯋趾縧ﰌ럥뉷눗理蟎䮔䆨죀㨁⸝给쵷箽אָ苲ᵨ⹀爩啛瓬鞂ᣔ夆꿍쑼ᤁ橼㔕鲷뷖‡ḰἹ븗㟛໔猶⹽횪ꇖꀓ鹦㼌趜萂鰭놴틑䗢묵넧惫╜荰ႜ꯴➞줌颿ꠐᄲ負༏둆㏷셤厚Ὂ撍Ƞ㭋嶥楧㸕征픮븱䐷匉槑勱楽㼐믞㹲ሦǸ㉳ᴕ瘊琈᪬╺쌾簂롍䒽㼀ꪲ㫮ྚᢱ賺嘶㌰琤ꬱఅગ䳍珥㰕竕켚썳턶Ⱓ㋩䮳ꄖ턔ᡒꄕЙ䊧뽧ഥ首Ḭ쑎땝ᯡﳺ뵇ԗ踣厾ᙥ蝘켃㟺뤯嵪㷚覾ꯇ넫㉱⏌鬁ᱫל鷮覌当",
+      "諡荞警損浿ꑚ᛬፴乄耈ㄣ䘹ᏩꜾ淠⌜堡踅✞褙封⣿輙䶽詮ใ쎪ꍼ㺋䩸컇Ⱏਅ뿰ﻪ艹螏麓熈歖뗘夞弢䂑晖澲讙輔䤆芭ꨝચ딙场꧖醴ﵸ鸦ᅯ긞뿡忍벏簖꫊悘怀캾涜௽⩵鋨尞먩郠ก窏", "᱔ᶆ㑖ꅚ淧⫒ᮙ⁆㓾斌"
+    ]
+  petNames: ["뽎榱", "⭟텂葭婐녯璭౩", "모좁㩯掸䜉屳ﰔ姁", "뉇එ쌝ˇ컜鈞緛ꅛ瓂㌸", "꛲䗳௓樃㸍"]
+
+  Original Error
+  --------------
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.PetRepository.deleteAll()" because "this.petRepository" is null
+
+
+]]></system-out>
+  </testcase>
+  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 12: Owner first name search accuracy" classname="com.petclinic.backend.repository.PetClinicSearchFilterProperties" time="0.706">
+    <error message="Cannot invoke &quot;com.petclinic.backend.repository.OwnerRepository.deleteAll()&quot; because &quot;this.ownerRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+	at com.petclinic.backend.repository.PetClinicSearchFilterProperties.ownerFirstNameSearchAccuracy(PetClinicSearchFilterProperties.java:56)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
+	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
+	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
+	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
+	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
+	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
+	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
+	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
+	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
+	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
+	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
+	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
+	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrinkSingleParameter(OneAfterTheOtherParameterShrinker.java:43)
+	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrink(OneAfterTheOtherParameterShrinker.java:25)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkOneParameterAfterTheOther(ShrinkingAlgorithm.java:52)
+	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:32)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
+	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
+	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
+	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
+]]></error>
+    <system-out><![CDATA[timestamp = 2026-01-28T21:47:44.144457, PetClinicSearchFilterProperties:Feature: pet-clinic-cicd-pipeline, Property 12: Owner first name search accuracy = 
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+
+                              |-----------------------jqwik-----------------------
+tries = 12                    | # of calls to property
+checks = 1                    | # of not rejected calls
+generation = RANDOMIZED       | parameters are randomly generated
+after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
+when-fixed-seed = ALLOW       | fixing the random seed is allowed
+edge-cases#mode = MIXIN       | edge cases are mixed in
+edge-cases#total = 0          | # of all combined edge cases
+edge-cases#tried = 0          | # of edge cases tried in current run
+seed = 3785835916773602281    | random seed to reproduce generated values
+
+Shrunk Sample (62 steps)
+------------------------
+  searchTerm: "!"
+  firstNames: ["!", "!", "!"]
+  lastNames: ["!", "!", "!"]
+
+Original Sample
+---------------
+  searchTerm:
+    "麥涪Ē鉢쁮꽛蔒꽊篞應髲ᮙ志⺧擢胴ㄈ≤᪯婮ꔠ艒怄낓袶굌鼩忭즼ᚻ꧋ޢꄬ苧䓼᳌末鼾욌䯈롼ቼ脿ࠕꎹ莺븂뇔嫁௛䙃䪴ɽ꛶ƞ⦈⦭宂蕜⼯紇톎᨞啕ؑ琓늛糁ᇄ䞇ఛ䯡ࠌ㐕ꇃ馆濇㞞휸ò䐀晧깾썦䢌㚤呷䟧礵䤭酪갻"
+  firstNames: ["⥯焯淹峧鴶췕", "恋焣꼪逸", "찤폪ᅻ۾瀾댕๫"]
+  lastNames: ["῾线杝䱻蛥㷒闎厑卙", "曌⒂룚䨪ﰜ봸쬵묀썡", "켦㏮蕍遗떙껣전"]
+
+  Original Error
+  --------------
+  java.lang.NullPointerException:
+    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.deleteAll()" because "this.ownerRepository" is null
+
+
+]]></system-out>
+  </testcase>
+</testsuite>

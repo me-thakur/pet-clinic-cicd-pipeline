@@ -1,0 +1,302 @@
+# Jenkins Configuration as Code (JCasC) for Pet Clinic CI/CD Pipeline
+# This file defines Jenkins configuration in a declarative way
+
+jenkins:
+  systemMessage: "Pet Clinic CI/CD Pipeline - Jenkins Server"
+  numExecutors: 2
+  scmCheckoutRetryCount: 3
+  mode: NORMAL
+  quietPeriod: 5
+  
+  # Security configuration
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "${JENKINS_ADMIN_PASSWORD:-admin123}"
+          properties:
+            - "hudson.security.HudsonPrivateSecurityRealm$Details":
+                passwordHash: "#jbcrypt:$2a$10$..."  # Generated hash
+        - id: "developer"
+          password: "${JENKINS_DEV_PASSWORD:-dev123}"
+        - id: "viewer"
+          password: "${JENKINS_VIEWER_PASSWORD:-view123}"
+
+  authorizationStrategy:
+    roleBased:
+      roles:
+        global:
+          - name: "admin"
+            description: "Jenkins administrators"
+            permissions:
+              - "Overall/Administer"
+            assignments:
+              - "admin"
+          - name: "developer"
+            description: "Developers with build permissions"
+            permissions:
+              - "Overall/Read"
+              - "Job/Build"
+              - "Job/Cancel"
+              - "Job/Read"
+              - "Job/Workspace"
+              - "Run/Replay"
+              - "Run/Update"
+              - "View/Read"
+            assignments:
+              - "developer"
+          - name: "viewer"
+            description: "Read-only access"
+            permissions:
+              - "Overall/Read"
+              - "Job/Read"
+              - "View/Read"
+            assignments:
+              - "viewer"
+
+  # Global security settings
+  remotingSecurity:
+    enabled: true
+  
+  # CSRF protection
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: false
+
+# Global tool configuration
+tool:
+  git:
+    installations:
+      - name: "Default"
+        home: "/usr/bin/git"
+  
+  maven:
+    installations:
+      - name: "Maven-3.8.6"
+        home: "/opt/maven"
+        properties:
+          - installSource:
+              installers:
+                - maven:
+                    id: "3.8.6"
+  
+  jdk:
+    installations:
+      - name: "Java-11"
+        home: "/usr/lib/jvm/java-11-amazon-corretto"
+        properties:
+          - installSource:
+              installers:
+                - jdkInstaller:
+                    id: "jdk-11.0.2"
+                    acceptLicense: true
+
+# Credentials configuration
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - basicSSHUserPrivateKey:
+              scope: GLOBAL
+              id: "github-ssh"
+              username: "git"
+              description: "GitHub SSH Key"
+              privateKeySource:
+                directEntry:
+                  privateKey: "${GITHUB_SSH_KEY}"
+          - aws:
+              scope: GLOBAL
+              id: "aws-credentials"
+              description: "AWS Credentials for deployment"
+              accessKey: "${AWS_ACCESS_KEY_ID}"
+              secretKey: "${AWS_SECRET_ACCESS_KEY}"
+          - usernamePassword:
+              scope: GLOBAL
+              id: "docker-hub"
+              username: "${DOCKER_HUB_USERNAME}"
+              password: "${DOCKER_HUB_PASSWORD}"
+              description: "Docker Hub credentials"
+
+# Plugin configuration
+unclassified:
+  # Location configuration
+  location:
+    adminAddress: "admin@petclinic.local"
+    url: "${JENKINS_URL:-http://localhost:8080/}"
+  
+  # GitHub plugin configuration
+  gitHubPluginConfig:
+    configs:
+      - name: "GitHub"
+        apiUrl: "https://api.github.com"
+        credentialsId: "github-ssh"
+        manageHooks: true
+  
+  # Email configuration
+  mailer:
+    smtpHost: "${SMTP_HOST:-localhost}"
+    smtpPort: "${SMTP_PORT:-25}"
+    charset: "UTF-8"
+    authentication:
+      username: "${SMTP_USERNAME}"
+      password: "${SMTP_PASSWORD}"
+    defaultSuffix: "@petclinic.local"
+  
+  # Slack configuration
+  slackNotifier:
+    baseUrl: "${SLACK_BASE_URL}"
+    teamDomain: "${SLACK_TEAM_DOMAIN}"
+    token: "${SLACK_TOKEN}"
+    room: "#ci-cd"
+  
+  # AWS configuration
+  awsCredentialsProvider:
+    credentialsId: "aws-credentials"
+  
+  # SonarQube configuration
+  sonarGlobalConfiguration:
+    installations:
+      - name: "SonarQube"
+        serverUrl: "${SONARQUBE_URL:-http://localhost:9000}"
+        credentialsId: "sonarqube-token"
+  
+  # ThinBackup configuration
+  thinBackup:
+    backupPath: "/var/lib/jenkins/backups"
+    nrMaxStoredFull: 30
+    schedule: "H 2 * * *"  # Daily at 2 AM
+    backupBuildResults: true
+    backupBuildArchive: false
+    backupUserContents: true
+    backupPluginArchives: true
+    backupConfigHistory: true
+    cleanupDiff: 7
+    moveOldBackupsToZipFile: true
+    backupAdditionalFiles: true
+    backupAdditionalFilesPattern: "userContent/**,jobs/*/builds/*/archive/**"
+
+# Job DSL configuration
+jobs:
+  - script: |
+      folder('pet-clinic') {
+          displayName('Pet Clinic Applications')
+          description('Jobs for Pet Clinic CI/CD Pipeline')
+      }
+      
+      multibranchPipelineJob('pet-clinic/pet-clinic-backend') {
+          displayName('Pet Clinic Backend')
+          description('CI/CD pipeline for Pet Clinic Backend application')
+          
+          branchSources {
+              github {
+                  id('pet-clinic-backend')
+                  scanCredentialsId('github-ssh')
+                  repoOwner('your-org')
+                  repository('pet-clinic-backend')
+                  buildOriginBranch(true)
+                  buildOriginBranchWithPR(false)
+                  buildOriginPRMerge(true)
+                  buildOriginPRHead(false)
+                  buildForkPRMerge(false)
+                  buildForkPRHead(false)
+              }
+          }
+          
+          factory {
+              workflowBranchProjectFactory {
+                  scriptPath('Jenkinsfile')
+              }
+          }
+          
+          orphanedItemStrategy {
+              discardOldItems {
+                  daysToKeep(7)
+                  numToKeep(10)
+              }
+          }
+          
+          triggers {
+              periodicFolderTrigger {
+                  interval('1h')
+              }
+          }
+      }
+      
+      multibranchPipelineJob('pet-clinic/pet-clinic-frontend') {
+          displayName('Pet Clinic Frontend')
+          description('CI/CD pipeline for Pet Clinic Frontend application')
+          
+          branchSources {
+              github {
+                  id('pet-clinic-frontend')
+                  scanCredentialsId('github-ssh')
+                  repoOwner('your-org')
+                  repository('pet-clinic-frontend')
+                  buildOriginBranch(true)
+                  buildOriginBranchWithPR(false)
+                  buildOriginPRMerge(true)
+                  buildOriginPRHead(false)
+                  buildForkPRMerge(false)
+                  buildForkPRHead(false)
+              }
+          }
+          
+          factory {
+              workflowBranchProjectFactory {
+                  scriptPath('Jenkinsfile')
+              }
+          }
+          
+          orphanedItemStrategy {
+              discardOldItems {
+                  daysToKeep(7)
+                  numToKeep(10)
+              }
+          }
+          
+          triggers {
+              periodicFolderTrigger {
+                  interval('1h')
+              }
+          }
+      }
+
+# Security configuration
+security:
+  # Disable CLI over remoting
+  remotingCLI:
+    enabled: false
+  
+  # Configure CSRF protection
+  csrf:
+    defaultCrumbIssuer:
+      enabled: true
+      proxyCompatability: true
+  
+  # Configure Content Security Policy
+  contentSecurityPolicy:
+    policy: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"
+  
+  # Configure agent protocols
+  agentProtocols:
+    - "JNLP4-connect"
+    - "Ping"
+
+# Appearance configuration
+appearance:
+  # Custom theme
+  theme:
+    elements:
+      - simpleTheme:
+          elements:
+            - cssText:
+                css: |
+                  .jenkins-header {
+                    background-color: #2c3e50 !important;
+                  }
+                  .jenkins-header .logo {
+                    content: url('data:image/svg+xml;base64,...'); /* Pet Clinic logo */
+                  }
+            - cssUrl:
+                url: "/userContent/custom.css"

@@ -1,0 +1,134 @@
+{
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/petclinic/application.log",
+            "log_group_name": "/aws/petclinic/application",
+            "log_stream_name": "{instance_id}/application",
+            "timezone": "UTC",
+            "multi_line_start_pattern": "^\\d{4}-\\d{2}-\\d{2}",
+            "retention_in_days": 30
+          },
+          {
+            "file_path": "/var/log/petclinic/error.log",
+            "log_group_name": "/aws/petclinic/errors",
+            "log_stream_name": "{instance_id}/errors",
+            "timezone": "UTC",
+            "multi_line_start_pattern": "^\\d{4}-\\d{2}-\\d{2}",
+            "retention_in_days": 60
+          },
+          {
+            "file_path": "/var/log/petclinic/security.log",
+            "log_group_name": "/aws/petclinic/security",
+            "log_stream_name": "{instance_id}/security",
+            "timezone": "UTC",
+            "multi_line_start_pattern": "^\\d{4}-\\d{2}-\\d{2}",
+            "retention_in_days": 90
+          },
+          {
+            "file_path": "/var/log/petclinic/database.log",
+            "log_group_name": "/aws/petclinic/database",
+            "log_stream_name": "{instance_id}/database",
+            "timezone": "UTC",
+            "multi_line_start_pattern": "^\\d{4}-\\d{2}-\\d{2}",
+            "retention_in_days": 30
+          },
+          {
+            "file_path": "/var/log/jenkins/jenkins.log",
+            "log_group_name": "/aws/jenkins/application",
+            "log_stream_name": "{instance_id}/jenkins",
+            "timezone": "UTC",
+            "multi_line_start_pattern": "^\\w{3} \\d{2}, \\d{4}",
+            "retention_in_days": 30
+          },
+          {
+            "file_path": "/var/log/jenkins/jenkins-backup-sync.log",
+            "log_group_name": "/aws/jenkins/backup",
+            "log_stream_name": "{instance_id}/backup-sync",
+            "timezone": "UTC",
+            "multi_line_start_pattern": "^\\[\\d{4}-\\d{2}-\\d{2}",
+            "retention_in_days": 60
+          },
+          {
+            "file_path": "/var/log/jenkins/jenkins-disaster-recovery.log",
+            "log_group_name": "/aws/jenkins/disaster-recovery",
+            "log_stream_name": "{instance_id}/disaster-recovery",
+            "timezone": "UTC",
+            "multi_line_start_pattern": "^\\[\\d{4}-\\d{2}-\\d{2}",
+            "retention_in_days": 90
+          },
+          {
+            "file_path": "/var/log/syslog",
+            "log_group_name": "/aws/system/syslog",
+            "log_stream_name": "{instance_id}/syslog",
+            "timezone": "UTC",
+            "retention_in_days": 14
+          },
+          {
+            "file_path": "/var/log/auth.log",
+            "log_group_name": "/aws/system/auth",
+            "log_stream_name": "{instance_id}/auth",
+            "timezone": "UTC",
+            "retention_in_days": 90
+          }
+        ]
+      }
+    },
+    "log_stream_name": "{instance_id}",
+    "force_flush_interval": 15
+  },
+  "metrics": {
+    "namespace": "PetClinic/Logs",
+    "metrics_collected": {
+      "cpu": {
+        "measurement": [
+          "cpu_usage_idle",
+          "cpu_usage_iowait",
+          "cpu_usage_user",
+          "cpu_usage_system"
+        ],
+        "metrics_collection_interval": 60,
+        "totalcpu": false
+      },
+      "disk": {
+        "measurement": [
+          "used_percent"
+        ],
+        "metrics_collection_interval": 60,
+        "resources": [
+          "*"
+        ]
+      },
+      "diskio": {
+        "measurement": [
+          "io_time"
+        ],
+        "metrics_collection_interval": 60,
+        "resources": [
+          "*"
+        ]
+      },
+      "mem": {
+        "measurement": [
+          "mem_used_percent"
+        ],
+        "metrics_collection_interval": 60
+      },
+      "netstat": {
+        "measurement": [
+          "tcp_established",
+          "tcp_time_wait"
+        ],
+        "metrics_collection_interval": 60
+      },
+      "swap": {
+        "measurement": [
+          "swap_used_percent"
+        ],
+        "metrics_collection_interval": 60
+      }
+    }
+  }
+}

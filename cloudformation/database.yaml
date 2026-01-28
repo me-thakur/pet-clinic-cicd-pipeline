@@ -1,0 +1,289 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Database infrastructure for Pet Clinic CI/CD Pipeline - RDS MySQL with Multi-AZ'
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Environment name for resource tagging
+
+  DatabaseInstanceClass:
+    Type: String
+    Default: db.t3.micro
+    Description: RDS instance class
+
+  VPCId:
+    Type: String
+    Description: VPC ID from network stack
+
+  PrivateSubnetId:
+    Type: String
+    Description: Private subnet ID for database
+
+  DatabaseSecurityGroupId:
+    Type: String
+    Description: Security group ID for database access
+
+  DBUsername:
+    Type: String
+    Default: petclinicadmin
+    MinLength: '8'
+    MaxLength: '16'
+    NoEcho: true
+    Description: Database admin username
+
+  DBPassword:
+    Type: String
+    NoEcho: true
+    MinLength: '8'
+    Description: Database admin password
+
+  DBName:
+    Type: String
+    Default: petclinicdb
+    Description: Database name
+
+Resources:
+  # DB Subnet Group for Multi-AZ deployment
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: !Sub '${Environment}-pet-clinic-db-subnet-group'
+      DBSubnetGroupDescription: Subnet group for Pet Clinic RDS database
+      SubnetIds:
+        - !Ref PrivateSubnetId
+        # Note: For true Multi-AZ, we need a second private subnet in different AZ
+        # This will be updated when we have multiple private subnets
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-pet-clinic-db-subnet-group'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # DB Parameter Group for MySQL 8.0 optimization
+  DBParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Family: mysql8.0
+      Description: Parameter group for Pet Clinic MySQL database
+      Parameters:
+        innodb_buffer_pool_size: '{DBInstanceClassMemory*3/4}'
+        max_connections: '100'
+        slow_query_log: '1'
+        long_query_time: '2'
+        general_log: '0'
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-pet-clinic-db-params'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # RDS MySQL 8.0 Instance
+  PetClinicDatabase:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: !Sub '${Environment}-pet-clinic-db'
+      DBInstanceClass: !Ref DatabaseInstanceClass
+      Engine: mysql
+      EngineVersion: '8.0.35'
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      DBName: !Ref DBName
+      AllocatedStorage: '100'
+      StorageType: gp2
+      StorageEncrypted: true
+      
+      # Network Configuration
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroupId
+      
+      # Multi-AZ for high availability
+      MultiAZ: true
+      
+      # Backup Configuration
+      BackupRetentionPeriod: 7
+      PreferredBackupWindow: '03:00-04:00'
+      PreferredMaintenanceWindow: 'sun:04:00-sun:05:00'
+      
+      # Monitoring
+      MonitoringInterval: 60
+      MonitoringRoleArn: !Sub 'arn:aws:iam::${AWS::AccountId}:role/${Environment}-rds-monitoring-role'
+      EnablePerformanceInsights: true
+      PerformanceInsightsRetentionPeriod: 7
+      
+      # Parameter Group
+      DBParameterGroupName: !Ref DBParameterGroup
+      
+      # Deletion Protection
+      DeletionProtection: false  # Set to true for production
+      
+      # Auto Minor Version Upgrade
+      AutoMinorVersionUpgrade: true
+      
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-pet-clinic-database'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+        - Key: Backup
+          Value: Required
+
+  # Read Replica for read scaling (optional for production)
+  PetClinicReadReplica:
+    Type: AWS::RDS::DBInstance
+    Condition: CreateReadReplica
+    Properties:
+      DBInstanceIdentifier: !Sub '${Environment}-pet-clinic-db-replica'
+      DBInstanceClass: !Ref DatabaseInstanceClass
+      SourceDBInstanceIdentifier: !Ref PetClinicDatabase
+      PubliclyAccessible: false
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-pet-clinic-db-replica'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # CloudWatch Alarms for Database Monitoring
+  DatabaseCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-pet-clinic-db-cpu-high'
+      AlarmDescription: 'Database CPU utilization is too high'
+      MetricName: CPUUtilization
+      Namespace: AWS/RDS
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 80
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Ref PetClinicDatabase
+      AlarmActions:
+        - !Ref DatabaseAlarmTopic
+
+  DatabaseConnectionsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-pet-clinic-db-connections-high'
+      AlarmDescription: 'Database connection count is too high'
+      MetricName: DatabaseConnections
+      Namespace: AWS/RDS
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 80
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Ref PetClinicDatabase
+      AlarmActions:
+        - !Ref DatabaseAlarmTopic
+
+  # SNS Topic for Database Alerts
+  DatabaseAlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${Environment}-pet-clinic-db-alerts'
+      DisplayName: Pet Clinic Database Alerts
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # Systems Manager Parameters for Database Connection
+  DBEndpointParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${Environment}/pet-clinic/database/endpoint'
+      Type: String
+      Value: !GetAtt PetClinicDatabase.Endpoint.Address
+      Description: Pet Clinic database endpoint
+      Tags:
+        Environment: !Ref Environment
+        Project: PetClinicCICD
+
+  DBPortParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${Environment}/pet-clinic/database/port'
+      Type: String
+      Value: !GetAtt PetClinicDatabase.Endpoint.Port
+      Description: Pet Clinic database port
+      Tags:
+        Environment: !Ref Environment
+        Project: PetClinicCICD
+
+  DBNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${Environment}/pet-clinic/database/name'
+      Type: String
+      Value: !Ref DBName
+      Description: Pet Clinic database name
+      Tags:
+        Environment: !Ref Environment
+        Project: PetClinicCICD
+
+  DBUsernameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${Environment}/pet-clinic/database/username'
+      Type: SecureString
+      Value: !Ref DBUsername
+      Description: Pet Clinic database username
+      Tags:
+        Environment: !Ref Environment
+        Project: PetClinicCICD
+
+  DBPasswordParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${Environment}/pet-clinic/database/password'
+      Type: SecureString
+      Value: !Ref DBPassword
+      Description: Pet Clinic database password
+      Tags:
+        Environment: !Ref Environment
+        Project: PetClinicCICD
+
+Conditions:
+  CreateReadReplica: !Equals [!Ref Environment, 'prod']
+
+Outputs:
+  DatabaseEndpoint:
+    Description: RDS database endpoint
+    Value: !GetAtt PetClinicDatabase.Endpoint.Address
+
+  DatabasePort:
+    Description: RDS database port
+    Value: !GetAtt PetClinicDatabase.Endpoint.Port
+
+  DatabaseName:
+    Description: Database name
+    Value: !Ref DBName
+
+  DatabaseInstanceId:
+    Description: RDS instance identifier
+    Value: !Ref PetClinicDatabase
+
+  DatabaseAlarmTopic:
+    Description: SNS topic for database alerts
+    Value: !Ref DatabaseAlarmTopic
+
+  ReadReplicaEndpoint:
+    Description: Read replica endpoint (if created)
+    Value: !If 
+      - CreateReadReplica
+      - !GetAtt PetClinicReadReplica.Endpoint.Address
+      - 'N/A - Read replica not created'
+
+  DBSubnetGroupName:
+    Description: Database subnet group name
+    Value: !Ref DBSubnetGroup

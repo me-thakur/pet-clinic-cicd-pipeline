@@ -1,0 +1,113 @@
+spring:
+  application:
+    name: pet-clinic-frontend
+  
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  thymeleaf:
+    cache: false
+    mode: HTML
+    encoding: UTF-8
+
+server:
+  port: 8080
+
+pet-clinic:
+  backend:
+    url: http://localhost:8081
+    api-path: /api/v1
+  
+logging:
+  level:
+    com.petclinic: DEBUG
+    org.springframework.security: DEBUG
+
+---
+# Staging Profile
+spring:
+  config:
+    activate:
+      on-profile: staging
+  
+  thymeleaf:
+    cache: true
+    mode: HTML
+    encoding: UTF-8
+
+server:
+  port: 8080
+
+pet-clinic:
+  backend:
+    url: ${BACKEND_URL:http://backend:8081}
+    api-path: /api/v1
+
+logging:
+  level:
+    com.petclinic: INFO
+    org.springframework.security: WARN
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  thymeleaf:
+    cache: true
+    mode: HTML
+    encoding: UTF-8
+
+server:
+  port: 8080
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+pet-clinic:
+  backend:
+    url: ${BACKEND_URL}
+    api-path: /api/v1
+
+logging:
+  level:
+    com.petclinic: WARN
+    org.springframework.security: WARN
+  file:
+    name: /var/log/pet-clinic-frontend.log
+
+# Common Configuration (applies to all profiles)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+security:
+  session:
+    timeout: 1800 # 30 minutes
+
+pet-clinic:
+  ui:
+    title: "Pet Clinic Management System"
+    version: "1.0.0"
+    pagination:
+      default-size: 10
+      max-size: 100

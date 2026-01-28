@@ -1,0 +1,456 @@
+# CloudWatch Alarms Configuration for Pet Clinic CI/CD Pipeline
+# This CloudFormation template creates comprehensive monitoring and alerting
+# Requirements: 9.4, 9.5
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudWatch Alarms and Monitoring for Pet Clinic CI/CD Pipeline'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+    Description: Environment name
+  
+  SNSTopicArn:
+    Type: String
+    Description: SNS Topic ARN for alert notifications
+  
+  InstanceId:
+    Type: String
+    Description: EC2 Instance ID for monitoring
+  
+  RDSInstanceId:
+    Type: String
+    Description: RDS Instance ID for database monitoring
+  
+  LoadBalancerFullName:
+    Type: String
+    Description: Application Load Balancer full name
+    Default: ""
+
+Resources:
+  # EC2 Instance Monitoring
+  HighCPUUtilizationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-HighCPUUtilization'
+      AlarmDescription: 'Alert when CPU utilization exceeds 80%'
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 80
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+      AlarmActions:
+        - !Ref SNSTopicArn
+      OKActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: breaching
+
+  HighMemoryUtilizationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-HighMemoryUtilization'
+      AlarmDescription: 'Alert when memory utilization exceeds 85%'
+      MetricName: mem_used_percent
+      Namespace: CWAgent
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 85
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+      AlarmActions:
+        - !Ref SNSTopicArn
+      OKActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: breaching
+
+  LowDiskSpaceAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-LowDiskSpace'
+      AlarmDescription: 'Alert when disk space usage exceeds 90%'
+      MetricName: disk_used_percent
+      Namespace: CWAgent
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 90
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+        - Name: device
+          Value: /dev/xvda1
+        - Name: fstype
+          Value: ext4
+        - Name: path
+          Value: /
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: breaching
+
+  InstanceStatusCheckFailedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-InstanceStatusCheckFailed'
+      AlarmDescription: 'Alert when instance status check fails'
+      MetricName: StatusCheckFailed_Instance
+      Namespace: AWS/EC2
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: breaching
+
+  SystemStatusCheckFailedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-SystemStatusCheckFailed'
+      AlarmDescription: 'Alert when system status check fails'
+      MetricName: StatusCheckFailed_System
+      Namespace: AWS/EC2
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: !Ref InstanceId
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: breaching
+
+  # RDS Database Monitoring
+  DatabaseHighCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-DatabaseHighCPU'
+      AlarmDescription: 'Alert when database CPU utilization exceeds 75%'
+      MetricName: CPUUtilization
+      Namespace: AWS/RDS
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 75
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Ref RDSInstanceId
+      AlarmActions:
+        - !Ref SNSTopicArn
+      OKActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: breaching
+
+  DatabaseHighConnectionsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-DatabaseHighConnections'
+      AlarmDescription: 'Alert when database connections exceed 80% of max'
+      MetricName: DatabaseConnections
+      Namespace: AWS/RDS
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 80
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Ref RDSInstanceId
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: breaching
+
+  DatabaseLowFreeStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-DatabaseLowFreeStorage'
+      AlarmDescription: 'Alert when database free storage is below 2GB'
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 2147483648  # 2GB in bytes
+      ComparisonOperator: LessThanThreshold
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Ref RDSInstanceId
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: breaching
+
+  DatabaseHighReadLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-DatabaseHighReadLatency'
+      AlarmDescription: 'Alert when database read latency exceeds 200ms'
+      MetricName: ReadLatency
+      Namespace: AWS/RDS
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 0.2
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Ref RDSInstanceId
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: notBreaching
+
+  DatabaseHighWriteLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-DatabaseHighWriteLatency'
+      AlarmDescription: 'Alert when database write latency exceeds 200ms'
+      MetricName: WriteLatency
+      Namespace: AWS/RDS
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 0.2
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Ref RDSInstanceId
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: notBreaching
+
+  # Application-specific Monitoring
+  ApplicationErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-ApplicationErrorRate'
+      AlarmDescription: 'Alert when application error rate exceeds 5%'
+      MetricName: ErrorCount
+      Namespace: PetClinic/Application
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: notBreaching
+
+  ApplicationResponseTimeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-ApplicationResponseTime'
+      AlarmDescription: 'Alert when application response time exceeds 2 seconds'
+      MetricName: ResponseTime
+      Namespace: PetClinic/Application
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 2000
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: notBreaching
+
+  # Jenkins Monitoring
+  JenkinsServiceDownAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-JenkinsServiceDown'
+      AlarmDescription: 'Alert when Jenkins service is down'
+      MetricName: ServiceStatus
+      Namespace: PetClinic/Jenkins
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: breaching
+
+  JenkinsBuildFailureRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-JenkinsBuildFailureRate'
+      AlarmDescription: 'Alert when Jenkins build failure rate exceeds 20%'
+      MetricName: BuildFailureRate
+      Namespace: PetClinic/Jenkins
+      Statistic: Average
+      Period: 900
+      EvaluationPeriods: 1
+      Threshold: 20
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: notBreaching
+
+  JenkinsQueueLengthAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-JenkinsQueueLength'
+      AlarmDescription: 'Alert when Jenkins queue length exceeds 10'
+      MetricName: QueueLength
+      Namespace: PetClinic/Jenkins
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: notBreaching
+
+  # Load Balancer Monitoring (if applicable)
+  LoadBalancerHighLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasLoadBalancer
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-LoadBalancerHighLatency'
+      AlarmDescription: 'Alert when load balancer target response time exceeds 1 second'
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !Ref LoadBalancerFullName
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: notBreaching
+
+  LoadBalancerUnhealthyHostsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasLoadBalancer
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-LoadBalancerUnhealthyHosts'
+      AlarmDescription: 'Alert when load balancer has unhealthy hosts'
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Average
+      Period: 60
+      EvaluationPeriods: 2
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: !Ref LoadBalancerFullName
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: notBreaching
+
+  # Security Monitoring
+  SecurityEventAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-SecurityEvent'
+      AlarmDescription: 'Alert on security events'
+      MetricName: SecurityEvents
+      Namespace: PetClinic/Security
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: notBreaching
+
+  FailedLoginAttemptsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-FailedLoginAttempts'
+      AlarmDescription: 'Alert on excessive failed login attempts'
+      MetricName: FailedLoginAttempts
+      Namespace: PetClinic/Security
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: notBreaching
+
+  # Backup Monitoring
+  BackupFailureAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-BackupFailure'
+      AlarmDescription: 'Alert when backup operations fail'
+      MetricName: BackupFailures
+      Namespace: PetClinic/Backup
+      Statistic: Sum
+      Period: 3600
+      EvaluationPeriods: 1
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: notBreaching
+
+  BackupAgeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${Environment}-PetClinic-BackupAge'
+      AlarmDescription: 'Alert when last successful backup is older than 25 hours'
+      MetricName: LastBackupAge
+      Namespace: PetClinic/Backup
+      Statistic: Maximum
+      Period: 3600
+      EvaluationPeriods: 1
+      Threshold: 90000  # 25 hours in seconds
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref SNSTopicArn
+      TreatMissingData: breaching
+
+Conditions:
+  HasLoadBalancer: !Not [!Equals [!Ref LoadBalancerFullName, ""]]
+
+Outputs:
+  AlarmNames:
+    Description: 'List of created alarm names'
+    Value: !Join
+      - ','
+      - - !Ref HighCPUUtilizationAlarm
+        - !Ref HighMemoryUtilizationAlarm
+        - !Ref LowDiskSpaceAlarm
+        - !Ref InstanceStatusCheckFailedAlarm
+        - !Ref SystemStatusCheckFailedAlarm
+        - !Ref DatabaseHighCPUAlarm
+        - !Ref DatabaseHighConnectionsAlarm
+        - !Ref DatabaseLowFreeStorageAlarm
+        - !Ref DatabaseHighReadLatencyAlarm
+        - !Ref DatabaseHighWriteLatencyAlarm
+        - !Ref ApplicationErrorRateAlarm
+        - !Ref ApplicationResponseTimeAlarm
+        - !Ref JenkinsServiceDownAlarm
+        - !Ref JenkinsBuildFailureRateAlarm
+        - !Ref JenkinsQueueLengthAlarm
+        - !Ref SecurityEventAlarm
+        - !Ref FailedLoginAttemptsAlarm
+        - !Ref BackupFailureAlarm
+        - !Ref BackupAgeAlarm
+
+  MonitoringDashboardUrl:
+    Description: 'URL to CloudWatch dashboard'
+    Value: !Sub 'https://console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards:name=${Environment}-PetClinic-Dashboard'

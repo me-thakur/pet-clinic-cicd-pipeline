@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Pet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Pet Clinic Backend</a> &gt; <a href="index.source.html" class="el_package">com.petclinic.backend.model</a> &gt; <span class="el_source">Pet.java</span></div><h1>Pet.java</h1><pre class="source lang-java linenums">package com.petclinic.backend.model;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Pet entity representing a pet in the clinic system
+ * Validates: Requirements 8.1, 8.2, 8.3
+ */
+@Entity
+@Table(name = &quot;pets&quot;)
+public class Pet {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @NotBlank(message = &quot;Pet name is required&quot;)
+    @Size(min = 1, max = 50, message = &quot;Pet name must be between 1 and 50 characters&quot;)
+    @Column(name = &quot;name&quot;, nullable = false, length = 50)
+    private String name;
+    
+    @NotBlank(message = &quot;Species is required&quot;)
+    @Size(min = 1, max = 30, message = &quot;Species must be between 1 and 30 characters&quot;)
+    @Column(name = &quot;species&quot;, nullable = false, length = 30)
+    private String species;
+    
+    @Size(max = 50, message = &quot;Breed must not exceed 50 characters&quot;)
+    @Column(name = &quot;breed&quot;, length = 50)
+    private String breed;
+    
+    @Past(message = &quot;Birth date must be in the past&quot;)
+    @Column(name = &quot;birth_date&quot;)
+    private LocalDate birthDate;
+    
+    @Size(max = 1000, message = &quot;Medical history must not exceed 1000 characters&quot;)
+    @Column(name = &quot;medical_history&quot;, length = 1000)
+    private String medicalHistory;
+    
+    @NotNull(message = &quot;Owner is required&quot;)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;owner_id&quot;, nullable = false)
+    @JsonBackReference
+    private Owner owner;
+    
+<span class="fc" id="L56">    @OneToMany(mappedBy = &quot;pet&quot;, cascade = CascadeType.ALL, fetch = FetchType.LAZY)</span>
+    @JsonManagedReference
+    private List&lt;Visit&gt; visits = new ArrayList&lt;&gt;();
+    
+    @Column(name = &quot;created_at&quot;, nullable = false, updatable = false)
+    private LocalDate createdAt;
+    
+    @Column(name = &quot;updated_at&quot;)
+    private LocalDate updatedAt;
+    
+    // Constructors
+<span class="fc" id="L67">    public Pet() {</span>
+<span class="fc" id="L68">        this.createdAt = LocalDate.now();</span>
+<span class="fc" id="L69">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L70">    }</span>
+    
+    public Pet(String name, String species, String breed, LocalDate birthDate, Owner owner) {
+<span class="nc" id="L73">        this();</span>
+<span class="nc" id="L74">        this.name = name;</span>
+<span class="nc" id="L75">        this.species = species;</span>
+<span class="nc" id="L76">        this.breed = breed;</span>
+<span class="nc" id="L77">        this.birthDate = birthDate;</span>
+<span class="nc" id="L78">        this.owner = owner;</span>
+<span class="nc" id="L79">    }</span>
+    
+    // Getters and Setters
+    public Long getId() {
+<span class="fc" id="L83">        return id;</span>
+    }
+    
+    public void setId(Long id) {
+<span class="nc" id="L87">        this.id = id;</span>
+<span class="nc" id="L88">    }</span>
+    
+    public String getName() {
+<span class="fc" id="L91">        return name;</span>
+    }
+    
+    public void setName(String name) {
+<span class="fc" id="L95">        this.name = name;</span>
+<span class="fc" id="L96">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L97">    }</span>
+    
+    public String getSpecies() {
+<span class="fc" id="L100">        return species;</span>
+    }
+    
+    public void setSpecies(String species) {
+<span class="fc" id="L104">        this.species = species;</span>
+<span class="fc" id="L105">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L106">    }</span>
+    
+    public String getBreed() {
+<span class="fc" id="L109">        return breed;</span>
+    }
+    
+    public void setBreed(String breed) {
+<span class="fc" id="L113">        this.breed = breed;</span>
+<span class="fc" id="L114">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L115">    }</span>
+    
+    public LocalDate getBirthDate() {
+<span class="fc" id="L118">        return birthDate;</span>
+    }
+    
+    public void setBirthDate(LocalDate birthDate) {
+<span class="fc" id="L122">        this.birthDate = birthDate;</span>
+<span class="fc" id="L123">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L124">    }</span>
+    
+    public String getMedicalHistory() {
+<span class="fc" id="L127">        return medicalHistory;</span>
+    }
+    
+    public void setMedicalHistory(String medicalHistory) {
+<span class="fc" id="L131">        this.medicalHistory = medicalHistory;</span>
+<span class="fc" id="L132">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L133">    }</span>
+    
+    public Owner getOwner() {
+<span class="fc" id="L136">        return owner;</span>
+    }
+    
+    public void setOwner(Owner owner) {
+<span class="fc" id="L140">        this.owner = owner;</span>
+<span class="fc" id="L141">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L142">    }</span>
+    
+    public List&lt;Visit&gt; getVisits() {
+<span class="nc" id="L145">        return visits;</span>
+    }
+    
+    public void setVisits(List&lt;Visit&gt; visits) {
+<span class="nc" id="L149">        this.visits = visits;</span>
+<span class="nc" id="L150">    }</span>
+    
+    public void addVisit(Visit visit) {
+<span class="nc" id="L153">        visits.add(visit);</span>
+<span class="nc" id="L154">        visit.setPet(this);</span>
+<span class="nc" id="L155">    }</span>
+    
+    public void removeVisit(Visit visit) {
+<span class="nc" id="L158">        visits.remove(visit);</span>
+<span class="nc" id="L159">        visit.setPet(null);</span>
+<span class="nc" id="L160">    }</span>
+    
+    public LocalDate getCreatedAt() {
+<span class="fc" id="L163">        return createdAt;</span>
+    }
+    
+    public LocalDate getUpdatedAt() {
+<span class="fc" id="L167">        return updatedAt;</span>
+    }
+    
+    // Business Methods
+    public int getAge() {
+<span class="nc bnc" id="L172" title="All 2 branches missed.">        if (birthDate == null) {</span>
+<span class="nc" id="L173">            return 0;</span>
+        }
+<span class="nc" id="L175">        return LocalDate.now().getYear() - birthDate.getYear();</span>
+    }
+    
+    public boolean isYoungPet() {
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        return getAge() &lt; 2;</span>
+    }
+    
+    public boolean isSeniorPet() {
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        return getAge() &gt; 7;</span>
+    }
+    
+    // Equals and HashCode
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L190" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L191">        Pet pet = (Pet) o;</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        return Objects.equals(id, pet.id) &amp;&amp;</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">               Objects.equals(name, pet.name) &amp;&amp;</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">               Objects.equals(species, pet.species) &amp;&amp;</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">               Objects.equals(owner, pet.owner);</span>
+    }
+    
+    @Override
+    public int hashCode() {
+<span class="nc" id="L200">        return Objects.hash(id, name, species, owner);</span>
+    }
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L205">        return &quot;Pet{&quot; +</span>
+                &quot;id=&quot; + id +
+                &quot;, name='&quot; + name + '\'' +
+                &quot;, species='&quot; + species + '\'' +
+                &quot;, breed='&quot; + breed + '\'' +
+                &quot;, birthDate=&quot; + birthDate +
+<span class="nc" id="L211">                &quot;, age=&quot; + getAge() +</span>
+                '}';
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+<span class="nc" id="L217">        this.updatedAt = LocalDate.now();</span>
+<span class="nc" id="L218">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

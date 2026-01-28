@@ -1,0 +1,280 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Master CloudFormation template for Pet Clinic CI/CD Pipeline infrastructure'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment name for resource tagging and configuration
+
+  InstanceType:
+    Type: String
+    Default: t3.medium
+    AllowedValues: [t3.small, t3.medium, t3.large]
+    Description: EC2 instance type for Jenkins server
+
+  DatabaseInstanceClass:
+    Type: String
+    Default: db.t3.micro
+    AllowedValues: [db.t3.micro, db.t3.small, db.t3.medium]
+    Description: RDS instance class for database
+
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: EC2 Key Pair for SSH access to instances
+
+  AdminCIDR:
+    Type: String
+    Default: 0.0.0.0/0
+    Description: CIDR block for admin access (restrict in production)
+    AllowedPattern: ^([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}$
+
+  DBUsername:
+    Type: String
+    Default: petclinicadmin
+    MinLength: '8'
+    MaxLength: '16'
+    NoEcho: true
+    Description: Database admin username
+
+  DBPassword:
+    Type: String
+    Description: The database admin account password
+    NoEcho: true
+    ConstraintDescription: "Min 8 characters. Do not use / @ \" or spaces."
+
+  DBName:
+    Type: String
+    Default: petclinicdb
+    Description: Database name
+
+  TemplateS3Bucket:
+    Type: String
+    Description: S3 bucket containing CloudFormation templates
+    Default: project-petclinic
+
+  TemplateS3Region:
+    Type: String
+    Description: S3 bucket region
+    Default: us-east-1
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Environment Configuration
+        Parameters:
+          - Environment
+          - TemplateS3Bucket
+          - TemplateS3Region
+      - Label:
+          default: Compute Configuration
+        Parameters:
+          - InstanceType
+          - KeyPairName
+          - AdminCIDR
+      - Label:
+          default: Database Configuration
+        Parameters:
+          - DatabaseInstanceClass
+          - DBUsername
+          - DBPassword
+          - DBName
+
+Resources:
+  # IAM Stack - Must be created first for roles and policies
+  IAMStack:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TemplateURL: !Sub "https://${TemplateS3Bucket}.s3.${TemplateS3Region}.amazonaws.com/infra/iam.yml"
+      Parameters:
+        Environment: !Ref Environment
+        JenkinsBackupBucket: !GetAtt BackupStack.Outputs.BackupBucketName
+        JenkinsKmsKeyArn: !GetAtt BackupStack.Outputs.KmsKeyArn
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # Network Stack - VPC, subnets, security groups
+  NetworkStack:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TemplateURL: !Sub "https://${TemplateS3Bucket}.s3.${TemplateS3Region}.amazonaws.com/infra/network.yml"
+      Parameters:
+        Environment: !Ref Environment
+        AdminCIDR: !Ref AdminCIDR
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # Storage Stack - S3, EFS
+  BackupStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: NetworkStack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TemplateURL: !Sub "https://${TemplateS3Bucket}.s3.${TemplateS3Region}.amazonaws.com/infra/s3-backup.yml"
+      Parameters:
+        Environment: !Ref Environment
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # EFS Stack for installation scripts
+  EfsStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: NetworkStack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TemplateURL: !Sub "https://${TemplateS3Bucket}.s3.${TemplateS3Region}.amazonaws.com/infra/efs.yml"
+      Parameters:
+        Environment: !Ref Environment
+        VpcId: !GetAtt NetworkStack.Outputs.VpcId
+        PrivateSubnet1: !GetAtt NetworkStack.Outputs.PrivateSubnet1
+        PrivateSubnet2: !GetAtt NetworkStack.Outputs.PrivateSubnet2
+        AppSecurityGroupId: !GetAtt NetworkStack.Outputs.AppSecurityGroupId
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # Database Stack - RDS instance
+  RDSStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: 
+      - NetworkStack
+      - IAMStack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TemplateURL: !Sub "https://${TemplateS3Bucket}.s3.${TemplateS3Region}.amazonaws.com/infra/rds.yml"
+      Parameters:
+        Environment: !Ref Environment
+        DatabaseInstanceClass: !Ref DatabaseInstanceClass
+        VpcId: !GetAtt NetworkStack.Outputs.VpcId
+        PrivateSubnet1: !GetAtt NetworkStack.Outputs.PrivateSubnet1
+        PrivateSubnet2: !GetAtt NetworkStack.Outputs.PrivateSubnet2
+        DBUsername: !Ref DBUsername
+        DBPassword: !Ref DBPassword
+        DBName: !Ref DBName
+        AppSecurityGroupId: !GetAtt NetworkStack.Outputs.AppSecurityGroupId
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # Load Balancer Stack
+  AlbStack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: RDSStack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TemplateURL: !Sub "https://${TemplateS3Bucket}.s3.${TemplateS3Region}.amazonaws.com/infra/alb.yml"
+      Parameters:
+        Environment: !Ref Environment
+        VpcId: !GetAtt NetworkStack.Outputs.VpcId
+        PublicSubnet1: !GetAtt NetworkStack.Outputs.PublicSubnet1
+        PublicSubnet2: !GetAtt NetworkStack.Outputs.PublicSubnet2
+        AppSecurityGroupId: !GetAtt NetworkStack.Outputs.AppSecurityGroupId
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # Compute Stack - EC2 instances, Jenkins server
+  EC2Stack:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - AlbStack
+      - EfsStack
+      - IAMStack
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TemplateURL: !Sub "https://${TemplateS3Bucket}.s3.${TemplateS3Region}.amazonaws.com/infra/ec2-jenkins-app.yml"
+      Parameters:
+        Environment: !Ref Environment
+        InstanceType: !Ref InstanceType
+        KeyPairName: !Ref KeyPairName
+        PrivateSubnet1: !GetAtt NetworkStack.Outputs.PrivateSubnet1
+        PrivateSubnet2: !GetAtt NetworkStack.Outputs.PrivateSubnet2
+        InstanceProfileName: !GetAtt IAMStack.Outputs.InstanceProfileName
+        TargetGroupArn: !GetAtt AlbStack.Outputs.TargetGroupArn
+        JenkinsBackupBucket: !GetAtt BackupStack.Outputs.BackupBucketName
+        RDSEndpoint: !GetAtt RDSStack.Outputs.RDSEndpoint
+        DBUsername: !Ref DBUsername
+        DBPassword: !Ref DBPassword
+        AppSecurityGroupId: !GetAtt NetworkStack.Outputs.AppSecurityGroupId
+        JenkinsTargetGroupArn: !GetAtt AlbStack.Outputs.JenkinsTargetGroupArn
+        EfsId: !GetAtt EfsStack.Outputs.EfsId
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+Outputs:
+  VPCId:
+    Description: VPC ID for the infrastructure
+    Value: !GetAtt NetworkStack.Outputs.VpcId
+    Export:
+      Name: !Sub '${Environment}-VPCId'
+
+  PublicSubnetIds:
+    Description: Public subnet IDs
+    Value: !Sub '${NetworkStack.Outputs.PublicSubnet1},${NetworkStack.Outputs.PublicSubnet2}'
+    Export:
+      Name: !Sub '${Environment}-PublicSubnetIds'
+
+  PrivateSubnetIds:
+    Description: Private subnet IDs
+    Value: !Sub '${NetworkStack.Outputs.PrivateSubnet1},${NetworkStack.Outputs.PrivateSubnet2}'
+    Export:
+      Name: !Sub '${Environment}-PrivateSubnetIds'
+
+  JenkinsServerPublicIP:
+    Description: Jenkins server public IP address (via ALB)
+    Value: !GetAtt AlbStack.Outputs.AlbDNSName
+    Export:
+      Name: !Sub '${Environment}-JenkinsPublicIP'
+
+  DatabaseEndpoint:
+    Description: RDS database endpoint
+    Value: !GetAtt RDSStack.Outputs.RDSEndpoint
+    Export:
+      Name: !Sub '${Environment}-DatabaseEndpoint'
+
+  S3BackupBucket:
+    Description: S3 bucket for Jenkins backups
+    Value: !GetAtt BackupStack.Outputs.BackupBucketName
+    Export:
+      Name: !Sub '${Environment}-BackupBucket'
+
+  EFSFileSystemId:
+    Description: EFS file system ID for installation scripts
+    Value: !GetAtt EfsStack.Outputs.EfsId
+    Export:
+      Name: !Sub '${Environment}-EFSFileSystemId'
+
+  LoadBalancerDNS:
+    Description: Application Load Balancer DNS name
+    Value: !GetAtt AlbStack.Outputs.AlbDNSName
+    Export:
+      Name: !Sub '${Environment}-LoadBalancerDNS'

@@ -1,0 +1,71 @@
+# Jenkins systemd service configuration for Pet Clinic CI/CD Pipeline
+# This file should be placed in /etc/systemd/system/jenkins.service
+
+[Unit]
+Description=Jenkins Continuous Integration Server
+After=network.target
+Wants=network.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+ExecStart=/usr/bin/java \
+    -Djava.awt.headless=true \
+    -Djenkins.install.runSetupWizard=false \
+    -Dcasc.jenkins.config=/var/lib/jenkins/jenkins-casc.yaml \
+    -Dhudson.security.csrf.DefaultCrumbIssuer.EXCLUDE_SESSION_ID=true \
+    -Dhudson.model.DirectoryBrowserSupport.CSP="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';" \
+    -Xms512m \
+    -Xmx2048m \
+    -XX:+UseG1GC \
+    -XX:+UseStringDeduplication \
+    -XX:+DisableExplicitGC \
+    -XX:+UnlockExperimentalVMOptions \
+    -XX:G1NewSizePercent=20 \
+    -XX:+UnlockDiagnosticVMOptions \
+    -XX:G1SummarizeRSetStatsPeriod=1 \
+    -jar /usr/share/java/jenkins.war \
+    --httpPort=8080 \
+    --prefix=/jenkins
+
+User=jenkins
+Group=jenkins
+
+# Environment variables
+Environment="JENKINS_HOME=/var/lib/jenkins"
+Environment="JENKINS_LOG=/var/log/jenkins/jenkins.log"
+Environment="JAVA_HOME=/usr/lib/jvm/java-11-amazon-corretto"
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-amazon-corretto/bin"
+
+# Working directory
+WorkingDirectory=/var/lib/jenkins
+
+# Process management
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/jenkins /var/log/jenkins /tmp
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+LimitCORE=0
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=jenkins
+
+# Timeout settings
+TimeoutStartSec=300
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

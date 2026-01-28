@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Owner.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Pet Clinic Backend</a> &gt; <a href="index.source.html" class="el_package">com.petclinic.backend.model</a> &gt; <span class="el_source">Owner.java</span></div><h1>Owner.java</h1><pre class="source lang-java linenums">package com.petclinic.backend.model;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Owner entity representing a pet owner in the clinic system
+ * Validates: Requirements 8.1, 8.2, 8.3
+ */
+@Entity
+@Table(name = &quot;owners&quot;)
+public class Owner {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @NotBlank(message = &quot;First name is required&quot;)
+    @Size(min = 1, max = 50, message = &quot;First name must be between 1 and 50 characters&quot;)
+    @Column(name = &quot;first_name&quot;, nullable = false, length = 50)
+    private String firstName;
+    
+    @NotBlank(message = &quot;Last name is required&quot;)
+    @Size(min = 1, max = 50, message = &quot;Last name must be between 1 and 50 characters&quot;)
+    @Column(name = &quot;last_name&quot;, nullable = false, length = 50)
+    private String lastName;
+    
+    @Size(max = 200, message = &quot;Address must not exceed 200 characters&quot;)
+    @Column(name = &quot;address&quot;, length = 200)
+    private String address;
+    
+    @Size(max = 50, message = &quot;City must not exceed 50 characters&quot;)
+    @Column(name = &quot;city&quot;, length = 50)
+    private String city;
+    
+    @Pattern(regexp = &quot;^[+]?[0-9\\s\\-\\(\\)]{10,15}$&quot;, message = &quot;Invalid telephone format&quot;)
+    @Column(name = &quot;telephone&quot;, length = 15)
+    private String telephone;
+    
+    @Email(message = &quot;Invalid email format&quot;)
+    @Size(max = 100, message = &quot;Email must not exceed 100 characters&quot;)
+    @Column(name = &quot;email&quot;, length = 100, unique = true)
+    private String email;
+    
+<span class="fc" id="L54">    @OneToMany(mappedBy = &quot;owner&quot;, cascade = CascadeType.ALL, fetch = FetchType.LAZY)</span>
+    @JsonManagedReference
+    private List&lt;Pet&gt; pets = new ArrayList&lt;&gt;();
+    
+    @Column(name = &quot;created_at&quot;, nullable = false, updatable = false)
+    private LocalDate createdAt;
+    
+    @Column(name = &quot;updated_at&quot;)
+    private LocalDate updatedAt;
+    
+    // Constructors
+<span class="fc" id="L65">    public Owner() {</span>
+<span class="fc" id="L66">        this.createdAt = LocalDate.now();</span>
+<span class="fc" id="L67">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L68">    }</span>
+    
+    public Owner(String firstName, String lastName, String address, String city, String telephone, String email) {
+<span class="nc" id="L71">        this();</span>
+<span class="nc" id="L72">        this.firstName = firstName;</span>
+<span class="nc" id="L73">        this.lastName = lastName;</span>
+<span class="nc" id="L74">        this.address = address;</span>
+<span class="nc" id="L75">        this.city = city;</span>
+<span class="nc" id="L76">        this.telephone = telephone;</span>
+<span class="nc" id="L77">        this.email = email;</span>
+<span class="nc" id="L78">    }</span>
+    
+    // Getters and Setters
+    public Long getId() {
+<span class="fc" id="L82">        return id;</span>
+    }
+    
+    public void setId(Long id) {
+<span class="fc" id="L86">        this.id = id;</span>
+<span class="fc" id="L87">    }</span>
+    
+    public String getFirstName() {
+<span class="fc" id="L90">        return firstName;</span>
+    }
+    
+    public void setFirstName(String firstName) {
+<span class="fc" id="L94">        this.firstName = firstName;</span>
+<span class="fc" id="L95">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L96">    }</span>
+    
+    public String getLastName() {
+<span class="fc" id="L99">        return lastName;</span>
+    }
+    
+    public void setLastName(String lastName) {
+<span class="fc" id="L103">        this.lastName = lastName;</span>
+<span class="fc" id="L104">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L105">    }</span>
+    
+    public String getAddress() {
+<span class="fc" id="L108">        return address;</span>
+    }
+    
+    public void setAddress(String address) {
+<span class="fc" id="L112">        this.address = address;</span>
+<span class="fc" id="L113">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L114">    }</span>
+    
+    public String getCity() {
+<span class="fc" id="L117">        return city;</span>
+    }
+    
+    public void setCity(String city) {
+<span class="fc" id="L121">        this.city = city;</span>
+<span class="fc" id="L122">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L123">    }</span>
+    
+    public String getTelephone() {
+<span class="fc" id="L126">        return telephone;</span>
+    }
+    
+    public void setTelephone(String telephone) {
+<span class="fc" id="L130">        this.telephone = telephone;</span>
+<span class="fc" id="L131">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L132">    }</span>
+    
+    public String getEmail() {
+<span class="fc" id="L135">        return email;</span>
+    }
+    
+    public void setEmail(String email) {
+<span class="fc" id="L139">        this.email = email;</span>
+<span class="fc" id="L140">        this.updatedAt = LocalDate.now();</span>
+<span class="fc" id="L141">    }</span>
+    
+    public List&lt;Pet&gt; getPets() {
+<span class="fc" id="L144">        return pets;</span>
+    }
+    
+    public void setPets(List&lt;Pet&gt; pets) {
+<span class="nc" id="L148">        this.pets = pets;</span>
+<span class="nc" id="L149">    }</span>
+    
+    public void addPet(Pet pet) {
+<span class="nc" id="L152">        pets.add(pet);</span>
+<span class="nc" id="L153">        pet.setOwner(this);</span>
+<span class="nc" id="L154">    }</span>
+    
+    public void removePet(Pet pet) {
+<span class="nc" id="L157">        pets.remove(pet);</span>
+<span class="nc" id="L158">        pet.setOwner(null);</span>
+<span class="nc" id="L159">    }</span>
+    
+    public LocalDate getCreatedAt() {
+<span class="fc" id="L162">        return createdAt;</span>
+    }
+    
+    public LocalDate getUpdatedAt() {
+<span class="fc" id="L166">        return updatedAt;</span>
+    }
+    
+    // Business Methods
+    public String getFullName() {
+<span class="fc" id="L171">        return firstName + &quot; &quot; + lastName;</span>
+    }
+    
+    public int getPetCount() {
+<span class="fc" id="L175">        return pets.size();</span>
+    }
+    
+    public boolean hasMultiplePets() {
+<span class="nc bnc" id="L179" title="All 2 branches missed.">        return pets.size() &gt; 1;</span>
+    }
+    
+    public List&lt;Pet&gt; getPetsBySpecies(String species) {
+<span class="nc" id="L183">        return pets.stream()</span>
+<span class="nc" id="L184">                .filter(pet -&gt; pet.getSpecies().equalsIgnoreCase(species))</span>
+<span class="nc" id="L185">                .collect(java.util.stream.Collectors.toList());</span>
+    }
+    
+    // Equals and HashCode
+    @Override
+    public boolean equals(Object o) {
+<span class="nc bnc" id="L191" title="All 2 branches missed.">        if (this == o) return true;</span>
+<span class="nc bnc" id="L192" title="All 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="nc" id="L193">        Owner owner = (Owner) o;</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        return Objects.equals(id, owner.id) &amp;&amp;</span>
+<span class="nc bnc" id="L195" title="All 2 branches missed.">               Objects.equals(firstName, owner.firstName) &amp;&amp;</span>
+<span class="nc bnc" id="L196" title="All 2 branches missed.">               Objects.equals(lastName, owner.lastName) &amp;&amp;</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">               Objects.equals(email, owner.email);</span>
+    }
+    
+    @Override
+    public int hashCode() {
+<span class="nc" id="L202">        return Objects.hash(id, firstName, lastName, email);</span>
+    }
+    
+    @Override
+    public String toString() {
+<span class="nc" id="L207">        return &quot;Owner{&quot; +</span>
+                &quot;id=&quot; + id +
+                &quot;, firstName='&quot; + firstName + '\'' +
+                &quot;, lastName='&quot; + lastName + '\'' +
+                &quot;, email='&quot; + email + '\'' +
+<span class="nc" id="L212">                &quot;, petCount=&quot; + getPetCount() +</span>
+                '}';
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+<span class="nc" id="L218">        this.updatedAt = LocalDate.now();</span>
+<span class="nc" id="L219">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,482 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Pet Clinic CI/CD Pipeline - Compute Infrastructure Stack'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment name
+
+  VpcId:
+    Type: String
+    Description: VPC ID from network stack
+
+  PublicSubnetId:
+    Type: String
+    Description: Public subnet ID for Jenkins server
+
+  PrivateSubnetId:
+    Type: String
+    Description: Private subnet ID for application servers
+
+  JenkinsSecurityGroupId:
+    Type: String
+    Description: Security group ID for Jenkins server
+
+  FrontendSecurityGroupId:
+    Type: String
+    Description: Security group ID for frontend servers
+
+  BackendSecurityGroupId:
+    Type: String
+    Description: Security group ID for backend servers
+
+  JenkinsInstanceRole:
+    Type: String
+    Description: IAM role for Jenkins EC2 instance
+
+  AppInstanceRole:
+    Type: String
+    Description: IAM role for application EC2 instances
+
+  EfsFileSystemId:
+    Type: String
+    Description: EFS file system ID for shared scripts
+
+  JenkinsInstanceType:
+    Type: String
+    Default: t3.medium
+    AllowedValues: [t3.small, t3.medium, t3.large]
+    Description: EC2 instance type for Jenkins server
+
+  AppInstanceType:
+    Type: String
+    Default: t3.small
+    AllowedValues: [t3.micro, t3.small, t3.medium]
+    Description: EC2 instance type for application servers
+
+  KeyPairName:
+    Type: String
+    Description: EC2 Key Pair name for SSH access
+    Default: ''
+
+  # Get Latest Amazon Linux 2 AMI
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+
+Conditions:
+  HasKeyPair: !Not [!Equals [!Ref KeyPairName, '']]
+
+Resources:
+  # Application Load Balancer
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Sub '${Environment}-petclinic-alb'
+      Type: application
+      Scheme: internet-facing
+      IpAddressType: ipv4
+      Subnets:
+        - !Ref PublicSubnetId
+        - !Ref PrivateSubnetId
+      SecurityGroups:
+        - !Ref ALBSecurityGroup
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-petclinic-alb'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ALB Security Group
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${Environment}-petclinic-alb-sg'
+      GroupDescription: Security group for Application Load Balancer
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP access from internet
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS access from internet
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          DestinationSecurityGroupId: !Ref FrontendSecurityGroupId
+          Description: Forward to frontend servers
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-petclinic-alb-sg'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # Target Group for Frontend
+  FrontendTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub '${Environment}-petclinic-frontend-tg'
+      Port: 8080
+      Protocol: HTTP
+      VpcId: !Ref VpcId
+      TargetType: instance
+      HealthCheckEnabled: true
+      HealthCheckPath: /actuator/health
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: 8080
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 3
+      Matcher:
+        HttpCode: 200
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-petclinic-frontend-tg'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # ALB Listener
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref FrontendTargetGroup
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+  # Launch Template for Frontend Servers
+  FrontendLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub '${Environment}-petclinic-frontend-lt'
+      LaunchTemplateData:
+        ImageId: !Ref LatestAmiId
+        InstanceType: !Ref AppInstanceType
+        KeyName: !If [HasKeyPair, !Ref KeyPairName, !Ref 'AWS::NoValue']
+        IamInstanceProfile:
+          Arn: !Sub 'arn:aws:iam::${AWS::AccountId}:instance-profile/${AppInstanceRole}'
+        SecurityGroupIds:
+          - !Ref FrontendSecurityGroupId
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y amazon-efs-utils
+
+            # Mount EFS for shared scripts
+            mkdir -p /mnt/efs
+            echo "${EfsFileSystemId}.efs.${AWS::Region}.amazonaws.com:/ /mnt/efs efs defaults,_netdev" >> /etc/fstab
+            mount -a
+
+            # Install Java 11
+            if [ -f /mnt/efs/install-java.sh ]; then
+              chmod +x /mnt/efs/install-java.sh
+              /mnt/efs/install-java.sh
+            else
+              yum install -y java-11-amazon-corretto-headless
+            fi
+
+            # Install Maven
+            if [ -f /mnt/efs/install-maven.sh ]; then
+              chmod +x /mnt/efs/install-maven.sh
+              /mnt/efs/install-maven.sh
+            else
+              cd /opt
+              wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+              tar xzf apache-maven-3.8.6-bin.tar.gz
+              ln -s apache-maven-3.8.6 maven
+              echo 'export PATH=/opt/maven/bin:$PATH' >> /etc/profile
+              source /etc/profile
+            fi
+
+            # Create application user
+            useradd -m petclinic
+            mkdir -p /home/petclinic/app
+            chown petclinic:petclinic /home/petclinic/app
+
+            # Install CloudWatch agent
+            yum install -y amazon-cloudwatch-agent
+            
+            # Signal completion
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource FrontendAutoScalingGroup --region ${AWS::Region}
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub '${Environment}-petclinic-frontend'
+              - Key: Environment
+                Value: !Ref Environment
+              - Key: Role
+                Value: frontend
+
+  # Auto Scaling Group for Frontend
+  FrontendAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !Sub '${Environment}-petclinic-frontend-asg'
+      LaunchTemplate:
+        LaunchTemplateId: !Ref FrontendLaunchTemplate
+        Version: !GetAtt FrontendLaunchTemplate.LatestVersionNumber
+      MinSize: 1
+      MaxSize: 3
+      DesiredCapacity: 2
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnetId
+      TargetGroupARNs:
+        - !Ref FrontendTargetGroup
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 300
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-petclinic-frontend-asg'
+          PropagateAtLaunch: false
+        - Key: Environment
+          Value: !Ref Environment
+          PropagateAtLaunch: true
+        - Key: Role
+          Value: frontend
+          PropagateAtLaunch: true
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT15M
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: 1
+        MaxBatchSize: 1
+        PauseTime: PT15M
+        WaitOnResourceSignals: true
+
+  # Launch Template for Backend Servers
+  BackendLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub '${Environment}-petclinic-backend-lt'
+      LaunchTemplateData:
+        ImageId: !Ref LatestAmiId
+        InstanceType: !Ref AppInstanceType
+        KeyName: !If [HasKeyPair, !Ref KeyPairName, !Ref 'AWS::NoValue']
+        IamInstanceProfile:
+          Arn: !Sub 'arn:aws:iam::${AWS::AccountId}:instance-profile/${AppInstanceRole}'
+        SecurityGroupIds:
+          - !Ref BackendSecurityGroupId
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y amazon-efs-utils
+
+            # Mount EFS for shared scripts
+            mkdir -p /mnt/efs
+            echo "${EfsFileSystemId}.efs.${AWS::Region}.amazonaws.com:/ /mnt/efs efs defaults,_netdev" >> /etc/fstab
+            mount -a
+
+            # Install Java 11
+            if [ -f /mnt/efs/install-java.sh ]; then
+              chmod +x /mnt/efs/install-java.sh
+              /mnt/efs/install-java.sh
+            else
+              yum install -y java-11-amazon-corretto-headless
+            fi
+
+            # Install Maven
+            if [ -f /mnt/efs/install-maven.sh ]; then
+              chmod +x /mnt/efs/install-maven.sh
+              /mnt/efs/install-maven.sh
+            else
+              cd /opt
+              wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+              tar xzf apache-maven-3.8.6-bin.tar.gz
+              ln -s apache-maven-3.8.6 maven
+              echo 'export PATH=/opt/maven/bin:$PATH' >> /etc/profile
+              source /etc/profile
+            fi
+
+            # Create application user
+            useradd -m petclinic
+            mkdir -p /home/petclinic/app
+            chown petclinic:petclinic /home/petclinic/app
+
+            # Install CloudWatch agent
+            yum install -y amazon-cloudwatch-agent
+            
+            # Signal completion
+            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource BackendAutoScalingGroup --region ${AWS::Region}
+        TagSpecifications:
+          - ResourceType: instance
+            Tags:
+              - Key: Name
+                Value: !Sub '${Environment}-petclinic-backend'
+              - Key: Environment
+                Value: !Ref Environment
+              - Key: Role
+                Value: backend
+
+  # Auto Scaling Group for Backend
+  BackendAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !Sub '${Environment}-petclinic-backend-asg'
+      LaunchTemplate:
+        LaunchTemplateId: !Ref BackendLaunchTemplate
+        Version: !GetAtt BackendLaunchTemplate.LatestVersionNumber
+      MinSize: 1
+      MaxSize: 3
+      DesiredCapacity: 2
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnetId
+      HealthCheckType: EC2
+      HealthCheckGracePeriod: 300
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-petclinic-backend-asg'
+          PropagateAtLaunch: false
+        - Key: Environment
+          Value: !Ref Environment
+          PropagateAtLaunch: true
+        - Key: Role
+          Value: backend
+          PropagateAtLaunch: true
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT15M
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: 1
+        MaxBatchSize: 1
+        PauseTime: PT15M
+        WaitOnResourceSignals: true
+
+  # Jenkins Server
+  JenkinsInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref JenkinsInstanceType
+      KeyName: !If [HasKeyPair, !Ref KeyPairName, !Ref 'AWS::NoValue']
+      IamInstanceProfile: !Ref JenkinsInstanceRole
+      SecurityGroupIds:
+        - !Ref JenkinsSecurityGroupId
+      SubnetId: !Ref PublicSubnetId
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          yum update -y
+          yum install -y amazon-efs-utils git docker
+
+          # Mount EFS for shared scripts
+          mkdir -p /mnt/efs
+          echo "${EfsFileSystemId}.efs.${AWS::Region}.amazonaws.com:/ /mnt/efs efs defaults,_netdev" >> /etc/fstab
+          mount -a
+
+          # Install Java 11
+          if [ -f /mnt/efs/install-java.sh ]; then
+            chmod +x /mnt/efs/install-java.sh
+            /mnt/efs/install-java.sh
+          else
+            yum install -y java-11-amazon-corretto-headless
+          fi
+
+          # Install Maven
+          if [ -f /mnt/efs/install-maven.sh ]; then
+            chmod +x /mnt/efs/install-maven.sh
+            /mnt/efs/install-maven.sh
+          else
+            cd /opt
+            wget https://archive.apache.org/dist/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+            tar xzf apache-maven-3.8.6-bin.tar.gz
+            ln -s apache-maven-3.8.6 maven
+            echo 'export PATH=/opt/maven/bin:$PATH' >> /etc/profile
+            source /etc/profile
+          fi
+
+          # Start Docker
+          systemctl start docker
+          systemctl enable docker
+          usermod -a -G docker ec2-user
+
+          # Install Jenkins
+          wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+          rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+          yum install -y jenkins
+
+          # Configure Jenkins
+          systemctl start jenkins
+          systemctl enable jenkins
+
+          # Install AWS CLI v2
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          ./aws/install
+
+          # Install CloudWatch agent
+          yum install -y amazon-cloudwatch-agent
+
+          # Signal completion
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource JenkinsInstance --region ${AWS::Region}
+      Tags:
+        - Key: Name
+          Value: !Sub '${Environment}-jenkins-server'
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Role
+          Value: jenkins
+    CreationPolicy:
+      ResourceSignal:
+        Count: 1
+        Timeout: PT15M
+
+Outputs:
+  ApplicationLoadBalancerDNS:
+    Description: DNS name of the Application Load Balancer
+    Value: !GetAtt ApplicationLoadBalancer.DNSName
+    Export:
+      Name: !Sub '${Environment}-petclinic-alb-dns'
+
+  ApplicationLoadBalancerArn:
+    Description: ARN of the Application Load Balancer
+    Value: !Ref ApplicationLoadBalancer
+    Export:
+      Name: !Sub '${Environment}-petclinic-alb-arn'
+
+  JenkinsInstanceId:
+    Description: Instance ID of Jenkins server
+    Value: !Ref JenkinsInstance
+    Export:
+      Name: !Sub '${Environment}-jenkins-instance-id'
+
+  JenkinsPublicIP:
+    Description: Public IP address of Jenkins server
+    Value: !GetAtt JenkinsInstance.PublicIp
+    Export:
+      Name: !Sub '${Environment}-jenkins-public-ip'
+
+  FrontendAutoScalingGroupName:
+    Description: Name of the Frontend Auto Scaling Group
+    Value: !Ref FrontendAutoScalingGroup
+    Export:
+      Name: !Sub '${Environment}-frontend-asg-name'
+
+  BackendAutoScalingGroupName:
+    Description: Name of the Backend Auto Scaling Group
+    Value: !Ref BackendAutoScalingGroup
+    Export:
+      Name: !Sub '${Environment}-backend-asg-name'
+
+  FrontendTargetGroupArn:
+    Description: ARN of the Frontend Target Group
+    Value: !Ref FrontendTargetGroup
+    Export:
+      Name: !Sub '${Environment}-frontend-tg-arn'

@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: pet-clinic-backend-test
+  
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  h2:
+    console:
+      enabled: true
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        dialect: org.hibernate.dialect.H2Dialect
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+    defer-datasource-initialization: true
+  
+  sql:
+    init:
+      mode: never
+
+logging:
+  level:
+    com.petclinic: WARN
+    org.springframework: WARN
+    org.hibernate: WARN
+    net.jqwik: INFO
+
+# Test-specific configuration
+pet-clinic:
+  test:
+    data-generation:
+      max-string-length: 50
+      max-text-length: 500
+      max-history-length: 1000

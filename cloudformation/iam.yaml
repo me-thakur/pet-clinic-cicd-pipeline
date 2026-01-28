@@ -1,0 +1,313 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'IAM roles and policies for Pet Clinic CI/CD Pipeline'
+
+Parameters:
+  Environment:
+    Type: String
+    Description: Environment name for resource tagging
+
+Resources:
+  # Jenkins EC2 Instance Role
+  JenkinsInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${Environment}-jenkins-instance-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # Jenkins Instance Policy - S3, EFS, CloudFormation, EC2 permissions
+  JenkinsInstancePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub '${Environment}-jenkins-instance-policy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          # S3 permissions for backup and artifacts
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+              - s3:ListBucket
+            Resource:
+              - !Sub 'arn:aws:s3:::${Environment}-pet-clinic-jenkins-backup'
+              - !Sub 'arn:aws:s3:::${Environment}-pet-clinic-jenkins-backup/*'
+              - !Sub 'arn:aws:s3:::${Environment}-pet-clinic-artifacts'
+              - !Sub 'arn:aws:s3:::${Environment}-pet-clinic-artifacts/*'
+          
+          # EFS permissions for installation scripts
+          - Effect: Allow
+            Action:
+              - elasticfilesystem:DescribeFileSystems
+              - elasticfilesystem:DescribeMountTargets
+            Resource: '*'
+          
+          # CloudFormation permissions for infrastructure management
+          - Effect: Allow
+            Action:
+              - cloudformation:DescribeStacks
+              - cloudformation:DescribeStackResources
+              - cloudformation:DescribeStackEvents
+              - cloudformation:ListStacks
+            Resource: '*'
+          
+          # EC2 permissions for deployment and management
+          - Effect: Allow
+            Action:
+              - ec2:DescribeInstances
+              - ec2:DescribeInstanceStatus
+              - ec2:DescribeImages
+              - ec2:DescribeSnapshots
+              - ec2:DescribeVolumes
+              - ec2:DescribeSecurityGroups
+              - ec2:DescribeSubnets
+              - ec2:DescribeVpcs
+              - ec2:CreateTags
+            Resource: '*'
+          
+          # Systems Manager for secure parameter access
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+              - ssm:GetParameters
+              - ssm:GetParametersByPath
+            Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${Environment}/pet-clinic/*'
+          
+          # CloudWatch permissions for monitoring and logging
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DescribeLogStreams
+              - logs:DescribeLogGroups
+              - cloudwatch:PutMetricData
+              - cloudwatch:GetMetricStatistics
+              - cloudwatch:ListMetrics
+            Resource: '*'
+          
+          # RDS permissions for database management
+          - Effect: Allow
+            Action:
+              - rds:DescribeDBInstances
+              - rds:DescribeDBClusters
+            Resource: '*'
+
+      Roles:
+        - !Ref JenkinsInstanceRole
+
+  # Jenkins Instance Profile
+  JenkinsInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub '${Environment}-jenkins-instance-profile'
+      Roles:
+        - !Ref JenkinsInstanceRole
+
+  # Application EC2 Instance Role
+  AppInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${Environment}-app-instance-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # Application Instance Policy - RDS, S3, EFS permissions
+  AppInstancePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub '${Environment}-app-instance-policy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          # RDS permissions for database access
+          - Effect: Allow
+            Action:
+              - rds:DescribeDBInstances
+              - rds:DescribeDBClusters
+            Resource: '*'
+          
+          # S3 permissions for application artifacts and logs
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:ListBucket
+            Resource:
+              - !Sub 'arn:aws:s3:::${Environment}-pet-clinic-artifacts'
+              - !Sub 'arn:aws:s3:::${Environment}-pet-clinic-artifacts/*'
+              - !Sub 'arn:aws:s3:::${Environment}-pet-clinic-logs'
+              - !Sub 'arn:aws:s3:::${Environment}-pet-clinic-logs/*'
+          
+          # EFS permissions for installation scripts
+          - Effect: Allow
+            Action:
+              - elasticfilesystem:DescribeFileSystems
+              - elasticfilesystem:DescribeMountTargets
+            Resource: '*'
+          
+          # Systems Manager for secure parameter access
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+              - ssm:GetParameters
+              - ssm:GetParametersByPath
+            Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${Environment}/pet-clinic/*'
+          
+          # CloudWatch permissions for application monitoring
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DescribeLogStreams
+              - logs:DescribeLogGroups
+              - cloudwatch:PutMetricData
+            Resource: '*'
+          
+          # EC2 permissions for self-management
+          - Effect: Allow
+            Action:
+              - ec2:DescribeInstances
+              - ec2:DescribeInstanceStatus
+              - ec2:CreateTags
+            Resource: '*'
+
+      Roles:
+        - !Ref AppInstanceRole
+
+  # Application Instance Profile
+  AppInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub '${Environment}-app-instance-profile'
+      Roles:
+        - !Ref AppInstanceRole
+
+  # RDS Enhanced Monitoring Role
+  RDSEnhancedMonitoringRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${Environment}-rds-monitoring-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: monitoring.rds.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # Lambda Execution Role for backup automation (if needed)
+  BackupLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${Environment}-backup-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: PetClinicCICD
+
+  # Lambda Policy for backup operations
+  BackupLambdaPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub '${Environment}-backup-lambda-policy'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          # S3 permissions for backup management
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+              - s3:ListBucket
+            Resource:
+              - !Sub 'arn:aws:s3:::${Environment}-pet-clinic-jenkins-backup'
+              - !Sub 'arn:aws:s3:::${Environment}-pet-clinic-jenkins-backup/*'
+          
+          # EC2 permissions for backup coordination
+          - Effect: Allow
+            Action:
+              - ec2:DescribeInstances
+              - ec2:CreateSnapshot
+              - ec2:DescribeSnapshots
+              - ec2:DeleteSnapshot
+              - ec2:CreateTags
+            Resource: '*'
+          
+          # SNS permissions for notifications
+          - Effect: Allow
+            Action:
+              - sns:Publish
+            Resource: !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${Environment}-pet-clinic-alerts'
+
+      Roles:
+        - !Ref BackupLambdaRole
+
+Outputs:
+  JenkinsInstanceRole:
+    Description: Jenkins EC2 instance role ARN
+    Value: !GetAtt JenkinsInstanceRole.Arn
+
+  JenkinsInstanceProfile:
+    Description: Jenkins EC2 instance profile ARN
+    Value: !GetAtt JenkinsInstanceProfile.Arn
+
+  AppInstanceRole:
+    Description: Application EC2 instance role ARN
+    Value: !GetAtt AppInstanceRole.Arn
+
+  AppInstanceProfile:
+    Description: Application EC2 instance profile ARN
+    Value: !GetAtt AppInstanceProfile.Arn
+
+  RDSEnhancedMonitoringRole:
+    Description: RDS Enhanced Monitoring role ARN
+    Value: !GetAtt RDSEnhancedMonitoringRole.Arn
+
+  BackupLambdaRole:
+    Description: Backup Lambda execution role ARN
+    Value: !GetAtt BackupLambdaRole.Arn
