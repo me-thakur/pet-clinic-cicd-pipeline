@@ -1,0 +1,498 @@
+# Pet Clinic CI/CD Pipeline - .gitignore
+
+# =============================================================================
+# Java / Maven
+# =============================================================================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Maven
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Virtual machine crash logs
+hs_err_pid*
+replay_pid*
+
+# =============================================================================
+# Spring Boot
+# =============================================================================
+spring-boot-*.log
+application-*.log
+
+# =============================================================================
+# IDEs
+# =============================================================================
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# =============================================================================
+# Operating System Files
+# =============================================================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# Docker
+# =============================================================================
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# =============================================================================
+# Database
+# =============================================================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# MySQL
+mysql-data/
+*.sql.backup
+*.sql.bak
+
+# H2 Database
+*.h2.db
+*.trace.db
+*.lock.db
+
+# Database backups
+pet-clinic-app/pet-clinic-backend/backups/
+backups/
+*.backup
+*.bak
+*.dump
+
+# =============================================================================
+# Logs and Temporary Files
+# =============================================================================
+logs/
+*.log
+*.log.*
+log/
+temp/
+tmp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Application logs
+pet-clinic-backend.log
+pet-clinic-frontend.log
+application.log
+spring.log
+error.log
+access.log
+
+# Jenkins logs
+jenkins.log
+jenkins-*.log
+
+# =============================================================================
+# Security and Credentials
+# =============================================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+*.keystore
+*.truststore
+secrets/
+credentials/
+config/secrets/
+
+# AWS credentials
+.aws/credentials
+.aws/config
+
+# SSH keys
+id_rsa
+id_rsa.pub
+*.ppk
+
+# =============================================================================
+# Build and Deployment
+# =============================================================================
+build/
+dist/
+out/
+target/
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# Deployment artifacts
+*.war
+*.jar
+!gradle-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# CloudFormation outputs
+cloudformation-outputs.json
+stack-outputs.json
+
+# Terraform (if used)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+terraform.tfvars.json
+*.tfplan
+
+# =============================================================================
+# Testing
+# =============================================================================
+# Test results
+TEST-*.xml
+junit.xml
+test-results/
+test-reports/
+coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+
+# Property-based testing
+.hypothesis/
+.jqwik-database
+
+# Performance test results
+performance-results/
+jmeter-results/
+*.jtl
+
+# =============================================================================
+# Python (for scripts and tools)
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# =============================================================================
+# Node.js / JavaScript (for frontend assets)
+# =============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.cache/
+.parcel-cache/
+.next/
+out/
+build/
+dist/
+
+# =============================================================================
+# Monitoring and Metrics
+# =============================================================================
+# Prometheus
+prometheus.yml
+alertmanager.yml
+*.prom
+
+# Grafana
+grafana.db
+grafana.log
+
+# Custom metrics
+metrics/
+monitoring-data/
+
+# =============================================================================
+# CI/CD and DevOps
+# =============================================================================
+# Jenkins
+.jenkins/
+jenkins-home/
+workspace/
+builds/
+jobs/
+plugins/
+secrets/
+userContent/
+war/
+*.hpi
+*.jpi
+
+# GitHub Actions
+.github/workflows/secrets/
+
+# GitLab CI
+.gitlab-ci-local/
+
+# =============================================================================
+# Infrastructure as Code
+# =============================================================================
+# CloudFormation
+*.template
+cloudformation-packaged.yaml
+cloudformation-packaged.yml
+
+# Ansible
+*.retry
+.vault_pass
+host_vars/
+group_vars/
+
+# =============================================================================
+# Backup Files
+# =============================================================================
+*.backup
+*.bak
+*.old
+*.orig
+*.save
+*~
+.#*
+#*#
+
+# Database backups
+backup_*.sql
+*_backup_*.sql
+*.sql.gz
+*.sql.bz2
+
+# Configuration backups
+*.conf.bak
+*.yaml.bak
+*.yml.bak
+*.properties.bak
+
+# =============================================================================
+# Cache and Temporary Directories
+# =============================================================================
+.cache/
+cache/
+.tmp/
+tmp/
+temp/
+.sass-cache/
+.webpack/
+.parcel-cache/
+
+# Maven cache
+.m2/repository/
+!.m2/settings.xml
+
+# Gradle cache
+.gradle/
+gradle/
+
+# =============================================================================
+# Documentation Build
+# =============================================================================
+_site/
+.jekyll-cache/
+.jekyll-metadata
+docs/_build/
+docs/build/
+site/
+
+# =============================================================================
+# Miscellaneous
+# =============================================================================
+# Vim
+*.swp
+*.swo
+*~
+.vimrc.local
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# =============================================================================
+# Project Specific
+# =============================================================================
+# Pet Clinic specific temporary files
+pet-clinic-*.log
+petclinic-*.log
+
+# EFS mount points (local development)
+/mnt/efs/
+
+# Local configuration overrides
+application-local.yml
+application-local.properties
+local.properties
+
+# Generated documentation
+api-docs/
+swagger-ui/
+
+# Test data
+test-data/
+sample-data/
+
+# Scripts output
+scripts/logs/
+scripts/output/
+
+# Local development databases
+dev.db
+test.db
+local.db
+
+# =============================================================================
+# End of .gitignore
+# =============================================================================
