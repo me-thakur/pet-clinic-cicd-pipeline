@@ -6,6 +6,7 @@ import com.petclinic.backend.config.SecurityConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(OwnerController.class)
 @Import(SecurityConfig.class)
 @ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class OwnerControllerTest {
 
     @Autowired
@@ -56,7 +58,7 @@ public class OwnerControllerTest {
         when(ownerRepository.findById(1L)).thenReturn(Optional.of(owner));
 
         // Act & Assert
-        mockMvc.perform(get("/owners/1"))
+        mockMvc.perform(get("/api/owners/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
@@ -73,7 +75,7 @@ public class OwnerControllerTest {
         when(ownerRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        mockMvc.perform(get("/owners/999"))
+        mockMvc.perform(get("/api/owners/999"))
                 .andExpect(status().isNotFound());
     }
 
@@ -97,7 +99,7 @@ public class OwnerControllerTest {
         when(ownerRepository.save(any(Owner.class))).thenReturn(savedOwner);
 
         // Act & Assert
-        mockMvc.perform(post("/owners")
+        mockMvc.perform(post("/api/owners")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(inputOwner)))
                 .andExpect(status().isCreated())
@@ -136,7 +138,7 @@ public class OwnerControllerTest {
         when(ownerRepository.save(any(Owner.class))).thenReturn(updatedOwner);
 
         // Act & Assert
-        mockMvc.perform(put("/owners/1")
+        mockMvc.perform(put("/api/owners/1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateData)))
                 .andExpect(status().isOk())
@@ -159,7 +161,7 @@ public class OwnerControllerTest {
         when(ownerRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        mockMvc.perform(put("/owners/999")
+        mockMvc.perform(put("/api/owners/999")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateData)))
                 .andExpect(status().isNotFound());
@@ -172,7 +174,7 @@ public class OwnerControllerTest {
         when(ownerRepository.existsById(1L)).thenReturn(true);
 
         // Act & Assert
-        mockMvc.perform(delete("/owners/1"))
+        mockMvc.perform(delete("/api/owners/1"))
                 .andExpect(status().isNoContent());
     }
 
@@ -183,7 +185,7 @@ public class OwnerControllerTest {
         when(ownerRepository.existsById(999L)).thenReturn(false);
 
         // Act & Assert
-        mockMvc.perform(delete("/owners/999"))
+        mockMvc.perform(delete("/api/owners/999"))
                 .andExpect(status().isNotFound());
     }
 
@@ -205,7 +207,7 @@ public class OwnerControllerTest {
                 .thenReturn(Arrays.asList(owner1, owner2));
 
         // Act & Assert
-        mockMvc.perform(get("/owners/search/by-first-name")
+        mockMvc.perform(get("/api/owners/search/by-first-name")
                 .param("name", "john"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -229,7 +231,7 @@ public class OwnerControllerTest {
                 .thenReturn(Optional.of(owner));
 
         // Act & Assert
-        mockMvc.perform(get("/owners/search/by-email")
+        mockMvc.perform(get("/api/owners/search/by-email")
                 .param("email", "john.doe@example.com"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -245,7 +247,7 @@ public class OwnerControllerTest {
                 .thenReturn(Optional.empty());
 
         // Act & Assert
-        mockMvc.perform(get("/owners/search/by-email")
+        mockMvc.perform(get("/api/owners/search/by-email")
                 .param("email", "nonexistent@example.com"))
                 .andExpect(status().isNotFound());
     }

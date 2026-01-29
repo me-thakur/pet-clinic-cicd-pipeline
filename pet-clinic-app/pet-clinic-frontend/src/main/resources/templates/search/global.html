@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Global Search - Pet Clinic</title>
+    <link rel="stylesheet" th:href="@{/css/search-navigation.css}">
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Global Search Interface -->
+        <div class="global-search-container">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <div class="text-center text-white mb-4">
+                            <h1><i class="fas fa-search"></i> Global Search</h1>
+                            <p class="lead">Search across pets, owners, visits, and veterinarians</p>
+                        </div>
+                        
+                        <div class="global-search-form">
+                            <form id="globalSearchForm" class="mb-3">
+                                <div class="search-input-group">
+                                    <input type="text" 
+                                           id="globalSearchInput" 
+                                           class="form-control search-input" 
+                                           placeholder="Search for pets, owners, visits, or veterinarians..."
+                                           autocomplete="off"
+                                           th:value="${query}">
+                                    <button type="submit" id="searchBtn" class="search-btn" aria-label="Search">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                    <div id="searchSuggestions" class="search-suggestions" style="display: none;"></div>
+                                </div>
+                            </form>
+                            
+                            <!-- Popular Search Terms -->
+                            <div class="popular-terms" th:if="${popularTerms != null and !#lists.isEmpty(popularTerms)}">
+                                <small class="text-muted">Popular searches:</small>
+                                <div id="popularTerms" class="mt-2">
+                                    <span th:each="term : ${popularTerms}" 
+                                          class="badge bg-light text-dark me-2 mb-2 popular-term"
+                                          style="cursor: pointer;"
+                                          th:text="${term}"
+                                          onclick="performGlobalSearch(this.textContent)">Term</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entity Type Filters -->
+        <div class="container">
+            <div class="entity-type-filters" id="entityTypeFilters">
+                <button class="entity-filter-btn" data-entity-type="pet">
+                    <i class="fas fa-paw"></i>
+                    Pets
+                    <span class="entity-count">0</span>
+                </button>
+                <button class="entity-filter-btn" data-entity-type="owner">
+                    <i class="fas fa-user"></i>
+                    Owners
+                    <span class="entity-count">0</span>
+                </button>
+                <button class="entity-filter-btn" data-entity-type="visit">
+                    <i class="fas fa-calendar-check"></i>
+                    Visits
+                    <span class="entity-count">0</span>
+                </button>
+                <button class="entity-filter-btn" data-entity-type="veterinarian">
+                    <i class="fas fa-user-md"></i>
+                    Veterinarians
+                    <span class="entity-count">0</span>
+                </button>
+            </div>
+
+            <!-- Advanced Filters -->
+            <div class="filters-container" id="advancedFilters">
+                <div class="filters-header">
+                    <button type="button" id="filtersToggle" class="filters-toggle">
+                        <i class="fas fa-filter"></i>
+                        Show Advanced Filters
+                    </button>
+                    <div class="filters-summary">
+                        <div id="activeFilters" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+                
+                <div class="filters-body" id="filtersBody">
+                    <div class="row">
+                        <!-- Date Range Filter -->
+                        <div class="col-md-6">
+                            <div class="filter-group">
+                                <label class="filter-label">Date Range</label>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="date" id="dateFrom" class="form-control form-control-sm" placeholder="From">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="date" id="dateTo" class="form-control form-control-sm" placeholder="To">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Species Filter -->
+                        <div class="col-md-6">
+                            <div class="filter-group">
+                                <label class="filter-label">Species</label>
+                                <select id="speciesFilter" class="form-select form-select-sm">
+                                    <option value="">All Species</option>
+                                    <option value="Dog">Dog</option>
+                                    <option value="Cat">Cat</option>
+                                    <option value="Bird">Bird</option>
+                                    <option value="Rabbit">Rabbit</option>
+                                    <option value="Hamster">Hamster</option>
+                                    <option value="Fish">Fish</option>
+                                    <option value="Reptile">Reptile</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Status Filter -->
+                        <div class="col-md-6">
+                            <div class="filter-group">
+                                <label class="filter-label">Status</label>
+                                <div class="filter-controls">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="statusFilter" value="active" id="statusActive">
+                                        <label class="form-check-label" for="statusActive">Active</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="statusFilter" value="inactive" id="statusInactive">
+                                        <label class="form-check-label" for="statusInactive">Inactive</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="statusFilter" value="pending" id="statusPending">
+                                        <label class="form-check-label" for="statusPending">Pending</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Age Range Filter -->
+                        <div class="col-md-6">
+                            <div class="filter-group">
+                                <label class="filter-label">Age Range (for pets)</label>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="number" id="minAge" class="form-control form-control-sm" placeholder="Min age" min="0" max="30">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="number" id="maxAge" class="form-control form-control-sm" placeholder="Max age" min="0" max="30">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Filter Actions -->
+                    <div class="filter-actions">
+                        <button type="button" id="applyFilters" class="btn btn-primary btn-sm">
+                            <i class="fas fa-filter"></i> Apply Filters
+                        </button>
+                        <button type="button" id="clearFilters" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-times"></i> Clear All
+                        </button>
+                        <button type="button" id="saveFilters" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-save"></i> Save Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            <div id="searchResults" class="search-results-container">
+                <!-- Initial state or results will be populated here by JavaScript -->
+                <div th:if="${results != null}" class="fade-in">
+                    <div class="search-results-header">
+                        <div class="search-results-info">
+                            <span class="search-results-count" th:text="${results.totalResults}">0</span> results found
+                            <span th:if="${query}" th:text="'for &quot;' + ${query} + '&quot;'"></span>
+                            <span th:if="${results.executionTimeMs}" th:text="'in ' + ${results.executionTimeMs} + 'ms'"></span>
+                        </div>
+                        <div class="search-results-actions">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="searchManager.exportResults()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Results List -->
+                    <div th:each="result : ${results.results}" class="result-card">
+                        <div class="result-card-header">
+                            <div class="result-title">
+                                <i th:class="${result.entityType == 'Pet' ? 'fas fa-paw' : 
+                                             result.entityType == 'Owner' ? 'fas fa-user' : 
+                                             result.entityType == 'Visit' ? 'fas fa-calendar-check' : 
+                                             result.entityType == 'Veterinarian' ? 'fas fa-user-md' : 'fas fa-file'}"></i>
+                                <span th:utext="${result.title}">Result Title</span>
+                            </div>
+                            <span class="result-type-badge" 
+                                  th:classappend="'result-type-' + ${#strings.toLowerCase(result.entityType)}"
+                                  th:text="${result.entityType}">Type</span>
+                        </div>
+                        <div class="result-card-body">
+                            <div class="result-description" th:utext="${result.description}">
+                                Result description
+                            </div>
+                            <div class="result-metadata" th:if="${result.metadata != null and !result.metadata.isEmpty()}">
+                                <span th:each="entry : ${result.metadata}" th:if="${entry.value != null}">
+                                    <strong th:text="${entry.key}">Key</strong>: <span th:text="${entry.value}">Value</span>
+                                </span>
+                            </div>
+                            <div class="result-actions mt-2">
+                                <a th:href="${result.url}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
+                                <a th:if="${result.editUrl}" th:href="${result.editUrl}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav th:if="${results.totalResults > 20}" aria-label="Search results pagination">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${results.currentPage == 0} ? 'disabled'">
+                                <a class="page-link" href="#" onclick="searchManager.goToPage(${results.currentPage - 1})">
+                                    <i class="fas fa-chevron-left"></i> Previous
+                                </a>
+                            </li>
+                            
+                            <li th:each="pageNum : ${#numbers.sequence(0, results.totalPages - 1)}" 
+                                class="page-item" 
+                                th:classappend="${pageNum == results.currentPage} ? 'active'">
+                                <a class="page-link" href="#" 
+                                   onclick="searchManager.goToPage(${pageNum})"
+                                   th:text="${pageNum + 1}">1</a>
+                            </li>
+                            
+                            <li class="page-item" th:classappend="${results.currentPage == results.totalPages - 1} ? 'disabled'">
+                                <a class="page-link" href="#" onclick="searchManager.goToPage(${results.currentPage + 1})">
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                
+                <!-- Empty state when no search has been performed -->
+                <div th:if="${results == null and query == null}" class="search-empty">
+                    <i class="fas fa-search"></i>
+                    <h5>Start your search</h5>
+                    <p>Enter keywords to search across all clinic records</p>
+                    <div class="search-tips">
+                        <h6>Search Tips:</h6>
+                        <ul class="list-unstyled text-start">
+                            <li>• Use specific names for better results</li>
+                            <li>• Try searching by species, breed, or condition</li>
+                            <li>• Use filters to narrow down results</li>
+                            <li>• Search terms are case-insensitive</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Include search navigation JavaScript -->
+    <script th:src="@{/js/search-navigation.js}"></script>
+    
+    <!-- Initialize with server-side data if available -->
+    <script th:if="${query != null}">
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.searchManager) {
+                window.searchManager.currentQuery = /*[[${query}]]*/ '';
+                window.searchManager.searchInput.value = /*[[${query}]]*/ '';
+            }
+        });
+    </script>
+</body>
+</html>

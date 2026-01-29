@@ -10,6 +10,7 @@ import com.petclinic.backend.repository.VeterinarianRepository;
 import com.petclinic.backend.repository.VisitRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class PetClinicDataPersistenceProperties {
 
     @Autowired
@@ -187,7 +189,7 @@ public class PetClinicDataPersistenceProperties {
         // Create visit with fixed data
         Visit originalVisit = new Visit();
         originalVisit.setVisitDate(LocalDateTime.of(2024, 1, 15, 10, 30));
-        originalVisit.setDescription("Annual checkup");
+        originalVisit.setNotes("Annual checkup");
         originalVisit.setDiagnosis("Healthy cat");
         originalVisit.setTreatment("Vaccinations updated");
         originalVisit.setCost(new BigDecimal("125.50"));
@@ -202,7 +204,7 @@ public class PetClinicDataPersistenceProperties {
         Visit visit = retrievedVisit.get();
         
         // Verify all fields match original values
-        assertEquals(originalVisit.getDescription(), visit.getDescription());
+        assertEquals(originalVisit.getNotes(), visit.getNotes());
         assertEquals(originalVisit.getDiagnosis(), visit.getDiagnosis());
         assertEquals(originalVisit.getTreatment(), visit.getTreatment());
         assertEquals(0, originalVisit.getCost().compareTo(visit.getCost()));

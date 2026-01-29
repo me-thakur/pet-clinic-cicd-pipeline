@@ -93,13 +93,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Property-Based Testing -->
-        <dependency>
-            <groupId>net.jqwik</groupId>
-            <artifactId>jqwik</artifactId>
-            <scope>test</scope>
-        </dependency>
-
         <!-- Selenium for UI Testing -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>

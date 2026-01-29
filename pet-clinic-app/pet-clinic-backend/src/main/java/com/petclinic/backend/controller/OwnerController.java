@@ -19,7 +19,7 @@ import java.util.Optional;
  * Validates: Requirements 8.1, 8.2, 8.3, 8.4
  */
 @RestController
-@RequestMapping("/owners")
+@RequestMapping("/api/owners")
 @CrossOrigin(origins = "*")
 public class OwnerController {
 
@@ -27,15 +27,27 @@ public class OwnerController {
     private OwnerRepository ownerRepository;
 
     /**
+     * Simple test endpoint
+     */
+    @GetMapping("/test")
+    public ResponseEntity<String> test() {
+        return ResponseEntity.ok("Backend is working!");
+    }
+
+    /**
      * Get all owners with pagination
      * GET /owners
      */
     @GetMapping
     public ResponseEntity<Page<Owner>> getAllOwners(Pageable pageable) {
+        System.out.println("DEBUG: getAllOwners called");
         try {
             Page<Owner> owners = ownerRepository.findAll(pageable);
+            System.out.println("DEBUG: Found " + owners.getTotalElements() + " owners");
             return ResponseEntity.ok(owners);
         } catch (Exception e) {
+            System.out.println("DEBUG: Error in getAllOwners: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

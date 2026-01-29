@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Visit Quick View Fragment -->
+    <div th:fragment="quickView">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-sm table-borderless">
+                    <tr>
+                        <th width="40%">Date & Time:</th>
+                        <td>
+                            <div th:text="${#temporals.format(visit.visitDate, 'MMM dd, yyyy')}">Date</div>
+                            <small class="text-muted" th:text="${#temporals.format(visit.visitDate, 'HH:mm')}">Time</small>
+                        </td>
+                    </tr>
+                    <tr th:if="${visit.pet != null}">
+                        <th>Pet:</th>
+                        <td>
+                            <span th:text="${visit.pet.name}">Pet Name</span>
+                            <small class="text-muted">
+                                (<span th:text="${visit.pet.species}">Species</span>)
+                            </small>
+                        </td>
+                    </tr>
+                    <tr th:if="${visit.pet != null and visit.pet.owner != null}">
+                        <th>Owner:</th>
+                        <td th:text="${visit.pet.owner.fullName}">Owner Name</td>
+                    </tr>
+                    <tr th:if="${visit.veterinarian != null}">
+                        <th>Veterinarian:</th>
+                        <td th:text="'Dr. ' + ${visit.veterinarian.firstName} + ' ' + ${visit.veterinarian.lastName}">Veterinarian</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-sm table-borderless">
+                    <tr th:if="${visit.cost != null}">
+                        <th width="40%">Cost:</th>
+                        <td>
+                            <span class="text-success">
+                                $<span th:text="${#numbers.formatDecimal(visit.cost, 1, 2)}">0.00</span>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Type:</th>
+                        <td>
+                            <span th:if="${visit.emergencyVisit}" class="badge bg-danger">Emergency</span>
+                            <span th:unless="${visit.emergencyVisit}" class="badge bg-info">Regular</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            <span th:if="${visit.completed != null}">
+                                <span th:if="${visit.completed}" class="badge bg-success">Completed</span>
+                                <span th:unless="${visit.completed}" class="badge bg-warning">Pending</span>
+                            </span>
+                            <span th:unless="${visit.completed != null}" class="badge bg-secondary">Unknown</span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <h6><i class="fas fa-file-alt"></i> Description</h6>
+            <p th:text="${visit.description}" class="mb-2">Description</p>
+        </div>
+
+        <div th:if="${visit.diagnosis != null and !#strings.isEmpty(visit.diagnosis)}" class="mt-3">
+            <h6><i class="fas fa-stethoscope"></i> Diagnosis</h6>
+            <p th:text="${visit.diagnosis}" class="mb-2">Diagnosis</p>
+        </div>
+
+        <div th:if="${visit.treatment != null and !#strings.isEmpty(visit.treatment)}" class="mt-3">
+            <h6><i class="fas fa-pills"></i> Treatment</h6>
+            <p th:text="${visit.treatment}" class="mb-2">Treatment</p>
+        </div>
+    </div>
+</body>
+</html>

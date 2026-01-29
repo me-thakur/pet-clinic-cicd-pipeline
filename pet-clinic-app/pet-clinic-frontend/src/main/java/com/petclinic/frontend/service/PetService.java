@@ -107,12 +107,12 @@ public class PetService {
     public Mono<List<Pet>> searchByName(String name) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/pets/search/by-name")
+                        .path("/pets/search")
                         .queryParam("name", name)
                         .build())
                 .retrieve()
-                .bodyToFlux(Pet.class)
-                .collectList();
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .map(this::extractPetListFromPagedResponse);
     }
 
     /**
@@ -120,10 +120,7 @@ public class PetService {
      */
     public Mono<List<Pet>> searchBySpecies(String species) {
         return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/pets/search/by-species")
-                        .queryParam("species", species)
-                        .build())
+                .uri("/pets/species/{species}", species)
                 .retrieve()
                 .bodyToFlux(Pet.class)
                 .collectList();
@@ -134,10 +131,7 @@ public class PetService {
      */
     public Mono<List<Pet>> searchByBreed(String breed) {
         return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/pets/search/by-breed")
-                        .queryParam("breed", breed)
-                        .build())
+                .uri("/pets/breed/{breed}", breed)
                 .retrieve()
                 .bodyToFlux(Pet.class)
                 .collectList();
@@ -149,7 +143,7 @@ public class PetService {
     public Mono<List<Pet>> searchByAgeRange(int minAge, int maxAge) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/pets/search/by-age-range")
+                        .path("/pets/age-range")
                         .queryParam("minAge", minAge)
                         .queryParam("maxAge", maxAge)
                         .build())
@@ -175,11 +169,11 @@ public class PetService {
     /**
      * Search pets by medical history
      */
-    public Mono<List<Pet>> searchByMedicalHistory(String text) {
+    public Mono<List<Pet>> searchByMedicalHistory(String keywords) {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path("/pets/search/by-medical-history")
-                        .queryParam("text", text)
+                        .path("/pets/medical-history")
+                        .queryParam("keywords", keywords)
                         .build())
                 .retrieve()
                 .bodyToFlux(Pet.class)
@@ -189,21 +183,21 @@ public class PetService {
     /**
      * Get pet statistics
      */
-    public Mono<Object[]> getPetStatistics() {
+    public Mono<Map<String, Object>> getPetStatistics() {
         return webClient.get()
                 .uri("/pets/statistics")
                 .retrieve()
-                .bodyToMono(Object[].class);
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {});
     }
 
     /**
      * Get pets by species count
      */
-    public Mono<List<Object[]>> getPetsBySpeciesCount() {
+    public Mono<List<Map<String, Object>>> getPetsBySpeciesCount() {
         return webClient.get()
                 .uri("/pets/species-count")
                 .retrieve()
-                .bodyToFlux(Object[].class)
+                .bodyToFlux(new ParameterizedTypeReference<Map<String, Object>>() {})
                 .collectList();
     }
 
@@ -217,14 +211,25 @@ public class PetService {
                 .map(this::mapToPet)
                 .collect(Collectors.toList());
 
-        Map<String, Object> pageable = (Map<String, Object>) pageResponse.get("pageable");
-        int pageNumber = (Integer) pageable.get("pageNumber");
-        int pageSize = (Integer) pageable.get("pageSize");
+        Map<String, Object> pageInfo = (Map<String, Object>) pageResponse.get("pageInfo");
+        int pageNumber = (Integer) pageInfo.get("pageNumber");
+        int pageSize = (Integer) pageInfo.get("pageSize");
         long totalElements = ((Number) pageResponse.get("totalElements")).longValue();
 
         return new PageImpl<>(pets, 
                 org.springframework.data.domain.PageRequest.of(pageNumber, pageSize), 
                 totalElements);
+    }
+
+    /**
+     * Extract pet list from paged response
+     */
+    @SuppressWarnings("unchecked")
+    private List<Pet> extractPetListFromPagedResponse(Map<String, Object> pageResponse) {
+        List<Map<String, Object>> content = (List<Map<String, Object>>) pageResponse.get("content");
+        return content.stream()
+                .map(this::mapToPet)
+                .collect(Collectors.toList());
     }
 
     /**

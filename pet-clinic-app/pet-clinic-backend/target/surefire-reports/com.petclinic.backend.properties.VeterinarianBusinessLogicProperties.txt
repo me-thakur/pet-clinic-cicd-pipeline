@@ -1,0 +1,17 @@
+-------------------------------------------------------------------------------
+Test set: com.petclinic.backend.properties.VeterinarianBusinessLogicProperties
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 14.42 s <<< FAILURE! -- in com.petclinic.backend.properties.VeterinarianBusinessLogicProperties
+com.petclinic.backend.properties.VeterinarianBusinessLogicProperties.testReferentialIntegrityProtection -- Time elapsed: 0.015 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Deleting veterinarian with visits should throw DataIntegrityViolationException due to foreign key constraint ==> Expected org.springframework.dao.DataIntegrityViolationException to be thrown, but nothing was thrown.
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:39)
+	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3131)
+	at com.petclinic.backend.properties.VeterinarianBusinessLogicProperties.lambda$testReferentialIntegrityProtection$10(VeterinarianBusinessLogicProperties.java:355)
+	at com.petclinic.backend.properties.PropertyTestBase.runPropertyTest(PropertyTestBase.java:170)
+	at com.petclinic.backend.properties.VeterinarianBusinessLogicProperties.testReferentialIntegrityProtection(VeterinarianBusinessLogicProperties.java:302)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+

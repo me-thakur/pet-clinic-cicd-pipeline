@@ -1,0 +1,581 @@
+/* Enhanced Search and Navigation Styles */
+
+/* Global Search Interface */
+.global-search-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.global-search-form {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-input-group {
+    position: relative;
+}
+
+.search-input {
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    padding: 12px 50px 12px 20px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.search-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    outline: none;
+}
+
+.search-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.search-btn:hover {
+    background: #5a6fd8;
+    transform: translateY(-50%) scale(1.05);
+}
+
+/* Search Suggestions */
+.search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.suggestion-item {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+    background-color: #f8f9fa;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-text {
+    font-weight: 500;
+}
+
+.suggestion-type {
+    font-size: 0.85em;
+    color: #6c757d;
+    margin-left: 8px;
+}
+
+/* Search Results */
+.search-results-container {
+    margin-top: 2rem;
+}
+
+.search-results-header {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.search-results-info {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.search-results-count {
+    font-weight: bold;
+    color: #495057;
+}
+
+.search-highlight {
+    background-color: #fff3cd;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.result-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.result-card:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.result-card-header {
+    padding: 1rem;
+    border-bottom: 1px solid #f8f9fa;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+}
+
+.result-type-badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.result-type-pet {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.result-type-owner {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.result-type-visit {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.result-type-veterinarian {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.result-card-body {
+    padding: 1rem;
+}
+
+.result-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.result-description {
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+}
+
+.result-metadata {
+    font-size: 0.85rem;
+    color: #868e96;
+    display: flex;
+    gap: 1rem;
+}
+
+/* Advanced Filters */
+.filters-container {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.filters-header {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.filters-toggle {
+    background: none;
+    border: none;
+    color: #495057;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filters-body {
+    padding: 1.5rem;
+    display: none;
+}
+
+.filters-body.show {
+    display: block;
+}
+
+.filter-group {
+    margin-bottom: 1.5rem;
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.filter-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.filter-controls {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    background: #e9ecef;
+    border: 1px solid #ced4da;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-chip:hover {
+    background: #dee2e6;
+}
+
+.filter-chip.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.filter-chip .remove-filter {
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 4px;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Entity Type Filters */
+.entity-type-filters {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.entity-filter-btn {
+    border: 1px solid #ced4da;
+    background: white;
+    color: #495057;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.entity-filter-btn:hover {
+    background: #f8f9fa;
+}
+
+.entity-filter-btn.active {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.entity-count {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.entity-filter-btn.active .entity-count {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive Navigation */
+.navbar-search {
+    position: relative;
+    max-width: 400px;
+    margin: 0 1rem;
+}
+
+.navbar-search .search-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 40px 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.navbar-search .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.navbar-search .search-input:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: none;
+}
+
+.navbar-search .search-btn {
+    width: 32px;
+    height: 32px;
+    right: 4px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.navbar-search .search-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile Navigation Enhancements */
+@media (max-width: 991.98px) {
+    .navbar-search {
+        max-width: none;
+        margin: 1rem 0;
+        order: 3;
+        width: 100%;
+    }
+    
+    .navbar-nav {
+        margin-top: 1rem;
+    }
+    
+    .global-search-container {
+        margin: 1rem -15px 2rem -15px;
+        border-radius: 0;
+    }
+    
+    .search-input {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+    
+    .filter-controls {
+        flex-direction: column;
+    }
+    
+    .filter-chip {
+        justify-content: center;
+    }
+    
+    .entity-type-filters {
+        justify-content: center;
+    }
+    
+    .search-results-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .result-card-header {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+    }
+    
+    .result-metadata {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .global-search-form {
+        padding: 1rem;
+    }
+    
+    .search-input {
+        padding: 10px 45px 10px 15px;
+    }
+    
+    .search-btn {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .filters-body {
+        padding: 1rem;
+    }
+    
+    .filter-actions {
+        flex-direction: column;
+    }
+    
+    .filter-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Loading States */
+.search-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+
+.search-loading .spinner-border {
+    margin-right: 0.5rem;
+}
+
+/* Empty States */
+.search-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #6c757d;
+}
+
+.search-empty i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.search-empty h5 {
+    margin-bottom: 1rem;
+}
+
+.search-empty p {
+    margin-bottom: 1.5rem;
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-down {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Accessibility Improvements */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus Styles */
+.search-input:focus,
+.filter-chip:focus,
+.entity-filter-btn:focus,
+.suggestion-item:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .search-highlight {
+        background-color: #ffff00;
+        color: #000000;
+    }
+    
+    .result-card {
+        border-width: 2px;
+    }
+    
+    .filter-chip.active {
+        border-width: 2px;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .search-btn,
+    .result-card,
+    .filter-chip,
+    .entity-filter-btn {
+        transition: none;
+    }
+    
+    .fade-in,
+    .slide-down {
+        animation: none;
+    }
+}

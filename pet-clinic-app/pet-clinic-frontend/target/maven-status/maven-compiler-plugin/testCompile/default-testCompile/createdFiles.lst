@@ -1,1 +1,5 @@
-com/petclinic/frontend/security/AuthenticationEnforcementTest.class
+com/petclinic/frontend/integration/SimpleFrontendIntegrationTest.class
+com/petclinic/frontend/properties/FormValidationConsistencyProperties.class
+com/petclinic/frontend/controller/SearchControllerTest.class
+com/petclinic/frontend/service/SearchServiceTest.class
+com/petclinic/frontend/integration/CompleteUIWorkflowIntegrationTest.class

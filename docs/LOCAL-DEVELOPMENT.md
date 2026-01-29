@@ -1,6 +1,6 @@
-# Pet Clinic CI/CD Pipeline - Local Development Guide
+# Pet Clinic Application - Local Development Guide
 
-This guide provides comprehensive instructions for setting up and running the Pet Clinic CI/CD Pipeline system locally for development and testing purposes.
+This guide provides comprehensive instructions for setting up and running the Pet Clinic application locally for development and testing purposes.
 
 ## Quick Start (Docker)
 
@@ -10,48 +10,29 @@ For the fastest setup using Docker:
 # 1. Ensure Docker Desktop is running
 open -a Docker  # macOS
 
-# 2. Fix Docker credentials if needed (temporary)
-cp ~/.docker/config.json ~/.docker/config.json.backup 2>/dev/null || true
-echo '{"auths": {}, "currentContext": "desktop-linux"}' > ~/.docker/config.json
-
-# 3. Start MySQL container
+# 2. Start MySQL container
 cd pet-clinic-app/pet-clinic-backend
 docker-compose -f docker-compose.dev.yml up -d mysql
 
-# 4. Start Jenkins (check if already exists first)
-if docker ps -a | grep -q jenkins-local; then
-    echo "Jenkins container exists, starting it..."
-    docker start jenkins-local
-else
-    echo "Creating new Jenkins container..."
-    docker pull jenkins/jenkins:lts
-    docker run -d --name jenkins-local -p 8082:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
-fi
-
-# 5. Restore Docker config
-mv ~/.docker/config.json.backup ~/.docker/config.json 2>/dev/null || true
-
-# 6. Verify services
+# 3. Verify MySQL service
 docker exec -it petclinic-mysql mysql -u petclinic -ppetclinic123 -D petclinic_dev -e "SELECT 1;"
-docker exec jenkins-local cat /var/jenkins_home/secrets/initialAdminPassword
 
-# 7. Start backend service
+# 4. Start backend service
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
-# 8. Start frontend service (in new terminal)
+# 5. Start frontend service (in new terminal)
 cd ../pet-clinic-frontend
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 # Access:
 # - Pet Clinic: http://localhost:8080
-# - Jenkins: http://localhost:8082 (use password from step 6)
 ```
 
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
 2. [Environment Setup](#environment-setup)
-3. [Local Infrastructure](#local-infrastructure)
+3. [Local Database Setup](#local-database-setup)
 4. [Application Development](#application-development)
 5. [Testing](#testing)
 6. [Debugging](#debugging)
@@ -206,8 +187,8 @@ choco install vscode
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/pet-clinic-cicd-pipeline.git
-cd pet-clinic-cicd-pipeline
+git clone https://github.com/your-org/pet-clinic-application.git
+cd pet-clinic-application
 
 # Create development branch
 git checkout -b feature/local-development
@@ -385,7 +366,7 @@ MAVEN_OPTS="-Xmx1024m -XX:MaxPermSize=256m"
 JAVA_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005"
 ```
 
-## Local Infrastructure
+## Local Database Setup
 
 ### 1. Database Management
 
@@ -504,100 +485,6 @@ choco install mysql.workbench
 
 # Or use command line tools
 mysql -u petclinic -ppetclinic123 -h localhost petclinic_dev
-```
-
-### 2. Local Jenkins (Optional)
-
-**Step 1: Fix Docker Credential Issues (if needed)**
-```bash
-# If you encounter credential helper errors, apply the temporary fix:
-cp ~/.docker/config.json ~/.docker/config.json.backup
-echo '{"auths": {}, "currentContext": "desktop-linux"}' > ~/.docker/config.json
-```
-
-**Step 2: Pull Jenkins Image**
-```bash
-# Pull the Jenkins LTS image
-docker pull jenkins/jenkins:lts
-```
-
-**Step 3: Start Jenkins Container**
-```bash
-# Check if Jenkins container already exists
-docker ps -a | grep jenkins-local
-
-# If container doesn't exist, create it:
-docker run -d \
-  --name jenkins-local \
-  -p 8082:8080 \
-  -p 50000:50000 \
-  -v jenkins_home:/var/jenkins_home \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  jenkins/jenkins:lts
-
-# If container exists but is stopped, start it:
-docker start jenkins-local
-
-# If container exists and is running, you're all set!
-# Check if Jenkins is running
-docker ps | grep jenkins-local
-```
-
-**Step 4: Handle Container Name Conflicts**
-```bash
-# If you get "container name already in use" error:
-
-# Option 1: Use the existing container (recommended)
-docker start jenkins-local
-
-# Option 2: Remove existing container and create new one
-docker stop jenkins-local
-docker rm jenkins-local
-# Then run the docker run command from Step 3
-
-# Option 3: Use a different name
-docker run -d \
-  --name jenkins-local-2 \
-  -p 8083:8080 \
-  -p 50001:50000 \
-  -v jenkins_home_2:/var/jenkins_home \
-  jenkins/jenkins:lts
-```
-
-**Step 4: Get Initial Admin Password**
-```bash
-# Get initial admin password
-docker exec jenkins-local cat /var/jenkins_home/secrets/initialAdminPassword
-
-# Example output: b8804d0b525749a08adad6919ed8de34
-```
-
-**Step 5: Access Jenkins**
-```bash
-# Access Jenkins at http://localhost:8082
-# Use the initial admin password from step 4 to unlock Jenkins
-```
-
-**Step 6: Restore Docker Config**
-```bash
-# Restore original Docker configuration
-mv ~/.docker/config.json.backup ~/.docker/config.json
-```
-
-**Jenkins Setup Notes:**
-- Jenkins will be available at `http://localhost:8082`
-- The container includes Docker socket mounting for Docker-in-Docker capabilities
-- Persistent volume `jenkins_home` stores all Jenkins data
-- Port 50000 is for Jenkins agent connections
-
-**Stop Jenkins:**
-```bash
-# Stop and remove Jenkins container
-docker stop jenkins-local
-docker rm jenkins-local
-
-# Remove Jenkins data volume (careful - this deletes all Jenkins data!)
-docker volume rm jenkins_home
 ```
 
 ## Application Development
@@ -1212,7 +1099,22 @@ mvn surefire:test -Dsurefire.rerunFailingTestsCount=2
 # Or use IDE continuous testing features
 ```
 
-### 3. Local CI/CD Simulation
+### 3. Local Development Best Practices
+
+#### Code Quality Checks
+```bash
+# Run code formatting
+mvn spotless:apply
+
+# Run static analysis
+mvn spotbugs:check
+
+# Run security checks
+mvn org.owasp:dependency-check-maven:check
+
+# Run all quality checks
+mvn clean verify
+```
 
 #### Pre-commit Hooks
 ```bash
@@ -1241,44 +1143,6 @@ EOF
 chmod +x .git/hooks/pre-commit
 ```
 
-#### Local Pipeline Simulation
-```bash
-# Create local pipeline script
-cat > scripts/local-pipeline.sh << 'EOF'
-#!/bin/bash
-set -e
-
-echo "=== Local CI/CD Pipeline Simulation ==="
-
-echo "1. Code Quality Checks..."
-mvn spotless:check
-mvn spotbugs:check
-
-echo "2. Unit Tests..."
-mvn test
-
-echo "3. Integration Tests..."
-mvn test -Pintegration-tests
-
-echo "4. Build Application..."
-mvn clean package -DskipTests
-
-echo "5. Security Scan..."
-mvn org.owasp:dependency-check-maven:check
-
-echo "6. Deploy to Local..."
-./scripts/deploy-local.sh
-
-echo "7. Health Check..."
-curl -f http://localhost:8080/health
-curl -f http://localhost:8081/api/health
-
-echo "=== Pipeline Completed Successfully ==="
-EOF
-
-chmod +x scripts/local-pipeline.sh
-```
-
 ### 4. Troubleshooting Common Issues
 
 #### Docker and Container Issues
@@ -1299,29 +1163,29 @@ docker info --format "{{.ServerVersion}}"
 ```bash
 # Symptoms: "container name already in use" error
 # Check existing containers
-docker ps -a | grep jenkins-local
+docker ps -a | grep petclinic-mysql
 
 # Solution 1: Use existing container (recommended)
-docker start jenkins-local
+docker start petclinic-mysql
 
 # Solution 2: Remove and recreate
-docker stop jenkins-local
-docker rm jenkins-local
-# Then create new container
+docker stop petclinic-mysql
+docker rm petclinic-mysql
+# Then create new container with docker-compose
 
 # Solution 3: Check container status and act accordingly
-CONTAINER_STATUS=$(docker inspect -f '{{.State.Status}}' jenkins-local 2>/dev/null || echo "not_found")
+CONTAINER_STATUS=$(docker inspect -f '{{.State.Status}}' petclinic-mysql 2>/dev/null || echo "not_found")
 case $CONTAINER_STATUS in
   "running")
-    echo "Jenkins is already running at http://localhost:8082"
+    echo "MySQL is already running at localhost:3306"
     ;;
   "exited")
-    echo "Starting existing Jenkins container..."
-    docker start jenkins-local
+    echo "Starting existing MySQL container..."
+    docker start petclinic-mysql
     ;;
   "not_found")
-    echo "Creating new Jenkins container..."
-    docker run -d --name jenkins-local -p 8082:8080 -p 50000:50000 -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
+    echo "Creating new MySQL container..."
+    docker-compose -f pet-clinic-app/pet-clinic-backend/docker-compose.dev.yml up -d mysql
     ;;
 esac
 ```
@@ -1335,63 +1199,56 @@ echo '{"auths": {}, "currentContext": "desktop-linux"}' > ~/.docker/config.json
 
 # Pull required images
 docker pull mysql:8.0
-docker pull jenkins/jenkins:lts
-
-# Restore original config
-mv ~/.docker/config.json.backup ~/.docker/config.json
-```
-```bash
-# Symptoms: "docker-credential-desktop: executable file not found"
-# Temporary fix:
-cp ~/.docker/config.json ~/.docker/config.json.backup
-echo '{"auths": {}, "currentContext": "desktop-linux"}' > ~/.docker/config.json
-
-# Pull required images
-docker pull mysql:8.0
 
 # Restore original config
 mv ~/.docker/config.json.backup ~/.docker/config.json
 ```
 
-**Jenkins Container Issues**
+**Managing Database Container**
 ```bash
-# Check if Jenkins container is running
-docker ps | grep jenkins-local
+# View MySQL container status
+docker ps | grep petclinic-mysql
 
-# View Jenkins container logs
-docker logs jenkins-local --tail 20
+# View all containers (including stopped)
+docker ps -a
 
-# Get Jenkins initial admin password
-docker exec jenkins-local cat /var/jenkins_home/secrets/initialAdminPassword
+# Start MySQL container
+docker start petclinic-mysql
 
-# Restart Jenkins container
-docker restart jenkins-local
+# Stop MySQL container
+docker stop petclinic-mysql
 
-# Connect to Jenkins container directly
-docker exec -it jenkins-local bash
+# Restart container
+docker restart petclinic-mysql
 
-# Check Jenkins is accessible
-curl -I http://localhost:8082
+# Check container status with a helper script
+cat > scripts/check-containers.sh << 'EOF'
+#!/bin/bash
+echo "=== Container Status ==="
+if docker ps -a --format "table {{.Names}}\t{{.Status}}" | grep -q "petclinic-mysql"; then
+    status=$(docker inspect -f '{{.State.Status}}' "petclinic-mysql")
+    echo "petclinic-mysql: $status"
+    if [ "$status" = "running" ]; then
+        echo "  MySQL: http://localhost:3306"
+    fi
+else
+    echo "petclinic-mysql: not found"
+fi
+EOF
+
+chmod +x scripts/check-containers.sh
+./scripts/check-containers.sh
+
+# Remove MySQL container (careful - this deletes data!)
+docker stop petclinic-mysql 2>/dev/null || true
+docker rm petclinic-mysql 2>/dev/null || true
+docker volume rm pet-clinic-backend_mysql_data 2>/dev/null || true
+
+# Check container resource usage
+docker stats petclinic-mysql --no-stream
 ```
 
-**Jenkins Access Issues**
-```bash
-# If Jenkins web interface is not accessible:
-# 1. Check if container is running
-docker ps | grep jenkins-local
-
-# 2. Check port mapping
-docker port jenkins-local
-
-# 3. Check if port 8082 is available
-lsof -i :8082
-
-# 4. Check Jenkins logs for startup errors
-docker logs jenkins-local | grep -i error
-
-# 5. Wait for Jenkins to fully start (can take 1-2 minutes)
-docker logs jenkins-local | grep "Jenkins is fully up and running"
-```
+**MySQL Container Issues**
 ```bash
 # Check if MySQL container is running
 docker ps | grep petclinic-mysql
@@ -1420,68 +1277,16 @@ docker exec -it petclinic-mysql mysql -u petclinic -ppetclinic123 -e "SHOW VARIA
 docker exec -it petclinic-mysql mysql -u root -prootpassword -e "SET GLOBAL log_bin_trust_function_creators = 1;"
 ```
 
-**Managing Multiple Containers**
-```bash
-# View all running containers
-docker ps
-
-# View all containers (including stopped)
-docker ps -a
-
-# Start all project containers
-docker start petclinic-mysql jenkins-local
-
-# Stop all project containers
-docker stop jenkins-local petclinic-mysql
-
-# Restart containers
-docker restart petclinic-mysql jenkins-local
-
-# Check container status with a helper script
-cat > scripts/check-containers.sh << 'EOF'
-#!/bin/bash
-echo "=== Container Status ==="
-for container in petclinic-mysql jenkins-local; do
-    if docker ps -a --format "table {{.Names}}\t{{.Status}}" | grep -q "$container"; then
-        status=$(docker inspect -f '{{.State.Status}}' "$container")
-        echo "$container: $status"
-        if [ "$status" = "running" ]; then
-            case $container in
-                "petclinic-mysql")
-                    echo "  MySQL: http://localhost:3306"
-                    ;;
-                "jenkins-local")
-                    echo "  Jenkins: http://localhost:8082"
-                    ;;
-            esac
-        fi
-    else
-        echo "$container: not found"
-    fi
-done
-EOF
-
-chmod +x scripts/check-containers.sh
-./scripts/check-containers.sh
-
-# Remove all project containers (careful - this deletes data!)
-docker stop jenkins-local petclinic-mysql 2>/dev/null || true
-docker rm jenkins-local petclinic-mysql 2>/dev/null || true
-docker volume rm jenkins_home pet-clinic-backend_mysql_data 2>/dev/null || true
-
-# Check container resource usage
-docker stats jenkins-local petclinic-mysql --no-stream
-```
-
 #### Port Conflicts
 ```bash
 # Check what's using ports
-lsof -i :8080
-lsof -i :8081
-lsof -i :3306
+lsof -i :8080  # Frontend
+lsof -i :8081  # Backend
+lsof -i :3306  # MySQL
 
 # Kill processes if needed
 kill -9 $(lsof -t -i:8080)
+kill -9 $(lsof -t -i:8081)
 ```
 
 #### Database Connection Issues
@@ -1558,7 +1363,6 @@ This local development setup provides a comprehensive environment for developing
 
 ✅ **FULLY WORKING**: All components are operational and tested:
 - Docker Desktop and MySQL container running properly
-- Jenkins container deployed and accessible
 - Backend API (port 8081) serving data correctly from MySQL database
 - Frontend application (port 8080) configured to communicate with backend
 - API connectivity verified - frontend can successfully call backend endpoints
@@ -1628,11 +1432,7 @@ Hibernate: select o1_0.id,o1_0.address,o1_0.city,o1_0.created_at,o1_0.email,o1_0
    - Login with credentials: `admin/admin123`, `vet/vet123`, or `staff/staff123`
    - Create owners, add pets, schedule visits
 
-2. **Jenkins pipeline setup**:
-   - Access Jenkins at http://localhost:8082
-   - Initial admin password: `b8804d0b525749a08adad6919ed8de34`
-
-3. **Run tests** (all passing):
+2. **Run tests** (all passing):
    ```bash
    # Backend tests (30 tests passing)
    cd pet-clinic-app/pet-clinic-backend
@@ -1643,7 +1443,7 @@ Hibernate: select o1_0.id,o1_0.address,o1_0.city,o1_0.created_at,o1_0.email,o1_0
    mvn test
    ```
 
-4. **API Testing**:
+3. **API Testing**:
    ```bash
    # Test owner creation (note: telephone must be 10-15 digits with optional formatting)
    curl -X POST http://localhost:8081/api/owners \
@@ -1663,159 +1463,10 @@ Hibernate: select o1_0.id,o1_0.address,o1_0.city,o1_0.created_at,o1_0.email,o1_0
 
 ## Summary
 
-**Task 9 - Frontend-Backend API Connection: ✅ COMPLETED**
-
-The investigation confirmed that the frontend-backend API connection is working perfectly:
-
-- **Configuration is correct**: Frontend WebClient properly configured to call backend at `http://localhost:8081/api`
-- **API calls are successful**: Backend logs show successful GET requests and database queries
-- **Data flow is working**: Owners, pets, and visits data being retrieved and displayed
-- **CORS is configured**: Cross-origin requests from frontend (port 8080) to backend (port 8081) working
-- **Security is properly configured**: CSRF disabled for REST API, authentication handled by frontend
-- **Validation is working**: Telephone number validation enforced (requires 10-15 digits)
-
 The Pet Clinic application is now fully operational for local development with all services communicating correctly.
-
-## Frontend Routing Configuration - COMPLETED ✅
-
-**STATUS**: ✅ COMPLETED
-
-All frontend routing has been successfully configured and tested:
-
-### Completed Components:
-
-**Controllers**:
-- ✅ `OwnerController.java` - Full CRUD operations and search functionality
-- ✅ `PetController.java` - Complete pet management with owner relationships
-- ✅ `VisitController.java` - Comprehensive visit management
-- ✅ `VeterinarianController.java` - Full veterinarian management
-
-**Services**:
-- ✅ `OwnerService.java` - API integration for owner operations
-- ✅ `PetService.java` - API integration for pet operations  
-- ✅ `VisitService.java` - API integration for visit operations
-- ✅ `VeterinarianService.java` - API integration for veterinarian operations
-
-**Templates**:
-- ✅ `owners/` - list.html, form.html, details.html, search.html, multiple-pets.html
-- ✅ `pets/` - list.html, form.html, details.html
-- ✅ `visits/` - list.html, form.html, details.html
-- ✅ `veterinarians/` - list.html, form.html, details.html, statistics.html
-
-### API Path Fixes:
-
-**FIXED**: Backend controller API path mismatches:
-- Updated `PetController.java` from `/api/pets` to `/pets` (context path already handles `/api`)
-- Updated `VeterinarianController.java` from `/api/veterinarians` to `/veterinarians`
-- Updated `VisitController.java` from `/api/visits` to `/visits`
-- All controllers now correctly use context path `/api` + controller path
-
-### Model Compatibility Fixes:
-
-**FIXED**: Frontend service mapping issues:
-- Fixed `VisitService.java` to match frontend `Visit` model structure
-- Fixed `VeterinarianService.java` to use `specialties` field correctly
-- Fixed `PetController.java` and `VisitController.java` to use object relationships instead of ID fields
-
-### Navigation Integration:
-
-**COMPLETED**: Updated `layout.html` with complete navigation:
-- Owners dropdown: All Owners, Add Owner, Search Owners, Multiple Pets
-- Pets dropdown: All Pets, Add Pet, Search Pets, Senior Pets  
-- Visits link: Direct access to visit management
-- Veterinarians link: Direct access to veterinarian management
-
-### Testing Results:
-
-**VERIFIED**: All components working correctly:
-- ✅ Backend APIs responding correctly (tested `/api/pets`, `/api/veterinarians`)
-- ✅ Frontend compilation successful (no errors)
-- ✅ Services running (Backend: 8081, Frontend: 8080)
-- ✅ Database connectivity confirmed
-- ✅ Authentication system working (redirects to login as expected)
-
-### Available Endpoints:
-
-**Frontend Web Pages**:
-- `/owners` - Owner management
-- `/pets` - Pet management  
-- `/visits` - Visit management
-- `/veterinarians` - Veterinarian management
-- All CRUD operations available for each entity
-
-**Backend API Endpoints**:
-- `http://localhost:8081/api/owners` - Owner REST API
-- `http://localhost:8081/api/pets` - Pet REST API
-- `http://localhost:8081/api/visits` - Visit REST API  
-- `http://localhost:8081/api/veterinarians` - Veterinarian REST API
-
-### Next Steps:
-
-The frontend routing is now complete. Users can:
-1. Navigate to any entity management page through the navigation menu
-2. Perform full CRUD operations on all entities
-3. Use search and filtering functionality
-4. View detailed statistics and reports
-5. Manage relationships between entities (pets → owners, visits → pets/vets)
-
-All "Whitelabel Error Page" issues have been resolved. The application now provides complete frontend routing for the Pet Clinic management system.
-
-## Test Status
-
-### Backend Tests ✅
-All backend tests are now passing:
-- **30 tests run, 0 failures, 0 errors, 0 skipped**
-- Unit tests for OwnerController (10 tests) - **FIXED CSRF issues**
-- Repository tests for data persistence (6 tests)
-- Search filter tests (9 tests)
-- Property-based data persistence tests (5 tests) - **CONVERTED to JUnit tests**
-
-### Frontend Tests ✅
-All frontend tests are now passing:
-- **10 tests run, 0 failures, 0 errors, 0 skipped**
-- Authentication enforcement tests - **FIXED CSRF expectations**
-
-### Key Issues Resolved
-
-#### 1. Backend CSRF Test Failures ✅
-**Problem**: OwnerController tests were failing with 403 Forbidden errors instead of expected status codes.
-
-**Root Cause**: `@WebMvcTest` was not loading the custom `SecurityConfig` and was using Spring Boot's default security configuration with CSRF enabled.
-
-**Solution**: 
-- Added `@Import(SecurityConfig.class)` to import the custom security configuration
-- Added `@ActiveProfiles("test")` to use the test profile instead of dev profile
-- This ensures CSRF is properly disabled for REST API endpoints in tests
-
-#### 2. Property-Based Test Repository Injection Issues ✅
-**Problem**: jqwik property-based tests were failing with NullPointerException because repositories were not being injected.
-
-**Root Cause**: jqwik framework doesn't work well with Spring Boot's dependency injection system.
-
-**Solution**: 
-- Converted complex jqwik property-based tests to simpler JUnit tests
-- Maintained the same data persistence validation logic
-- Tests now verify owner, pet, veterinarian, and visit data persistence with fixed test data
-- All tests validate the same correctness properties as the original property-based tests
-
-#### 3. Frontend Routing and Whitelabel Errors ✅
-**Problem**: Frontend was showing whitelabel errors for pets, visits, and veterinarians pages.
-
-**Root Cause**: Missing controllers, services, and templates for complete frontend routing.
-
-**Solution**: 
-- Created complete frontend controllers: `PetController`, `VisitController`, `VeterinarianController`
-- Created all frontend services: `PetService`, `VisitService`, `VeterinarianService`
-- Created all Thymeleaf templates for pets, visits, and veterinarians (list, form, details, statistics)
-- Fixed template fragment definitions and Bootstrap webjars paths
-- Updated navigation with complete dropdown menus
-- Fixed Pet model `ownerId` field for proper form binding
-
-### Current System Status
 
 ✅ **All services running correctly**:
 - MySQL container: Port 3306
-- Jenkins container: Port 8082  
 - Backend API: Port 8081
 - Frontend Web: Port 8080
 
@@ -1860,3 +1511,7 @@ For testing the application, use these credentials:
 - **Staff**: `staff/staff123` (STAFF role)
 
 These credentials are configured in the SecurityConfig and displayed on the login page for convenience.
+
+---
+
+**Note**: This guide focuses exclusively on local development setup. For production deployment, CI/CD pipeline configuration, and cloud infrastructure setup, please refer to the DEPLOYMENT-GUIDE.md and other production-focused documentation.

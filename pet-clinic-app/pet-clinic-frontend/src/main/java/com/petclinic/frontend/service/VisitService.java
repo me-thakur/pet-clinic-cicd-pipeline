@@ -1,6 +1,9 @@
 package com.petclinic.frontend.service;
 
 import com.petclinic.frontend.model.Visit;
+import com.petclinic.frontend.model.Pet;
+import com.petclinic.frontend.model.Veterinarian;
+import com.petclinic.frontend.model.Owner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -310,6 +313,14 @@ public class VisitService {
             visit.setCost(new BigDecimal(visitMap.get("cost").toString()));
         }
         
+        // Handle boolean fields
+        if (visitMap.get("emergencyVisit") != null) {
+            visit.setEmergencyVisit((Boolean) visitMap.get("emergencyVisit"));
+        }
+        if (visitMap.get("completed") != null) {
+            visit.setCompleted((Boolean) visitMap.get("completed"));
+        }
+        
         // Handle date fields
         if (visitMap.get("visitDate") != null) {
             visit.setVisitDate(LocalDateTime.parse((String) visitMap.get("visitDate")));
@@ -319,6 +330,38 @@ public class VisitService {
         }
         if (visitMap.get("updatedAt") != null) {
             visit.setUpdatedAt(LocalDateTime.parse((String) visitMap.get("updatedAt")));
+        }
+        
+        // Handle nested objects
+        if (visitMap.get("pet") != null) {
+            Map<String, Object> petMap = (Map<String, Object>) visitMap.get("pet");
+            Pet pet = new Pet();
+            pet.setId(((Number) petMap.get("id")).longValue());
+            pet.setName((String) petMap.get("name"));
+            pet.setSpecies((String) petMap.get("species"));
+            pet.setBreed((String) petMap.get("breed"));
+            
+            // Handle pet owner if present
+            if (petMap.get("owner") != null) {
+                Map<String, Object> ownerMap = (Map<String, Object>) petMap.get("owner");
+                Owner owner = new Owner();
+                owner.setId(((Number) ownerMap.get("id")).longValue());
+                owner.setFirstName((String) ownerMap.get("firstName"));
+                owner.setLastName((String) ownerMap.get("lastName"));
+                pet.setOwner(owner);
+            }
+            
+            visit.setPet(pet);
+        }
+        
+        if (visitMap.get("veterinarian") != null) {
+            Map<String, Object> vetMap = (Map<String, Object>) visitMap.get("veterinarian");
+            Veterinarian veterinarian = new Veterinarian();
+            veterinarian.setId(((Number) vetMap.get("id")).longValue());
+            veterinarian.setFirstName((String) vetMap.get("firstName"));
+            veterinarian.setLastName((String) vetMap.get("lastName"));
+            veterinarian.setSpecialties((String) vetMap.get("specialty"));
+            visit.setVeterinarian(veterinarian);
         }
         
         return visit;

@@ -25,15 +25,36 @@ spring:
   
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
+  
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+    clean-disabled: true
+  
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=30m
+    cache-names:
+      - pets
+      - veterinarians
+      - visits
+      - owners
+      - searchResults
+      - reports
+      - dashboardMetrics
+      - statistics
 
 server:
-  port: 8081
+  port: 9090
 
 logging:
   level:
@@ -60,9 +81,14 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
+  
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
 
 server:
-  port: 8081
+  port: 9090
 
 logging:
   level:
@@ -77,7 +103,7 @@ spring:
       on-profile: prod
   
   datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useSSL=true&requireSSL=true&verifyServerCertificate=true
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -99,9 +125,24 @@ spring:
           batch_size: 20
         order_inserts: true
         order_updates: true
+  
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
 
 server:
-  port: 8081
+  port: 8443
+  http:
+    port: 8080
+  ssl:
+    enabled: ${app.https.enabled:true}
+    key-store: ${app.https.keystore.path}
+    key-store-password: ${app.https.keystore.password}
+    key-store-type: ${app.https.keystore.type}
+    key-alias: ${app.https.keystore.alias}
+    protocol: TLS
+    enabled-protocols: TLSv1.2,TLSv1.3
 
 logging:
   level:
@@ -124,6 +165,38 @@ management:
       prometheus:
         enabled: true
 
+# OpenAPI/Swagger Configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    try-it-out-enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+    show-extensions: true
+    show-common-extensions: true
+  show-actuator: true
+  group-configs:
+    - group: 'pet-management'
+      display-name: 'Pet Management APIs'
+      paths-to-match: '/api/pets/**'
+    - group: 'authentication'
+      display-name: 'Authentication APIs'
+      paths-to-match: '/api/auth/**'
+    - group: 'veterinarian-management'
+      display-name: 'Veterinarian Management APIs'
+      paths-to-match: '/api/veterinarians/**'
+    - group: 'visit-management'
+      display-name: 'Visit Management APIs'
+      paths-to-match: '/api/visits/**'
+    - group: 'reporting'
+      display-name: 'Reporting APIs'
+      paths-to-match: '/api/reports/**'
+
 security:
   jwt:
     secret: ${JWT_SECRET:mySecretKey}
@@ -135,3 +208,37 @@ pet-clinic:
   api:
     version: v1
     base-path: /api/v1
+  data-seeding:
+    enabled: false
+    skip-if-data-exists: true
+    owner-count: 15
+    veterinarian-count: 10
+    max-pets-per-owner: 3
+    max-visits-per-pet: 5
+    past-months: 6
+    future-months: 3
+    generate-medical-history: true
+    seed-users: true
+
+# Application-specific configuration
+app:
+  encryption:
+    key: ${ENCRYPTION_KEY:petclinic-encryption-key-32-chars}
+  jwt:
+    secret: ${JWT_SECRET:petclinic-secret-key-that-is-at-least-256-bits-long-for-security}
+    expiration: ${JWT_EXPIRATION:3600000} # 1 hour in milliseconds
+  session:
+    timeout: ${SESSION_TIMEOUT:1800000} # 30 minutes in milliseconds
+  https:
+    enabled: ${HTTPS_ENABLED:false}
+    keystore:
+      path: ${KEYSTORE_PATH:classpath:keystore.p12}
+      password: ${KEYSTORE_PASSWORD:changeit}
+      type: ${KEYSTORE_TYPE:PKCS12}
+      alias: ${KEYSTORE_ALIAS:petclinic}
+  backup:
+    directory: ${BACKUP_DIRECTORY:./backups}
+    retention-days: ${BACKUP_RETENTION_DAYS:30}
+    auto-backup:
+      enabled: ${AUTO_BACKUP_ENABLED:false}
+      schedule: ${AUTO_BACKUP_SCHEDULE:0 0 2 * * ?} # Daily at 2 AM

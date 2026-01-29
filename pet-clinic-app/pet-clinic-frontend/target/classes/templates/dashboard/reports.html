@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Reports</title>
+    <style>
+        .report-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .report-card:hover {
+            transform: translateY(-2px);
+        }
+        .filter-section {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .export-buttons {
+            display: none;
+        }
+        .report-preview {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-chart-bar"></i> Reports & Analytics
+            </h1>
+            <div>
+                <a th:href="@{/dashboard}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+                <a th:href="@{/dashboard/analytics}" class="btn btn-info ms-2">
+                    <i class="fas fa-analytics"></i> Advanced Analytics
+                </a>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}">Error message</span>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <h5><i class="fas fa-filter"></i> Report Filters</h5>
+            <form id="reportFilters">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="startDate" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="startDate" name="startDate" 
+                               th:value="${defaultStartDate}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="endDate" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="endDate" name="endDate" 
+                               th:value="${defaultEndDate}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="veterinarianId" class="form-label">Veterinarian (Optional)</label>
+                        <select class="form-select" id="veterinarianId" name="veterinarianId">
+                            <option value="">All Veterinarians</option>
+                            <!-- Options will be populated via AJAX -->
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="species" class="form-label">Species (Optional)</label>
+                        <select class="form-select" id="species" name="species">
+                            <option value="">All Species</option>
+                            <option value="Dog">Dog</option>
+                            <option value="Cat">Cat</option>
+                            <option value="Bird">Bird</option>
+                            <option value="Rabbit">Rabbit</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Report Types -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card report-card h-100" onclick="generateReport('visits')">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
+                        <h5>Visit Statistics</h5>
+                        <p class="text-muted">Comprehensive visit statistics including completion rates, visit types, and trends over time.</p>
+                        <div class="export-buttons" id="visits-export">
+                            <button class="btn btn-outline-primary btn-sm me-2" onclick="exportReport('visits', 'pdf')">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="exportReport('visits', 'csv')">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card report-card h-100" onclick="generateReport('revenue')">
+                    <div class="card-body text-center">
+                        <i class="fas fa-dollar-sign fa-3x text-success mb-3"></i>
+                        <h5>Revenue Report</h5>
+                        <p class="text-muted">Revenue analysis with trends, payment rates, and breakdown by veterinarian and species.</p>
+                        <div class="export-buttons" id="revenue-export">
+                            <button class="btn btn-outline-primary btn-sm me-2" onclick="exportReport('revenue', 'pdf')">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="exportReport('revenue', 'csv')">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card report-card h-100" onclick="generateReport('dashboard')">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tachometer-alt fa-3x text-info mb-3"></i>
+                        <h5>Dashboard Summary</h5>
+                        <p class="text-muted">Complete dashboard metrics snapshot including KPIs, utilization, and performance indicators.</p>
+                        <div class="export-buttons" id="dashboard-export">
+                            <button class="btn btn-outline-primary btn-sm me-2" onclick="exportReport('dashboard', 'pdf')">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="exportReport('dashboard', 'csv')">
+                                <i class="fas fa-file-csv"></i> CSV
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Results -->
+        <div id="reportResults" style="display: none;">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 id="reportTitle">Report Results</h5>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm me-2" id="exportPdfBtn">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" id="exportCsvBtn">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body report-preview" id="reportContent">
+                    <!-- Report content will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" style="display: none;" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Generating report...</p>
+        </div>
+
+        <!-- Quick Report Links -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-bolt"></i> Quick Reports</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <a href="#" class="btn btn-outline-primary w-100 mb-2" onclick="generateQuickReport('today')">
+                                    <i class="fas fa-calendar-day"></i> Today's Summary
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="#" class="btn btn-outline-info w-100 mb-2" onclick="generateQuickReport('week')">
+                                    <i class="fas fa-calendar-week"></i> This Week
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="#" class="btn btn-outline-success w-100 mb-2" onclick="generateQuickReport('month')">
+                                    <i class="fas fa-calendar-alt"></i> This Month
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a href="#" class="btn btn-outline-warning w-100 mb-2" onclick="generateQuickReport('quarter')">
+                                    <i class="fas fa-calendar"></i> This Quarter
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentReportType = '';
+
+        function generateReport(reportType) {
+            currentReportType = reportType;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const veterinarianId = document.getElementById('veterinarianId').value;
+            const species = document.getElementById('species').value;
+
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates.');
+                return;
+            }
+
+            showLoading();
+
+            let url = `/dashboard/reports/${reportType}?startDate=${startDate}&endDate=${endDate}`;
+            if (veterinarianId) url += `&veterinarianId=${veterinarianId}`;
+            if (species) url += `&species=${species}`;
+
+            window.location.href = url;
+        }
+
+        function exportReport(reportType, format) {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates.');
+                return;
+            }
+
+            const includeTrends = reportType === 'revenue' ? 'true' : 'false';
+            let url = `/dashboard/export/${reportType}?startDate=${startDate}&endDate=${endDate}&format=${format}&includeTrends=${includeTrends}`;
+            
+            // Create a temporary link to trigger download
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${reportType}-report-${startDate}-to-${endDate}.${format}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function generateQuickReport(period) {
+            const today = new Date();
+            let startDate, endDate;
+
+            switch (period) {
+                case 'today':
+                    startDate = endDate = today.toISOString().split('T')[0];
+                    break;
+                case 'week':
+                    const weekStart = new Date(today.setDate(today.getDate() - today.getDay()));
+                    startDate = weekStart.toISOString().split('T')[0];
+                    endDate = new Date().toISOString().split('T')[0];
+                    break;
+                case 'month':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                    endDate = new Date().toISOString().split('T')[0];
+                    break;
+                case 'quarter':
+                    const quarter = Math.floor(today.getMonth() / 3);
+                    startDate = new Date(today.getFullYear(), quarter * 3, 1).toISOString().split('T')[0];
+                    endDate = new Date().toISOString().split('T')[0];
+                    break;
+            }
+
+            document.getElementById('startDate').value = startDate;
+            document.getElementById('endDate').value = endDate;
+            
+            // Generate visit statistics for quick reports
+            generateReport('visits');
+        }
+
+        function showLoading() {
+            document.getElementById('loadingSpinner').style.display = 'block';
+            document.getElementById('reportResults').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingSpinner').style.display = 'none';
+        }
+
+        // Initialize date inputs with default values
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+            
+            if (!document.getElementById('startDate').value) {
+                document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
+            }
+            if (!document.getElementById('endDate').value) {
+                document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            }
+        });
+    </script>
+</body>
+</html>

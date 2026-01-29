@@ -80,6 +80,10 @@ public class Veterinarian {
         this.specialties = specialties;
     }
 
+    public String getSpecialty() {
+        return specialties; // For backward compatibility with templates
+    }
+
     public String getLicenseNumber() {
         return licenseNumber;
     }

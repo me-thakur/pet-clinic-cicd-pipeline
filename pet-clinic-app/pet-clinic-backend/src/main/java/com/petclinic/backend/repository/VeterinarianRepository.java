@@ -1,6 +1,7 @@
 package com.petclinic.backend.repository;
 
 import com.petclinic.backend.model.Veterinarian;
+import com.petclinic.backend.model.Specialty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,7 +20,7 @@ import java.util.Optional;
  * Validates: Requirements 8.1, 8.2, 8.3, 8.4
  */
 @Repository
-public interface VeterinarianRepository extends JpaRepository<Veterinarian, Long> {
+public interface VeterinarianRepository extends BaseRepository<Veterinarian, Long> {
     
     /**
      * Find veterinarian by license number (unique identifier)
@@ -163,6 +165,12 @@ public interface VeterinarianRepository extends JpaRepository<Veterinarian, Long
     List<Veterinarian> findByLicenseNumberContaining(String licensePattern);
     
     /**
+     * Find veterinarians by license number pattern (case-insensitive)
+     * Supports license validation and search
+     */
+    List<Veterinarian> findByLicenseNumberContainingIgnoreCase(String licensePattern);
+    
+    /**
      * Find veterinarians treating specific pet species
      * Supports species-based staff assignment
      */
@@ -203,4 +211,58 @@ public interface VeterinarianRepository extends JpaRepository<Veterinarian, Long
      */
     @Query("SELECT v.specialties, COUNT(v) FROM Veterinarian v WHERE v.specialties IS NOT NULL AND v.specialties != '' GROUP BY v.specialties ORDER BY COUNT(v) DESC")
     List<Object[]> findMostCommonSpecialties(Pageable pageable);
+    
+    /**
+     * Find veterinarians by specialty enum
+     * Supports enhanced specialty-based search
+     */
+    @Query("SELECT v FROM Veterinarian v JOIN v.specialtySet s WHERE s = :specialty")
+    List<Veterinarian> findBySpecialtyEnum(@Param("specialty") Specialty specialty);
+    
+    /**
+     * Find veterinarians with multiple specialties (enum-based)
+     * Supports multi-specialty staff identification
+     */
+    @Query("SELECT v FROM Veterinarian v WHERE SIZE(v.specialtySet) > 1")
+    List<Veterinarian> findVeterinariansWithMultipleSpecialtyEnums();
+    
+    /**
+     * Find veterinarians available for emergency cases
+     * Supports emergency care assignment
+     */
+    @Query("SELECT v FROM Veterinarian v JOIN v.specialtySet s WHERE s IN :emergencySpecialties")
+    List<Veterinarian> findEmergencyVeterinarians(@Param("emergencySpecialties") List<Specialty> emergencySpecialties);
+    
+    /**
+     * Find veterinarians who can perform surgery
+     * Supports surgical care assignment
+     */
+    @Query("SELECT v FROM Veterinarian v JOIN v.specialtySet s WHERE s IN :surgicalSpecialties")
+    List<Veterinarian> findSurgicalVeterinarians(@Param("surgicalSpecialties") List<Specialty> surgicalSpecialties);
+    
+    /**
+     * Find veterinarians available at specific date and time
+     * Supports appointment scheduling with conflict detection
+     */
+    @Query("SELECT v FROM Veterinarian v WHERE v.id NOT IN " +
+           "(SELECT DISTINCT visit.veterinarian.id FROM Visit visit WHERE visit.veterinarian IS NOT NULL AND " +
+           "visit.visitDate <= :endTime AND " +
+           "visit.visitDate >= :startTime)")
+    List<Veterinarian> findAvailableAtDateTime(@Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+    
+    /**
+     * Check if veterinarian is available at specific time
+     * Supports scheduling conflict detection
+     */
+    @Query("SELECT COUNT(v) = 0 FROM Visit v WHERE v.veterinarian.id = :vetId AND " +
+           "v.visitDate <= :endTime AND " +
+           "v.visitDate >= :startTime")
+    boolean isVeterinarianAvailable(@Param("vetId") Long vetId, @Param("startTime") LocalDateTime startTime, @Param("endTime") LocalDateTime endTime);
+    
+    /**
+     * Count veterinarians by specialty enum
+     * Supports enhanced specialty analytics
+     */
+    @Query("SELECT s, COUNT(v) FROM Veterinarian v JOIN v.specialtySet s GROUP BY s")
+    List<Object[]> countVeterinariansBySpecialtyEnum();
 }

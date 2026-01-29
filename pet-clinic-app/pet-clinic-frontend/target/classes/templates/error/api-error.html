@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Error - Pet Clinic</title>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/petclinic.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            API Error <span th:if="${statusCode}" th:text="'(' + ${statusCode} + ')'"></span>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Error:</strong> <span th:text="${errorMessage}">An error occurred</span>
+                        </div>
+                        
+                        <div th:if="${errorDetails}" class="alert alert-info" role="alert">
+                            <strong>Details:</strong> <span th:text="${errorDetails}">Error details</span>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h5>What you can do:</h5>
+                            <ul>
+                                <li>Check your internet connection</li>
+                                <li>Refresh the page and try again</li>
+                                <li>Go back to the <a href="/" class="btn btn-link p-0">home page</a></li>
+                                <li>Contact support if the problem persists</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <a href="/" class="btn btn-primary">
+                                <i class="fas fa-home"></i> Go Home
+                            </a>
+                            <button onclick="history.back()" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Go Back
+                            </button>
+                            <button onclick="location.reload()" class="btn btn-outline-primary">
+                                <i class="fas fa-refresh"></i> Retry
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/webjars/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+</body>
+</html>

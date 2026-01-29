@@ -92,8 +92,8 @@ security:
 pet-clinic:
   backend:
     # Default backend configuration (can be overridden by profiles)
-    url: http://localhost:8081
-    api-path: /api
+    url: http://localhost:9090
+    api-path: /api  # Backend API base path
   ui:
     title: "Pet Clinic Management System"
     version: "1.0.0"

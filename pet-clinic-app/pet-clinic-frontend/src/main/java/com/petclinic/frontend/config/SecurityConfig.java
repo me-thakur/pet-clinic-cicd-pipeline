@@ -2,6 +2,7 @@ package com.petclinic.frontend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -16,13 +17,14 @@ import org.springframework.security.web.SecurityFilterChain;
  * Security Configuration
  * 
  * Configures Spring Security for the Pet Clinic Frontend application.
- * Implements basic authentication with in-memory user store for demonstration.
- * In production, this would be replaced with a proper user management system.
+ * Implements in-memory authentication with role-based access control.
+ * Supports ADMIN, VET, and STAFF roles with appropriate permissions.
  * 
- * Validates: Requirements 10.1, 10.2
+ * Validates: Requirements 9.1, 10.1, 10.2
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Bean

@@ -1,794 +1,594 @@
-# Pet Clinic CI/CD Pipeline - Architecture Guide
+# Pet Clinic Management System - Architecture Guide
 
-This document provides a comprehensive overview of the system architecture, design decisions, and technical implementation details.
+## Overview
 
-## Table of Contents
+This document provides a comprehensive overview of the Pet Clinic Management System architecture, including system design, technology stack, deployment patterns, and architectural decisions.
 
-1. [System Overview](#system-overview)
-2. [Architecture Patterns](#architecture-patterns)
-3. [Infrastructure Architecture](#infrastructure-architecture)
-4. [Application Architecture](#application-architecture)
-5. [CI/CD Pipeline Architecture](#cicd-pipeline-architecture)
-6. [Security Architecture](#security-architecture)
-7. [Monitoring Architecture](#monitoring-architecture)
-8. [Data Architecture](#data-architecture)
-9. [Design Decisions](#design-decisions)
-10. [Scalability Considerations](#scalability-considerations)
-
-## System Overview
-
-The Pet Clinic CI/CD Pipeline is a comprehensive, enterprise-grade system that demonstrates modern DevOps practices and cloud-native architecture patterns. The system is designed for high availability, scalability, security, and maintainability.
+## System Architecture
 
 ### High-Level Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                                AWS Cloud                                    │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────────┐ │
-│  │   Public Subnet │  │  Private Subnet │  │      Data Layer             │ │
-│  │                 │  │                 │  │                             │ │
-│  │ ┌─────────────┐ │  │ ┌─────────────┐ │  │ ┌─────────────────────────┐ │ │
-│  │ │   Jenkins   │ │  │ │ Application │ │  │ │      RDS MySQL          │ │ │
-│  │ │   Server    │ │  │ │   Servers   │ │  │ │    (Multi-AZ)           │ │ │
-│  │ │             │ │  │ │             │ │  │ │                         │ │ │
-│  │ └─────────────┘ │  │ └─────────────┘ │  │ └─────────────────────────┘ │ │
-│  │                 │  │                 │  │                             │ │
-│  │ ┌─────────────┐ │  │ ┌─────────────┐ │  │ ┌─────────────────────────┐ │ │
-│  │ │     ALB     │ │  │ │     EFS     │ │  │ │         S3              │ │ │
-│  │ │             │ │  │ │             │ │  │ │   (Backups/Artifacts)   │ │ │
-│  │ └─────────────┘ │  │ └─────────────┘ │  │ └─────────────────────────┘ │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              External Services                              │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────────┐ │
-│  │     GitHub      │  │   CloudWatch    │  │      SNS/Email              │ │
-│  │   Repository    │  │   Monitoring    │  │    Notifications            │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Key Components
-
-1. **Source Control**: GitHub repository with webhook integration
-2. **CI/CD Engine**: Jenkins with Blue Ocean and Configuration as Code
-3. **Infrastructure**: AWS CloudFormation managed resources
-4. **Application**: Java Spring Boot microservices
-5. **Database**: AWS RDS MySQL with Multi-AZ deployment
-6. **MySQL Privilege Configuration**: Automated MySQL privilege management system
-7. **Storage**: S3 for artifacts/backups, EFS for shared scripts
-8. **Monitoring**: CloudWatch with custom dashboards and alerts
-9. **Security**: Multi-layered security with encryption and access controls
-
-## Architecture Patterns
-
-### 1. Infrastructure as Code (IaC)
-
-**Pattern**: All infrastructure is defined as code using CloudFormation templates.
-
-**Benefits**:
-- Version controlled infrastructure
-- Repeatable deployments
-- Reduced configuration drift
-- Automated rollback capabilities
-
-**Implementation**:
-```yaml
-# Master stack orchestrates nested stacks
-Resources:
-  NetworkStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub 'https://${S3Bucket}/network.yaml'
-      Parameters:
-        Environment: !Ref Environment
-```
-
-### 2. Microservices Architecture
-
-**Pattern**: Application is split into frontend and backend services.
-
-**Benefits**:
-- Independent deployment and scaling
-- Technology diversity
-- Fault isolation
-- Team autonomy
-
-**Implementation**:
-- **Frontend Service**: Spring Boot with Thymeleaf (Port 8080)
-- **Backend Service**: Spring Boot REST API (Port 8081)
-- **Communication**: HTTP/REST with service discovery
-
-### 3. Pipeline as Code
-
-**Pattern**: CI/CD pipelines defined as code in Jenkinsfiles.
-
-**Benefits**:
-- Version controlled pipelines
-- Consistent deployment process
-- Easy pipeline modifications
-- Automated testing integration
-
-**Implementation**:
-```groovy
-pipeline {
-    agent any
-    stages {
-        stage('Build') { /* ... */ }
-        stage('Test') { /* ... */ }
-        stage('Deploy') { /* ... */ }
-        stage('Verify') { /* ... */ }
-    }
-}
-```
-
-### 4. Configuration as Code
-
-**Pattern**: Jenkins configuration managed through JCasC.
-
-**Benefits**:
-- Reproducible Jenkins setup
-- Version controlled configuration
-- Automated plugin management
-- Disaster recovery support
-
-## Infrastructure Architecture
-
-### Network Architecture
-
-```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        VPC (10.0.0.0/16)                       │
-│                                                                 │
-│  ┌─────────────────────────┐  ┌─────────────────────────────┐   │
-│  │   Public Subnet         │  │   Private Subnet            │   │
-│  │   (10.0.1.0/24)         │  │   (10.0.2.0/24)             │   │
-│  │                         │  │                             │   │
-│  │ ┌─────────────────────┐ │  │ ┌─────────────────────────┐ │   │
-│  │ │  Internet Gateway   │ │  │ │    NAT Gateway          │ │   │
-│  │ └─────────────────────┘ │  │ └─────────────────────────┘ │   │
-│  │                         │  │                             │   │
-│  │ ┌─────────────────────┐ │  │ ┌─────────────────────────┐ │   │
-│  │ │  Jenkins Server     │ │  │ │  Application Servers    │ │   │
-│  │ │  (t3.medium)        │ │  │ │  (Auto Scaling Group)   │ │   │
-│  │ └─────────────────────┘ │  │ └─────────────────────────┘ │   │
-│  │                         │  │                             │   │
-│  │ ┌─────────────────────┐ │  │ ┌─────────────────────────┐ │   │
-│  │ │  Application        │ │  │ │  Database Subnet        │ │   │
-│  │ │  Load Balancer      │ │  │ │  Group                  │ │   │
-│  │ └─────────────────────┘ │  │ └─────────────────────────┘ │   │
-│  └─────────────────────────┘  └─────────────────────────────┘   │
+│                    Pet Clinic Management System                 │
+├─────────────────────────────────────────────────────────────────┤
+│  Presentation Layer                                             │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌──────────┐  │
+│  │   Web UI    │ │  Mobile UI  │ │  REST API   │ │ WebSocket│  │
+│  │ (Thymeleaf) │ │(Responsive) │ │ (OpenAPI)   │ │   API    │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘ └──────────┘  │
+├─────────────────────────────────────────────────────────────────┤
+│  Application Layer                                              │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌──────────┐  │
+│  │Pet Service  │ │Visit Service│ │ Vet Service │ │ Report   │  │
+│  │             │ │             │ │             │ │ Service  │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘ └──────────┘  │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌──────────┐  │
+│  │Search Svc   │ │ Auth Svc    │ │ Audit Svc   │ │ Cache    │  │
+│  │             │ │             │ │             │ │ Manager  │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘ └──────────┘  │
+├─────────────────────────────────────────────────────────────────┤
+│  Data Access Layer                                              │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌──────────┐  │
+│  │   JPA       │ │   Flyway    │ │   Caffeine  │ │   File   │  │
+│  │Repositories │ │ Migrations  │ │    Cache    │ │ Storage  │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘ └──────────┘  │
+├─────────────────────────────────────────────────────────────────┤
+│  Infrastructure Layer                                           │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌──────────┐  │
+│  │   MySQL     │ │   Redis     │ │   File      │ │ Message  │  │
+│  │  Database   │ │   Cache     │ │   System    │ │  Queue   │  │
+│  └─────────────┘ └─────────────┘ └─────────────┘ └──────────┘  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Security Groups
+### Architectural Patterns
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Security Group Rules                      │
-├─────────────────────────────────────────────────────────────────┤
-│  Jenkins SG:                                                    │
-│  • Inbound: 8080 (HTTP) from 0.0.0.0/0                        │
-│  • Inbound: 22 (SSH) from Admin IPs                            │
-│  • Outbound: All traffic                                       │
-├─────────────────────────────────────────────────────────────────┤
-│  ALB SG:                                                        │
-│  • Inbound: 80 (HTTP) from 0.0.0.0/0                          │
-│  • Inbound: 443 (HTTPS) from 0.0.0.0/0                        │
-│  • Outbound: 8080, 8081 to Application SG                     │
-├─────────────────────────────────────────────────────────────────┤
-│  Application SG:                                                │
-│  • Inbound: 8080, 8081 from ALB SG                            │
-│  • Inbound: 22 (SSH) from Jenkins SG                          │
-│  • Outbound: 3306 to Database SG                              │
-├─────────────────────────────────────────────────────────────────┤
-│  Database SG:                                                   │
-│  • Inbound: 3306 from Application SG                          │
-│  • No outbound rules (default deny)                           │
-└─────────────────────────────────────────────────────────────────┘
-```
+#### 1. Layered Architecture
+- **Presentation Layer**: User interfaces and API endpoints
+- **Application Layer**: Business logic and service orchestration
+- **Data Access Layer**: Data persistence and retrieval
+- **Infrastructure Layer**: External systems and resources
 
-### Compute Resources
+#### 2. Domain-Driven Design (DDD)
+- **Entities**: Core business objects (Pet, Owner, Visit, Veterinarian)
+- **Value Objects**: Immutable objects (Address, ContactInfo)
+- **Aggregates**: Consistency boundaries (Pet with Visits)
+- **Repositories**: Data access abstractions
+- **Services**: Domain logic that doesn't belong to entities
 
-| Component | Instance Type | Auto Scaling | Availability |
-|-----------|---------------|--------------|--------------|
-| Jenkins Server | t3.medium | No | Single AZ |
-| Frontend App | t3.small | 2-6 instances | Multi-AZ |
-| Backend App | t3.small | 2-6 instances | Multi-AZ |
-| Database | db.t3.micro | No (RDS Multi-AZ) | Multi-AZ |
+#### 3. CQRS (Command Query Responsibility Segregation)
+- **Commands**: Operations that modify state
+- **Queries**: Operations that read state
+- **Separate models**: Optimized for different use cases
 
-## Application Architecture
+## Technology Stack
 
-### Service Architecture
+### Backend Technologies
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Application Layer                         │
-│                                                                 │
-│  ┌─────────────────────────┐  ┌─────────────────────────────┐   │
-│  │   Frontend Service      │  │   Backend Service           │   │
-│  │   (Spring Boot + MVC)   │  │   (Spring Boot + REST)     │   │
-│  │                         │  │                             │   │
-│  │ ┌─────────────────────┐ │  │ ┌─────────────────────────┐ │   │
-│  │ │  Web Controllers    │ │  │ │  REST Controllers       │ │   │
-│  │ │  - HomeController   │ │  │ │  - OwnerController      │ │   │
-│  │ │  - OwnerController  │ │  │ │  - PetController        │ │   │
-│  │ └─────────────────────┘ │  │ │  - VetController        │ │   │
-│  │                         │  │ │  - VisitController      │ │   │
-│  │ ┌─────────────────────┐ │  │ └─────────────────────────┘ │   │
-│  │ │  Service Layer      │ │  │                             │   │
-│  │ │  - OwnerService     │ │  │ ┌─────────────────────────┐ │   │
-│  │ │  - PetService       │ │  │ │  Service Layer          │ │   │
-│  │ └─────────────────────┘ │  │ │  - Business Logic       │ │   │
-│  │                         │  │ │  - Validation           │ │   │
-│  │ ┌─────────────────────┐ │  │ └─────────────────────────┘ │   │
-│  │ │  View Layer         │ │  │                             │   │
-│  │ │  - Thymeleaf        │ │  │ ┌─────────────────────────┐ │   │
-│  │ │  - Bootstrap CSS    │ │  │ │  Repository Layer       │ │   │
-│  │ └─────────────────────┘ │  │ │  - JPA Repositories     │ │   │
-│  └─────────────────────────┘  │ │  - Custom Queries       │ │   │
-│                                │ └─────────────────────────┘ │   │
-│                                └─────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-                                    │
-                                    ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                       Data Layer                               │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                 MySQL Database                          │   │
-│  │                                                         │   │
-│  │  Tables:                                                │   │
-│  │  • owners (id, first_name, last_name, address, ...)    │   │
-│  │  • pets (id, name, birth_date, type, owner_id)         │   │
-│  │  • visits (id, visit_date, description, pet_id)        │   │
-│  │  • veterinarians (id, first_name, last_name, ...)      │   │
-│  │  • specialties (id, name)                              │   │
-│  │  • vet_specialties (vet_id, specialty_id)              │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-```
+#### Core Framework
+- **Spring Boot 2.7**: Application framework and auto-configuration
+- **Spring MVC**: Web framework for REST APIs
+- **Spring Data JPA**: Data access and ORM
+- **Spring Security**: Authentication and authorization
+- **Spring Cache**: Caching abstraction
 
-### Domain Model
+#### Database Technologies
+- **MySQL 8.0**: Primary relational database
+- **H2 Database**: In-memory database for testing
+- **Flyway**: Database migration management
+- **HikariCP**: High-performance connection pooling
 
+#### Caching and Performance
+- **Caffeine**: High-performance in-memory caching
+- **Spring Boot Actuator**: Application monitoring and metrics
+- **Micrometer**: Application metrics collection
+
+### Frontend Technologies
+
+#### Web Framework
+- **Thymeleaf**: Server-side template engine
+- **Spring Boot**: Frontend application framework
+- **Bootstrap 5**: CSS framework for responsive design
+- **jQuery**: JavaScript library for DOM manipulation
+
+#### UI Components
+- **Font Awesome**: Icon library
+- **Chart.js**: Data visualization and charts
+- **DataTables**: Enhanced table functionality
+- **Bootstrap DatePicker**: Date selection components
+
+### Development and Testing
+
+#### Build and Dependency Management
+- **Maven**: Build automation and dependency management
+- **Maven Surefire**: Unit test execution
+- **Maven Failsafe**: Integration test execution
+
+#### Testing Frameworks
+- **JUnit 5**: Unit testing framework
+- **Mockito**: Mocking framework for unit tests
+- **TestContainers**: Integration testing with containers
+- **jqwik**: Property-based testing framework
+- **Spring Boot Test**: Integration testing support
+
+#### Code Quality
+- **SpotBugs**: Static code analysis
+- **Checkstyle**: Code style checking
+- **JaCoCo**: Code coverage analysis
+
+## Component Architecture
+
+### Backend Components
+
+#### Controllers (Presentation Layer)
 ```java
-// Core domain entities with relationships
-@Entity
-public class Owner {
-    @Id @GeneratedValue
-    private Long id;
-    
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
-    private Set<Pet> pets = new HashSet<>();
-    
-    // Additional fields and methods
-}
-
-@Entity
-public class Pet {
-    @Id @GeneratedValue
-    private Long id;
-    
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private Owner owner;
-    
-    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL)
-    private Set<Visit> visits = new HashSet<>();
-    
-    // Additional fields and methods
+@RestController
+@RequestMapping("/api/v1/pets")
+public class PetController {
+    // REST API endpoints for pet management
+    // Input validation and response formatting
+    // Exception handling and error responses
 }
 ```
 
-## CI/CD Pipeline Architecture
-
-### Pipeline Flow
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      CI/CD Pipeline Flow                       │
-│                                                                 │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐ │
-│  │   GitHub    │───▶│   Webhook   │───▶│   Jenkins Trigger   │ │
-│  │   Push      │    │   Trigger   │    │                     │ │
-│  └─────────────┘    └─────────────┘    └─────────────────────┘ │
-│                                                   │             │
-│                                                   ▼             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                Build Stage                              │   │
-│  │  • Source checkout                                      │   │
-│  │  • Maven compile                                        │   │
-│  │  • Dependency resolution                                │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                Test Stage                               │   │
-│  │  • Unit tests (JUnit)                                  │   │
-│  │  • Property-based tests (jqwik)                        │   │
-│  │  • Integration tests                                   │   │
-│  │  • Code coverage analysis                              │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Quality Gate                               │   │
-│  │  • SonarQube analysis                                  │   │
-│  │  • Security scanning                                   │   │
-│  │  • Dependency vulnerability check                      │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Package Stage                              │   │
-│  │  • JAR/WAR creation                                     │   │
-│  │  • Docker image build (optional)                       │   │
-│  │  • Artifact upload to S3                               │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Deploy Stage                               │   │
-│  │  • Blue-green deployment                                │   │
-│  │  • Database migration                                  │   │
-│  │  • Configuration update                                │   │
-│  │  • Service restart                                     │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Verify Stage                               │   │
-│  │  • Health checks                                       │   │
-│  │  • Smoke tests                                         │   │
-│  │  • Performance validation                              │   │
-│  │  • Rollback on failure                                 │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
+#### Services (Application Layer)
+```java
+@Service
+@Transactional
+public class PetServiceImpl implements PetService {
+    // Business logic implementation
+    // Transaction management
+    // Cross-cutting concerns (audit, cache)
+}
 ```
 
-### Jenkins Configuration
-
-```yaml
-# Jenkins Configuration as Code (JCasC)
-jenkins:
-  systemMessage: "Pet Clinic CI/CD Pipeline"
-  numExecutors: 2
-  mode: NORMAL
-  
-  securityRealm:
-    local:
-      allowsSignup: false
-      users:
-        - id: admin
-          password: ${JENKINS_ADMIN_PASSWORD}
-          
-  authorizationStrategy:
-    globalMatrix:
-      permissions:
-        - "Overall/Administer:admin"
-        - "Overall/Read:authenticated"
+#### Repositories (Data Access Layer)
+```java
+@Repository
+public interface PetRepository extends JpaRepository<Pet, Long> {
+    // Data access methods
+    // Custom query definitions
+    // Pagination and sorting support
+}
 ```
 
-## Security Architecture
-
-### Multi-Layer Security
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Security Layers                           │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Network Security                           │   │
-│  │  • VPC isolation                                       │   │
-│  │  • Security groups (stateful firewall)                 │   │
-│  │  • NACLs (stateless firewall)                          │   │
-│  │  • Private subnets for sensitive resources             │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Access Control                             │   │
-│  │  • IAM roles and policies                              │   │
-│  │  • Least privilege principle                           │   │
-│  │  • Service-to-service authentication                   │   │
-│  │  • Multi-factor authentication                         │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Data Protection                            │   │
-│  │  • Encryption at rest (S3, RDS, EFS)                  │   │
-│  │  • Encryption in transit (TLS/SSL)                    │   │
-│  │  • Database encryption                                 │   │
-│  │  • Backup encryption                                   │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Application Security                       │   │
-│  │  • Input validation                                    │   │
-│  │  • SQL injection prevention                            │   │
-│  │  • XSS protection                                      │   │
-│  │  • CSRF protection                                     │   │
-│  │  • Secure headers                                      │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Monitoring & Compliance                    │   │
-│  │  • CloudTrail logging                                  │   │
-│  │  • Security event monitoring                           │   │
-│  │  • Compliance reporting                                │   │
-│  │  • Vulnerability scanning                              │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
+#### Entities (Domain Layer)
+```java
+@Entity
+@Table(name = "pets")
+public class Pet extends BaseEntity {
+    // Domain model representation
+    // Business rules and validation
+    // Relationship mappings
+}
 ```
 
-### Secrets Management
+### Frontend Components
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Secrets Management Flow                     │
-│                                                                 │
-│  ┌─────────────────┐    ┌─────────────────┐    ┌─────────────┐ │
-│  │   Parameter     │───▶│   Application   │───▶│   Runtime   │ │
-│  │     Store       │    │   Retrieval     │    │   Usage     │ │
-│  │                 │    │                 │    │             │ │
-│  │ • DB passwords  │    │ • Startup       │    │ • Memory    │ │
-│  │ • API keys      │    │ • Encrypted     │    │ • Secure    │ │
-│  │ • Certificates  │    │ • IAM roles     │    │ • Rotation  │ │
-│  └─────────────────┘    └─────────────────┘    └─────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
+#### Controllers
+```java
+@Controller
+@RequestMapping("/pets")
+public class PetWebController {
+    // Web page controllers
+    // Model preparation for views
+    // Form handling and validation
+}
 ```
 
-## Monitoring Architecture
-
-### Observability Stack
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Monitoring Architecture                     │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                  Metrics Collection                     │   │
-│  │                                                         │   │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │   │
-│  │  │ CloudWatch  │  │ Application │  │   Custom        │ │   │
-│  │  │   Agent     │  │   Metrics   │  │   Metrics       │ │   │
-│  │  │             │  │             │  │                 │ │   │
-│  │  │ • CPU       │  │ • Response  │  │ • Business      │ │   │
-│  │  │ • Memory    │  │   time      │  │   KPIs          │ │   │
-│  │  │ • Disk      │  │ • Error     │  │ • User          │ │   │
-│  │  │ • Network   │  │   rate      │  │   activity      │ │   │
-│  │  └─────────────┘  └─────────────┘  └─────────────────┘ │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                 Log Aggregation                         │   │
-│  │                                                         │   │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │   │
-│  │  │ Application │  │   System    │  │    Jenkins      │ │   │
-│  │  │    Logs     │  │    Logs     │  │     Logs        │ │   │
-│  │  │             │  │             │  │                 │ │   │
-│  │  │ • Business  │  │ • OS events │  │ • Build logs    │ │   │
-│  │  │   events    │  │ • Security  │  │ • Deploy logs   │ │   │
-│  │  │ • Errors    │  │   events    │  │ • Pipeline      │ │   │
-│  │  │ • Audit     │  │ • Performance│  │   status        │ │   │
-│  │  └─────────────┘  └─────────────┘  └─────────────────┘ │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                 Alerting System                         │   │
-│  │                                                         │   │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │   │
-│  │  │ CloudWatch  │  │     SNS     │  │  Notification   │ │   │
-│  │  │   Alarms    │  │   Topics    │  │   Channels      │ │   │
-│  │  │             │  │             │  │                 │ │   │
-│  │  │ • Threshold │  │ • Fan-out   │  │ • Email         │ │   │
-│  │  │ • Anomaly   │  │ • Filtering │  │ • Slack         │ │   │
-│  │  │ • Composite │  │ • Routing   │  │ • PagerDuty     │ │   │
-│  │  └─────────────┘  └─────────────┘  └─────────────────┘ │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Dashboard Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Dashboard Hierarchy                       │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Executive Dashboard                        │   │
-│  │  • System health overview                              │   │
-│  │  • SLA compliance                                      │   │
-│  │  • Cost optimization                                   │   │
-│  │  • Security posture                                    │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Operational Dashboard                      │   │
-│  │  • Infrastructure metrics                              │   │
-│  │  • Application performance                             │   │
-│  │  • CI/CD pipeline status                               │   │
-│  │  • Error rates and trends                              │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Technical Dashboard                        │   │
-│  │  • Detailed system metrics                             │   │
-│  │  • Log analysis                                        │   │
-│  │  • Performance profiling                               │   │
-│  │  • Troubleshooting tools                               │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
+#### Templates (Thymeleaf)
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- Responsive HTML templates -->
+<!-- Data binding and form handling -->
+<!-- Client-side JavaScript integration -->
+</html>
 ```
 
 ## Data Architecture
 
-### MySQL Privilege Configuration System
-
-The system includes an automated MySQL privilege configuration management component that ensures proper database security across different environments:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                MySQL Privilege Configuration                   │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Environment Detection                      │   │
-│  │  • Automatic environment identification                 │   │
-│  │  • Configuration template selection                     │   │
-│  │  • Security level determination                         │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Configuration Management                   │   │
-│  │  • Template-based configuration                        │   │
-│  │  • Environment-specific security settings              │   │
-│  │  • Automated privilege validation                      │   │
-│  │  • Configuration drift detection                       │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Script Execution                           │   │
-│  │  • Database initialization scripts                     │   │
-│  │  • User creation and privilege assignment              │   │
-│  │  • Function and procedure deployment                   │   │
-│  │  • Retry logic and error handling                      │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-#### Environment-Specific Security Configurations
-
-| Environment | Security Level | log_bin_trust_function_creators | Use Case |
-|-------------|----------------|--------------------------------|----------|
-| **Local Development** | Permissive | ON | Rapid development and testing |
-| **CI/CD** | Balanced | ON | Automated testing with security |
-| **Production** | Restrictive | OFF | Maximum security compliance |
-
-#### Core Components
-
-1. **EnvironmentDetector**: Automatically identifies the deployment environment
-2. **DatabaseConfigManager**: Central orchestrator for configuration management
-3. **PrivilegeValidator**: Validates MySQL privileges and reports issues
-4. **ScriptExecutor**: Executes database scripts with retry logic
-5. **ErrorHandler**: Provides comprehensive error resolution strategies
-
 ### Database Design
 
+#### Entity Relationship Model
+```
+OWNERS (1) ──────── (N) PETS (1) ──────── (N) VISITS (N) ──────── (1) VETERINARIANS
+   │                     │                     │                        │
+   │                     │                     │                        │
+   └─ Contact Info       └─ Medical History    └─ Treatment Records     └─ Specialties
+```
+
+#### Core Tables
+- **owners**: Pet owner information and contact details
+- **pets**: Pet profiles, medical information, and owner relationships
+- **visits**: Appointment records, diagnoses, and treatments
+- **veterinarians**: Veterinary staff profiles and specialties
+- **users**: System user accounts and authentication
+- **audit_logs**: System activity tracking and compliance
+
+#### Indexing Strategy
 ```sql
--- Core entity relationships
-CREATE TABLE owners (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    first_name VARCHAR(30) NOT NULL,
-    last_name VARCHAR(30) NOT NULL,
-    address VARCHAR(255),
-    city VARCHAR(80),
-    telephone VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
-CREATE TABLE pets (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(30) NOT NULL,
-    birth_date DATE,
-    type VARCHAR(30) NOT NULL,
-    owner_id BIGINT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_id) REFERENCES owners(id)
-);
-
-CREATE TABLE visits (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    pet_id BIGINT NOT NULL,
-    visit_date DATE NOT NULL,
-    description TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (pet_id) REFERENCES pets(id)
-);
-
--- Indexes for performance
+-- Performance-critical indexes
 CREATE INDEX idx_pets_owner_id ON pets(owner_id);
 CREATE INDEX idx_visits_pet_id ON visits(pet_id);
+CREATE INDEX idx_visits_veterinarian_id ON visits(veterinarian_id);
 CREATE INDEX idx_visits_date ON visits(visit_date);
 CREATE INDEX idx_owners_name ON owners(last_name, first_name);
 ```
 
-### Backup Strategy
+### Data Flow Architecture
 
+#### Request Processing Flow
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Backup Architecture                       │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                Database Backups                         │   │
-│  │  • RDS automated backups (7 days)                      │   │
-│  │  • Point-in-time recovery                              │   │
-│  │  • Cross-region snapshots                              │   │
-│  │  • Encryption at rest                                  │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Application Backups                        │   │
-│  │  • Jenkins configuration (ThinBackup)                  │   │
-│  │  • Application artifacts (S3)                          │   │
-│  │  • Configuration files (Git)                           │   │
-│  │  • Deployment scripts (S3)                             │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Retention Policy                           │   │
-│  │  • Daily: 30 days                                      │   │
-│  │  • Weekly: 12 weeks                                    │   │
-│  │  • Monthly: 12 months                                  │   │
-│  │  • Yearly: 7 years (compliance)                        │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
+Client Request → Controller → Service → Repository → Database
+                     ↓           ↓         ↓
+                 Validation → Business → Data Access
+                              Logic      Layer
+                     ↓           ↓         ↓
+                 Response ← DTO ← Entity ← Result Set
 ```
 
-## Design Decisions
+#### Caching Strategy
+```
+L1 Cache (JPA) → L2 Cache (Caffeine) → Database
+     ↓                ↓                    ↓
+Entity Cache    Application Cache    Persistent Storage
+```
+
+## Security Architecture
+
+### Authentication and Authorization
+
+#### Security Layers
+```
+┌─────────────────────────────────────┐
+│         Network Security            │
+│    (HTTPS, Firewall, WAF)          │
+├─────────────────────────────────────┤
+│       Application Security          │
+│  (JWT, RBAC, Input Validation)     │
+├─────────────────────────────────────┤
+│         Data Security               │
+│   (Encryption, Audit, Backup)      │
+└─────────────────────────────────────┘
+```
+
+#### Role-Based Access Control (RBAC)
+```java
+@PreAuthorize("hasRole('ADMIN') or hasRole('VET')")
+public Pet updatePet(Long id, UpdatePetRequest request) {
+    // Method-level security
+}
+```
+
+#### Security Configuration
+```java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    // JWT authentication configuration
+    // Role-based authorization rules
+    // CORS and CSRF protection
+}
+```
+
+### Data Protection
+
+#### Encryption Strategy
+- **Data at Rest**: AES-256 encryption for sensitive fields
+- **Data in Transit**: TLS 1.3 for all communications
+- **Key Management**: Secure key storage and rotation
+
+#### Audit Logging
+```java
+@Component
+public class AuditService {
+    // Comprehensive activity logging
+    // Compliance and regulatory support
+    // Security event monitoring
+}
+```
+
+## Performance Architecture
+
+### Caching Strategy
+
+#### Multi-Level Caching
+```
+Browser Cache → CDN → Application Cache → Database Cache
+     ↓            ↓           ↓              ↓
+Static Assets  Static Files  Query Results  Data Pages
+```
+
+#### Cache Configuration
+```java
+@Configuration
+@EnableCaching
+public class CacheConfig {
+    // Caffeine cache configuration
+    // TTL and eviction policies
+    // Cache metrics and monitoring
+}
+```
+
+### Database Optimization
+
+#### Connection Pooling
+```yaml
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+```
+
+#### Query Optimization
+- **Lazy Loading**: Fetch data only when needed
+- **Batch Processing**: Bulk operations for efficiency
+- **Query Hints**: Database-specific optimizations
+- **Result Set Caching**: Cache frequently accessed data
+
+### Scalability Considerations
+
+#### Horizontal Scaling
+- **Load Balancing**: Distribute requests across instances
+- **Session Management**: Stateless application design
+- **Database Clustering**: Master-slave replication
+- **Caching Layer**: Distributed caching with Redis
+
+#### Vertical Scaling
+- **JVM Tuning**: Optimal garbage collection and memory settings
+- **Database Tuning**: Buffer pool and query cache optimization
+- **Resource Monitoring**: CPU, memory, and I/O optimization
+
+## Deployment Architecture
+
+### Environment Strategy
+
+#### Development Environment
+```
+Developer Workstation → Local Database → Local Cache
+         ↓                    ↓              ↓
+    IDE Integration      H2/MySQL      In-Memory Cache
+```
+
+#### Staging Environment
+```
+Load Balancer → Application Servers → Database Cluster
+      ↓               ↓                      ↓
+   SSL Termination  Auto Scaling        Master/Slave
+```
+
+#### Production Environment
+```
+CDN → Load Balancer → App Servers → Database → Backup
+ ↓         ↓             ↓            ↓         ↓
+Static   SSL/WAF    Auto Scaling   Clustering  DR Site
+```
+
+### Containerization
+
+#### Docker Configuration
+```dockerfile
+FROM openjdk:11-jre-slim
+COPY target/pet-clinic-backend.jar app.jar
+EXPOSE 9090
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+#### Docker Compose
+```yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "9090:9090"
+    depends_on:
+      - mysql
+      - redis
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: petclinic
+  redis:
+    image: redis:alpine
+```
+
+## Integration Architecture
+
+### API Design
+
+#### RESTful API Principles
+- **Resource-Based URLs**: `/api/v1/pets/{id}`
+- **HTTP Methods**: GET, POST, PUT, DELETE
+- **Status Codes**: Meaningful HTTP response codes
+- **Content Negotiation**: JSON and XML support
+
+#### API Versioning
+```java
+@RequestMapping("/api/v1/pets")
+public class PetControllerV1 {
+    // Version 1 implementation
+}
+
+@RequestMapping("/api/v2/pets")
+public class PetControllerV2 {
+    // Version 2 implementation
+}
+```
+
+### External Integrations
+
+#### Email Service Integration
+```java
+@Service
+public class EmailService {
+    // SMTP configuration
+    // Template-based email generation
+    // Delivery tracking and retry logic
+}
+```
+
+#### File Storage Integration
+```java
+@Service
+public class FileStorageService {
+    // Local file system storage
+    // Cloud storage integration (S3, Azure)
+    // File metadata management
+}
+```
+
+## Monitoring and Observability
+
+### Application Monitoring
+
+#### Metrics Collection
+```java
+@Component
+public class MetricsCollector {
+    // Custom business metrics
+    // Performance counters
+    // Error rate tracking
+}
+```
+
+#### Health Checks
+```java
+@Component
+public class DatabaseHealthIndicator implements HealthIndicator {
+    // Database connectivity checks
+    // Performance threshold monitoring
+    // Dependency health validation
+}
+```
+
+### Logging Architecture
+
+#### Structured Logging
+```java
+@Slf4j
+public class PetService {
+    public Pet createPet(CreatePetRequest request) {
+        log.info("Creating pet: name={}, species={}, ownerId={}", 
+                request.getName(), request.getSpecies(), request.getOwnerId());
+        // Implementation
+    }
+}
+```
+
+#### Log Aggregation
+```
+Application Logs → Log Aggregator → Search/Analysis → Alerting
+       ↓               ↓                ↓              ↓
+   Structured       Centralized      Elasticsearch   Monitoring
+     Format         Collection        Kibana         Dashboard
+```
+
+## Quality Attributes
+
+### Performance
+- **Response Time**: < 2 seconds for 95% of requests
+- **Throughput**: 100+ requests per second
+- **Concurrent Users**: 50+ simultaneous users
+- **Database Performance**: < 100ms for simple queries
+
+### Reliability
+- **Availability**: 99.5% uptime during business hours
+- **Error Rate**: < 1% of requests result in errors
+- **Data Integrity**: ACID compliance for all transactions
+- **Backup Recovery**: < 4 hours RTO, < 1 hour RPO
+
+### Security
+- **Authentication**: Multi-factor authentication support
+- **Authorization**: Role-based access control
+- **Data Protection**: Encryption at rest and in transit
+- **Audit Trail**: Comprehensive activity logging
+
+### Maintainability
+- **Code Coverage**: 85%+ test coverage
+- **Documentation**: Comprehensive API and code documentation
+- **Modularity**: Loosely coupled, highly cohesive components
+- **Extensibility**: Plugin architecture for new features
+
+## Architectural Decisions
 
 ### Technology Choices
 
-| Component | Technology | Rationale |
-|-----------|------------|-----------|
-| **Cloud Provider** | AWS | Market leader, comprehensive services, enterprise support |
-| **IaC Tool** | CloudFormation | Native AWS integration, mature ecosystem |
-| **CI/CD Platform** | Jenkins | Open source, extensive plugin ecosystem, enterprise features |
-| **Application Framework** | Spring Boot | Java ecosystem, rapid development, production-ready |
-| **Database** | MySQL | Relational data model, AWS RDS support, familiar to teams |
-| **Monitoring** | CloudWatch | Native AWS integration, comprehensive metrics |
-| **Testing Framework** | JUnit + jqwik | Standard Java testing + property-based testing |
-
-### Architectural Decisions
-
-#### 1. Microservices vs Monolith
-**Decision**: Microservices (Frontend + Backend)
+#### Spring Boot vs. Other Frameworks
+**Decision**: Spring Boot  
 **Rationale**: 
-- Demonstrates modern architecture patterns
-- Allows independent scaling and deployment
-- Enables technology diversity
-- Provides fault isolation
+- Mature ecosystem and community support
+- Excellent integration with other Spring projects
+- Auto-configuration reduces boilerplate code
+- Strong testing support and documentation
 
-#### 2. Database Strategy
-**Decision**: Single MySQL database with service-specific schemas
+#### MySQL vs. PostgreSQL
+**Decision**: MySQL  
 **Rationale**:
-- Simplifies deployment and management
-- Reduces operational complexity
-- Maintains data consistency
-- Cost-effective for demo application
+- Widespread adoption in veterinary software
+- Excellent performance for read-heavy workloads
+- Strong replication and clustering support
+- Cost-effective licensing model
 
-#### 3. Deployment Strategy
-**Decision**: Blue-Green deployment with health checks
+#### Thymeleaf vs. React/Angular
+**Decision**: Thymeleaf  
 **Rationale**:
-- Zero-downtime deployments
-- Quick rollback capability
-- Production-ready approach
-- Reduces deployment risk
+- Server-side rendering for better SEO
+- Simpler deployment and maintenance
+- Strong integration with Spring Boot
+- Reduced complexity for the target user base
 
-#### 4. Security Model
-**Decision**: Defense in depth with multiple security layers
-**Rationale**:
-- Comprehensive security coverage
-- Compliance with best practices
-- Reduces attack surface
-- Demonstrates enterprise security
+### Design Patterns
 
-## Scalability Considerations
+#### Repository Pattern
+**Usage**: Data access abstraction  
+**Benefits**: 
+- Testability through mocking
+- Separation of concerns
+- Consistent data access interface
 
-### Horizontal Scaling
+#### Service Layer Pattern
+**Usage**: Business logic encapsulation  
+**Benefits**:
+- Transaction boundary definition
+- Cross-cutting concern application
+- Reusable business logic
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    Scaling Architecture                        │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Load Balancer                              │   │
-│  │  • Application Load Balancer (ALB)                     │   │
-│  │  • Health checks                                       │   │
-│  │  • SSL termination                                     │   │
-│  │  • Request routing                                     │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Auto Scaling Groups                        │   │
-│  │                                                         │   │
-│  │  Frontend ASG:        Backend ASG:                      │   │
-│  │  • Min: 2 instances   • Min: 2 instances               │   │
-│  │  • Max: 6 instances   • Max: 6 instances               │   │
-│  │  • Target: CPU < 70%  • Target: CPU < 70%              │   │
-│  │  • Scale out: +1      • Scale out: +1                  │   │
-│  │  • Scale in: -1       • Scale in: -1                   │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                   │                             │
-│                                   ▼                             │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              Database Scaling                           │   │
-│  │  • RDS Multi-AZ for availability                       │   │
-│  │  • Read replicas for read scaling                      │   │
-│  │  • Connection pooling                                  │   │
-│  │  • Query optimization                                  │   │
-│  └─────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-```
+#### DTO Pattern
+**Usage**: Data transfer between layers  
+**Benefits**:
+- API versioning support
+- Reduced network payload
+- Input validation centralization
 
-### Performance Optimization
+## Future Considerations
 
-1. **Application Level**:
-   - Connection pooling
-   - Caching strategies
-   - Lazy loading
-   - Query optimization
+### Scalability Enhancements
+- **Microservices Architecture**: Break down monolith into services
+- **Event-Driven Architecture**: Asynchronous processing
+- **CQRS Implementation**: Separate read and write models
+- **Database Sharding**: Horizontal database partitioning
 
-2. **Infrastructure Level**:
-   - Auto Scaling Groups
-   - Load balancer optimization
-   - CDN for static content
-   - Database read replicas
+### Technology Evolution
+- **Cloud-Native Deployment**: Kubernetes orchestration
+- **Reactive Programming**: Non-blocking I/O with WebFlux
+- **GraphQL API**: Flexible query language
+- **Machine Learning Integration**: Predictive analytics
 
-3. **Monitoring and Tuning**:
-   - Performance metrics
-   - Bottleneck identification
-   - Capacity planning
-   - Cost optimization
+### Feature Enhancements
+- **Mobile Applications**: Native iOS and Android apps
+- **Real-Time Notifications**: WebSocket-based updates
+- **Advanced Analytics**: Business intelligence and reporting
+- **Integration APIs**: Third-party system integration
 
-## Future Enhancements
+---
 
-### Potential Improvements
-
-1. **Container Orchestration**:
-   - Migrate to EKS/Kubernetes
-   - Container-based deployments
-   - Service mesh integration
-
-2. **Advanced Monitoring**:
-   - Distributed tracing
-   - APM integration
-   - Custom business metrics
-
-3. **Enhanced Security**:
-   - WAF integration
-   - Advanced threat detection
-   - Zero-trust architecture
-
-4. **Data Analytics**:
-   - Data lake integration
-   - Business intelligence
-   - Machine learning insights
-
-This architecture provides a solid foundation for a production-ready CI/CD pipeline while demonstrating modern DevOps practices and cloud-native patterns.
+**Architecture Document Version**: 2.0  
+**Last Updated**: January 30, 2026  
+**Maintained By**: Pet Clinic Architecture Team

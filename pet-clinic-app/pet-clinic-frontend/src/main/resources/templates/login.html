@@ -3,134 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Pet Clinic</title>
-    
-    <!-- Bootstrap CSS -->
-    <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
-    
-    <!-- Custom CSS -->
+    <title>Login - Pet Clinic Management System</title>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/petclinic.css" rel="stylesheet">
     <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .login-container {
             min-height: 100vh;
             display: flex;
             align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         .login-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         }
         .login-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        .login-body {
-            padding: 40px;
-        }
-        .btn-login {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            padding: 12px 30px;
-            font-weight: bold;
-        }
-        .btn-login:hover {
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-        }
-        .demo-credentials {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
+            border-radius: 15px 15px 0 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="login-card">
-                    <div class="login-header">
-                        <h2><i class="fas fa-paw"></i> Pet Clinic</h2>
-                        <p class="mb-0">Management System</p>
-                    </div>
-                    
-                    <div class="login-body">
-                        <!-- Login Form -->
-                        <form th:action="@{/login}" method="post">
-                            <!-- Error Message -->
-                            <div th:if="${param.error}" class="alert alert-danger" role="alert">
-                                <i class="fas fa-exclamation-circle"></i>
-                                Invalid username or password. Please try again.
-                            </div>
-                            
-                            <!-- Logout Message -->
-                            <div th:if="${param.logout}" class="alert alert-success" role="alert">
-                                <i class="fas fa-check-circle"></i>
-                                You have been logged out successfully.
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+    <div class="login-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card login-card border-0">
+                        <div class="card-header login-header text-center py-4">
+                            <h3 class="mb-0">
+                                <i class="fas fa-paw"></i>
+                                Pet Clinic
+                            </h3>
+                            <p class="mb-0 mt-2">Management System</p>
+                        </div>
+                        <div class="card-body p-4">
+                            <!-- Login Form -->
+                            <form th:action="@{/login}" method="post">
+                                <!-- Error Messages -->
+                                <div th:if="${param.error}" class="alert alert-danger" role="alert">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Invalid username or password.
+                                </div>
+                                
+                                <div th:if="${param.logout}" class="alert alert-success" role="alert">
+                                    <i class="fas fa-check-circle"></i>
+                                    You have been logged out successfully.
+                                </div>
+                                
+                                <div th:if="${errorMessage}" class="alert alert-warning" role="alert">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <span th:text="${errorMessage}">Error message</span>
+                                </div>
+                                
+                                <!-- Username Field -->
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">
+                                        <i class="fas fa-user"></i> Username
+                                    </label>
                                     <input type="text" class="form-control" id="username" name="username" 
                                            placeholder="Enter your username" required autofocus>
                                 </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label for="password" class="form-label">Password</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                
+                                <!-- Password Field -->
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">
+                                        <i class="fas fa-lock"></i> Password
+                                    </label>
                                     <input type="password" class="form-control" id="password" name="password" 
                                            placeholder="Enter your password" required>
                                 </div>
-                            </div>
+                                
+                                <!-- Remember Me -->
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="remember-me" name="remember-me">
+                                    <label class="form-check-label" for="remember-me">
+                                        Remember me
+                                    </label>
+                                </div>
+                                
+                                <!-- Login Button -->
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-sign-in-alt"></i> Sign In
+                                    </button>
+                                </div>
+                            </form>
                             
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" class="form-check-input" id="remember-me" name="remember-me">
-                                <label class="form-check-label" for="remember-me">
-                                    Remember me
-                                </label>
+                            <!-- Demo Accounts -->
+                            <div class="mt-4">
+                                <hr>
+                                <h6 class="text-center text-muted mb-3">Demo Accounts</h6>
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body py-2">
+                                                <small class="text-muted d-block">Admin</small>
+                                                <strong>admin</strong><br>
+                                                <small>admin123</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body py-2">
+                                                <small class="text-muted d-block">Vet</small>
+                                                <strong>vet</strong><br>
+                                                <small>vet123</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="card bg-light">
+                                            <div class="card-body py-2">
+                                                <small class="text-muted d-block">Staff</small>
+                                                <strong>staff</strong><br>
+                                                <small>staff123</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary btn-login">
-                                    <i class="fas fa-sign-in-alt"></i> Sign In
-                                </button>
-                            </div>
-                        </form>
-                        
-                        <!-- Demo Credentials -->
-                        <div class="demo-credentials">
-                            <h6 class="mb-2"><i class="fas fa-info-circle"></i> Demo Credentials</h6>
-                            <small class="text-muted">
-                                <strong>Admin:</strong> admin / admin123<br>
-                                <strong>Veterinarian:</strong> vet / vet123<br>
-                                <strong>Staff:</strong> staff / staff123
-                            </small>
+                        </div>
+                        <div class="card-footer text-center text-muted">
+                            <small>&copy; 2024 Pet Clinic Management System</small>
                         </div>
                     </div>
-                </div>
-                
-                <!-- System Info -->
-                <div class="text-center mt-4">
-                    <p class="text-white">
-                        <small>Pet Clinic Management System v1.0.0</small>
-                    </p>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Bootstrap JS -->
-    <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
     
-    <!-- Font Awesome -->
-    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    <script src="/webjars/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script>
+        // Auto-fill demo credentials
+        document.addEventListener('DOMContentLoaded', function() {
+            const demoCards = document.querySelectorAll('.card.bg-light');
+            demoCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const username = this.querySelector('strong').textContent;
+                    const password = this.querySelector('small:last-child').textContent;
+                    
+                    document.getElementById('username').value = username;
+                    document.getElementById('password').value = password;
+                });
+            });
+        });
+    </script>
 </body>
 </html>

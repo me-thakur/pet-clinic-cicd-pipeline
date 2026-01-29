@@ -1,0 +1,60 @@
+-------------------------------------------------------------------------------
+Test set: com.petclinic.backend.properties.SearchResultAccuracyProperties
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 4, Errors: 0, Skipped: 0, Time elapsed: 1.595 s <<< FAILURE! -- in com.petclinic.backend.properties.SearchResultAccuracyProperties
+com.petclinic.backend.properties.SearchResultAccuracyProperties.testCaseInsensitiveSearchAccuracy -- Time elapsed: 0.394 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Result should contain query case-insensitively ==> expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at com.petclinic.backend.properties.SearchResultAccuracyProperties.lambda$testCaseInsensitiveSearchAccuracy$3(SearchResultAccuracyProperties.java:296)
+	at com.petclinic.backend.properties.PropertyTestBase.runPropertyTest(PropertyTestBase.java:170)
+	at com.petclinic.backend.properties.SearchResultAccuracyProperties.testCaseInsensitiveSearchAccuracy(SearchResultAccuracyProperties.java:272)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+com.petclinic.backend.properties.SearchResultAccuracyProperties.testEntitySpecificSearchAccuracy -- Time elapsed: 0.006 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Result 'Visit - TestPet2 with Dr. TestVet2 VetLastName2' does not contain search query '3' ==> expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at com.petclinic.backend.properties.SearchResultAccuracyProperties.lambda$testEntitySpecificSearchAccuracy$1(SearchResultAccuracyProperties.java:185)
+	at com.petclinic.backend.properties.PropertyTestBase.runPropertyTest(PropertyTestBase.java:170)
+	at com.petclinic.backend.properties.SearchResultAccuracyProperties.testEntitySpecificSearchAccuracy(SearchResultAccuracyProperties.java:152)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+com.petclinic.backend.properties.SearchResultAccuracyProperties.testPaginatedSearchAccuracy -- Time elapsed: 0.015 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: All results on first page should contain query ==> expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at com.petclinic.backend.properties.SearchResultAccuracyProperties.lambda$testPaginatedSearchAccuracy$2(SearchResultAccuracyProperties.java:227)
+	at com.petclinic.backend.properties.PropertyTestBase.runPropertyTest(PropertyTestBase.java:170)
+	at com.petclinic.backend.properties.SearchResultAccuracyProperties.testPaginatedSearchAccuracy(SearchResultAccuracyProperties.java:212)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+com.petclinic.backend.properties.SearchResultAccuracyProperties.testGlobalSearchResultAccuracy -- Time elapsed: 0.137 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Result 'TestOwner0 LastName0' (type: Owner, ID: 3684) does not contain search query '6' ==> expected: <true> but was: <false>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
+	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
+	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
+	at com.petclinic.backend.properties.SearchResultAccuracyProperties.lambda$testGlobalSearchResultAccuracy$0(SearchResultAccuracyProperties.java:117)
+	at com.petclinic.backend.properties.PropertyTestBase.runPropertyTest(PropertyTestBase.java:170)
+	at com.petclinic.backend.properties.SearchResultAccuracyProperties.testGlobalSearchResultAccuracy(SearchResultAccuracyProperties.java:90)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+

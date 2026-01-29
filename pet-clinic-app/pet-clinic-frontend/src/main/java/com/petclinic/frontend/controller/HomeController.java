@@ -18,9 +18,8 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model, Authentication authentication) {
-        model.addAttribute("username", authentication.getName());
-        model.addAttribute("authorities", authentication.getAuthorities());
-        return "index";
+        // Redirect to the main dashboard
+        return "redirect:/dashboard";
     }
 
     @GetMapping("/login")
@@ -30,8 +29,7 @@ public class HomeController {
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Authentication authentication) {
-        model.addAttribute("username", authentication.getName());
-        model.addAttribute("authorities", authentication.getAuthorities());
-        return "dashboard";
+        // This endpoint is now handled by DashboardController
+        return "redirect:/dashboard";
     }
 }

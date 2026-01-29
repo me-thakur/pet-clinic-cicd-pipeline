@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Day Visits Fragment -->
+    <div th:fragment="dayVisits">
+        <div th:if="${visits == null or #lists.isEmpty(visits)}" class="text-center py-3">
+            <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
+            <p class="text-muted mb-0">No visits scheduled for this day</p>
+        </div>
+
+        <div th:if="${visits != null and !#lists.isEmpty(visits)}">
+            <div class="list-group">
+                <div th:each="visit : ${visits}" 
+                     class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center mb-1">
+                                <h6 class="mb-0 me-2" th:text="${#temporals.format(visit.visitDate, 'HH:mm')}">Time</h6>
+                                <span th:if="${visit.emergencyVisit}" class="badge bg-danger me-2">Emergency</span>
+                                <span th:if="${visit.completed != null}">
+                                    <span th:if="${visit.completed}" class="badge bg-success me-2">Completed</span>
+                                    <span th:unless="${visit.completed}" class="badge bg-warning me-2">Pending</span>
+                                </span>
+                            </div>
+                            <p class="mb-1">
+                                <strong>Pet:</strong> 
+                                <span th:if="${visit.pet != null}" th:text="${visit.pet.name}">Pet Name</span>
+                                <span th:unless="${visit.pet != null}" class="text-muted">Unknown Pet</span>
+                                <span th:if="${visit.pet != null and visit.pet.owner != null}" 
+                                      class="text-muted">
+                                    (Owner: <span th:text="${visit.pet.owner.fullName}">Owner</span>)
+                                </span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Veterinarian:</strong>
+                                <span th:if="${visit.veterinarian != null}" 
+                                      th:text="'Dr. ' + ${visit.veterinarian.firstName} + ' ' + ${visit.veterinarian.lastName}">Veterinarian</span>
+                                <span th:unless="${visit.veterinarian != null}" class="text-muted">Not assigned</span>
+                            </p>
+                            <p class="mb-1">
+                                <strong>Description:</strong> <span th:text="${visit.description}">Description</span>
+                            </p>
+                            <div th:if="${visit.cost != null}" class="mb-1">
+                                <strong>Cost:</strong> 
+                                <span class="text-success">$<span th:text="${#numbers.formatDecimal(visit.cost, 1, 2)}">0.00</span></span>
+                            </div>
+                        </div>
+                        <div class="btn-group-vertical btn-group-sm ms-3" role="group">
+                            <a th:href="@{/visits/{id}(id=${visit.id})}" 
+                               class="btn btn-outline-info btn-sm" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a th:href="@{/visits/{id}/edit(id=${visit.id})}" 
+                               class="btn btn-outline-primary btn-sm" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

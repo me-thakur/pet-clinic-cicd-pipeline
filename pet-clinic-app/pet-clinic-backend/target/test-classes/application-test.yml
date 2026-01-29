@@ -1,16 +1,9 @@
 spring:
-  application:
-    name: pet-clinic-backend-test
-  
   datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
     password: 
-  
-  h2:
-    console:
-      enabled: true
   
   jpa:
     hibernate:
@@ -18,32 +11,28 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        format_sql: false
         dialect: org.hibernate.dialect.H2Dialect
-        jdbc:
-          batch_size: 20
-        order_inserts: true
-        order_updates: true
-    defer-datasource-initialization: true
+  
+  flyway:
+    enabled: false
   
   sql:
     init:
-      mode: never
+      mode: never # Disable schema.sql execution
 
-server:
-  port: 0  # Use random available port for tests
+# Test-specific configuration
+app:
+  encryption:
+    key: test-encryption-key-32-characters
+  jwt:
+    secret: test-secret-key-that-is-at-least-256-bits-long-for-security-testing
+    expiration: 3600000 # 1 hour
+  session:
+    timeout: 1800000 # 30 minutes
+  https:
+    enabled: false
 
 logging:
   level:
-    com.petclinic: WARN
-    org.springframework: WARN
-    org.hibernate: WARN
-    net.jqwik: INFO
-
-# Test-specific configuration
-pet-clinic:
-  test:
-    data-generation:
-      max-string-length: 50
-      max-text-length: 500
-      max-history-length: 1000
+    com.petclinic: DEBUG
+    org.springframework.security: DEBUG

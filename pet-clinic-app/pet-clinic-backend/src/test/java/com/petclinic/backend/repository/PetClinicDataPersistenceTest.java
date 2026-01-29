@@ -135,7 +135,7 @@ public class PetClinicDataPersistenceTest {
         // Create visit with test data
         Visit originalVisit = new Visit();
         originalVisit.setVisitDate(LocalDateTime.of(2023, 6, 15, 10, 30));
-        originalVisit.setDescription("Annual checkup");
+        originalVisit.setNotes("Annual checkup");
         originalVisit.setDiagnosis("Healthy");
         originalVisit.setTreatment("Vaccination");
         originalVisit.setCost(new BigDecimal("75.00"));
@@ -152,7 +152,7 @@ public class PetClinicDataPersistenceTest {
         assertThat(retrievedVisit).isPresent();
         Visit visit = retrievedVisit.get();
         
-        assertThat(visit.getDescription()).isEqualTo("Annual checkup");
+        assertThat(visit.getNotes()).isEqualTo("Annual checkup");
         assertThat(visit.getDiagnosis()).isEqualTo("Healthy");
         assertThat(visit.getTreatment()).isEqualTo("Vaccination");
         assertThat(visit.getCost()).isEqualByComparingTo(new BigDecimal("75.00"));

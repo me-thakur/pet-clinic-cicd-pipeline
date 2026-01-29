@@ -1,0 +1,130 @@
+-------------------------------------------------------------------------------
+Test set: com.petclinic.backend.integration.EnhancedPerformanceTest
+-------------------------------------------------------------------------------
+Tests run: 6, Failures: 0, Errors: 6, Skipped: 0, Time elapsed: 4.060 s <<< FAILURE! -- in com.petclinic.backend.integration.EnhancedPerformanceTest
+com.petclinic.backend.integration.EnhancedPerformanceTest.testSystemPerformanceUnderRealisticLoad -- Time elapsed: 0.389 s <<< ERROR!
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "http://localhost:60899/api/auth/login": cannot retry due to server authentication, in streaming mode
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:905)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:885)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:781)
+	at org.springframework.web.client.RestTemplate.postForEntity(RestTemplate.java:529)
+	at org.springframework.boot.test.web.client.TestRestTemplate.postForEntity(TestRestTemplate.java:454)
+	at com.petclinic.backend.integration.EnhancedPerformanceTest.setUp(EnhancedPerformanceTest.java:74)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.net.HttpRetryException: cannot retry due to server authentication, in streaming mode
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1796)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1599)
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:531)
+	at org.springframework.http.client.SimpleClientHttpResponse.getStatusCode(SimpleClientHttpResponse.java:55)
+	at org.springframework.web.client.DefaultResponseErrorHandler.hasError(DefaultResponseErrorHandler.java:83)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:921)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:881)
+	... 7 more
+
+com.petclinic.backend.integration.EnhancedPerformanceTest.testMemoryUsageUnderLoad -- Time elapsed: 0.095 s <<< ERROR!
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "http://localhost:60899/api/auth/login": cannot retry due to server authentication, in streaming mode
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:905)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:885)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:781)
+	at org.springframework.web.client.RestTemplate.postForEntity(RestTemplate.java:529)
+	at org.springframework.boot.test.web.client.TestRestTemplate.postForEntity(TestRestTemplate.java:454)
+	at com.petclinic.backend.integration.EnhancedPerformanceTest.setUp(EnhancedPerformanceTest.java:74)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.net.HttpRetryException: cannot retry due to server authentication, in streaming mode
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1796)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1599)
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:531)
+	at org.springframework.http.client.SimpleClientHttpResponse.getStatusCode(SimpleClientHttpResponse.java:55)
+	at org.springframework.web.client.DefaultResponseErrorHandler.hasError(DefaultResponseErrorHandler.java:83)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:921)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:881)
+	... 7 more
+
+com.petclinic.backend.integration.EnhancedPerformanceTest.testCachingEffectiveness -- Time elapsed: 0.086 s <<< ERROR!
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "http://localhost:60899/api/auth/login": cannot retry due to server authentication, in streaming mode
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:905)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:885)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:781)
+	at org.springframework.web.client.RestTemplate.postForEntity(RestTemplate.java:529)
+	at org.springframework.boot.test.web.client.TestRestTemplate.postForEntity(TestRestTemplate.java:454)
+	at com.petclinic.backend.integration.EnhancedPerformanceTest.setUp(EnhancedPerformanceTest.java:74)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.net.HttpRetryException: cannot retry due to server authentication, in streaming mode
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1796)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1599)
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:531)
+	at org.springframework.http.client.SimpleClientHttpResponse.getStatusCode(SimpleClientHttpResponse.java:55)
+	at org.springframework.web.client.DefaultResponseErrorHandler.hasError(DefaultResponseErrorHandler.java:83)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:921)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:881)
+	... 7 more
+
+com.petclinic.backend.integration.EnhancedPerformanceTest.testConcurrentUserLoad -- Time elapsed: 0.087 s <<< ERROR!
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "http://localhost:60899/api/auth/login": cannot retry due to server authentication, in streaming mode
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:905)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:885)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:781)
+	at org.springframework.web.client.RestTemplate.postForEntity(RestTemplate.java:529)
+	at org.springframework.boot.test.web.client.TestRestTemplate.postForEntity(TestRestTemplate.java:454)
+	at com.petclinic.backend.integration.EnhancedPerformanceTest.setUp(EnhancedPerformanceTest.java:74)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.net.HttpRetryException: cannot retry due to server authentication, in streaming mode
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1796)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1599)
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:531)
+	at org.springframework.http.client.SimpleClientHttpResponse.getStatusCode(SimpleClientHttpResponse.java:55)
+	at org.springframework.web.client.DefaultResponseErrorHandler.hasError(DefaultResponseErrorHandler.java:83)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:921)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:881)
+	... 7 more
+
+com.petclinic.backend.integration.EnhancedPerformanceTest.testResponseTimeRequirements -- Time elapsed: 0.087 s <<< ERROR!
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "http://localhost:60899/api/auth/login": cannot retry due to server authentication, in streaming mode
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:905)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:885)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:781)
+	at org.springframework.web.client.RestTemplate.postForEntity(RestTemplate.java:529)
+	at org.springframework.boot.test.web.client.TestRestTemplate.postForEntity(TestRestTemplate.java:454)
+	at com.petclinic.backend.integration.EnhancedPerformanceTest.setUp(EnhancedPerformanceTest.java:74)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.net.HttpRetryException: cannot retry due to server authentication, in streaming mode
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1796)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1599)
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:531)
+	at org.springframework.http.client.SimpleClientHttpResponse.getStatusCode(SimpleClientHttpResponse.java:55)
+	at org.springframework.web.client.DefaultResponseErrorHandler.hasError(DefaultResponseErrorHandler.java:83)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:921)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:881)
+	... 7 more
+
+com.petclinic.backend.integration.EnhancedPerformanceTest.testDatabaseQueryOptimization -- Time elapsed: 0.088 s <<< ERROR!
+org.springframework.web.client.ResourceAccessException: I/O error on POST request for "http://localhost:60899/api/auth/login": cannot retry due to server authentication, in streaming mode
+	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:905)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:885)
+	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:781)
+	at org.springframework.web.client.RestTemplate.postForEntity(RestTemplate.java:529)
+	at org.springframework.boot.test.web.client.TestRestTemplate.postForEntity(TestRestTemplate.java:454)
+	at com.petclinic.backend.integration.EnhancedPerformanceTest.setUp(EnhancedPerformanceTest.java:74)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+Caused by: java.net.HttpRetryException: cannot retry due to server authentication, in streaming mode
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1796)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1599)
+	at java.base/java.net.HttpURLConnection.getResponseCode(HttpURLConnection.java:531)
+	at org.springframework.http.client.SimpleClientHttpResponse.getStatusCode(SimpleClientHttpResponse.java:55)
+	at org.springframework.web.client.DefaultResponseErrorHandler.hasError(DefaultResponseErrorHandler.java:83)
+	at org.springframework.web.client.RestTemplate.handleResponse(RestTemplate.java:921)
+	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:881)
+	... 7 more
+

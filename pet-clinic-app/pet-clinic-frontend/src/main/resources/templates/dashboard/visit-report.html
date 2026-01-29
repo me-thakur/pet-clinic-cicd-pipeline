@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Visit Statistics Report</title>
+    <style>
+        .stat-card {
+            border-left: 4px solid #007bff;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+        .table-responsive {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1>
+                    <i class="fas fa-calendar-check"></i> Visit Statistics Report
+                </h1>
+                <p class="text-muted mb-0">
+                    Report Period: <strong th:text="${#temporals.format(startDate, 'MMM dd, yyyy')} + ' - ' + ${#temporals.format(endDate, 'MMM dd, yyyy')}">Date Range</strong>
+                    <span th:if="${veterinarianId}" class="ms-3">
+                        | Veterinarian ID: <strong th:text="${veterinarianId}">ID</strong>
+                    </span>
+                    <span th:if="${species}" class="ms-3">
+                        | Species: <strong th:text="${species}">Species</strong>
+                    </span>
+                </p>
+            </div>
+            <div>
+                <a th:href="@{/dashboard/reports}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Reports
+                </a>
+                <div class="btn-group ms-2" role="group">
+                    <button type="button" class="btn btn-outline-primary" onclick="exportReport('pdf')">
+                        <i class="fas fa-file-pdf"></i> Export PDF
+                    </button>
+                    <button type="button" class="btn btn-outline-success" onclick="exportReport('csv')">
+                        <i class="fas fa-file-csv"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}">Error message</span>
+        </div>
+
+        <!-- Summary Statistics -->
+        <div th:if="${visitReport}" class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body text-center">
+                        <h3 class="text-primary" th:text="${visitReport.totalVisits ?: 0}">0</h3>
+                        <p class="mb-0">Total Visits</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card" style="border-left-color: #28a745;">
+                    <div class="card-body text-center">
+                        <h3 class="text-success" th:text="${visitReport.completedVisits ?: 0}">0</h3>
+                        <p class="mb-0">Completed Visits</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card" style="border-left-color: #ffc107;">
+                    <div class="card-body text-center">
+                        <h3 class="text-warning" th:text="${visitReport.scheduledVisits ?: 0}">0</h3>
+                        <p class="mb-0">Scheduled Visits</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card" style="border-left-color: #dc3545;">
+                    <div class="card-body text-center">
+                        <h3 class="text-danger" th:text="${visitReport.cancelledVisits ?: 0}">0</h3>
+                        <p class="mb-0">Cancelled Visits</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div th:if="${visitReport}" class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-percentage"></i> Completion Rate</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="progress mb-3" style="height: 30px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 th:style="'width: ' + ${visitReport.completionRate ?: 0} + '%'"
+                                 th:classappend="${(visitReport.completionRate ?: 0) >= 80} ? 'bg-success' : (${(visitReport.completionRate ?: 0) >= 60} ? 'bg-warning' : 'bg-danger')">
+                                <span th:text="${#numbers.formatDecimal(visitReport.completionRate ?: 0, 1, 1)} + '%'">0%</span>
+                            </div>
+                        </div>
+                        <p class="text-muted mb-0">
+                            <span th:text="${visitReport.completedVisits ?: 0}">0</span> out of 
+                            <span th:text="${visitReport.totalVisits ?: 0}">0</span> visits completed
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line"></i> Average Visits per Day</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <h2 class="text-info" th:text="${#numbers.formatDecimal(visitReport.averageVisitsPerDay ?: 0, 1, 1)}">0.0</h2>
+                        <p class="text-muted mb-0">visits per day</p>
+                        <small class="text-muted">
+                            Based on <span th:text="${visitReport.totalVisits ?: 0}">0</span> visits over 
+                            <span th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(startDate, endDate) + 1}">0</span> days
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visits by Veterinarian -->
+        <div th:if="${visitReport?.visitsByVeterinarian != null and !visitReport.visitsByVeterinarian.empty}" class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-user-md"></i> Visits by Veterinarian</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Veterinarian</th>
+                                        <th>Total Visits</th>
+                                        <th>Percentage</th>
+                                        <th>Visual</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="entry : ${visitReport.visitsByVeterinarian}">
+                                        <td th:text="${entry.key}">Veterinarian Name</td>
+                                        <td th:text="${entry.value}">0</td>
+                                        <td th:text="${#numbers.formatDecimal((entry.value * 100.0) / (visitReport.totalVisits ?: 1), 1, 1)} + '%'">0%</td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-primary" role="progressbar" 
+                                                     th:style="'width: ' + ${(entry.value * 100.0) / (visitReport.totalVisits ?: 1)} + '%'">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visits by Species -->
+        <div th:if="${visitReport?.visitsBySpecies != null and !visitReport.visitsBySpecies.empty}" class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-paw"></i> Visits by Species</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="entry : ${visitReport.visitsBySpecies}" class="d-flex justify-content-between align-items-center mb-2">
+                            <span th:text="${entry.key}">Species</span>
+                            <div class="d-flex align-items-center">
+                                <span class="me-2" th:text="${entry.value}">0</span>
+                                <div class="progress" style="width: 100px; height: 20px;">
+                                    <div class="progress-bar bg-info" role="progressbar" 
+                                         th:style="'width: ' + ${(entry.value * 100.0) / (visitReport.totalVisits ?: 1)} + '%'">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-pie"></i> Species Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="entry : ${visitReport.visitsBySpecies}" class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span th:text="${entry.key}">Species</span>
+                                <span th:text="${#numbers.formatDecimal((entry.value * 100.0) / (visitReport.totalVisits ?: 1), 1, 1)} + '%'">0%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     th:style="'width: ' + ${(entry.value * 100.0) / (visitReport.totalVisits ?: 1)} + '%'"
+                                     th:classappend="${entryStat.index % 4 == 0} ? 'bg-primary' : (${entryStat.index % 4 == 1} ? 'bg-success' : (${entryStat.index % 4 == 2} ? 'bg-warning' : 'bg-info'))">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visits by Type -->
+        <div th:if="${visitReport?.visitsByType != null and !visitReport.visitsByType.empty}" class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-clipboard-list"></i> Visits by Type</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div th:each="entry : ${visitReport.visitsByType}" class="col-md-4 mb-3">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body text-center">
+                                        <h4 th:text="${entry.value}">0</h4>
+                                        <p class="mb-0" th:text="${entry.key}">Visit Type</p>
+                                        <small class="text-muted" th:text="${#numbers.formatDecimal((entry.value * 100.0) / (visitReport.totalVisits ?: 1), 1, 1)} + '%'">0%</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Visit Trend -->
+        <div th:if="${visitReport?.visitsByDate != null and !visitReport.visitsByDate.empty}" class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-area"></i> Daily Visit Trend</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive" style="max-height: 300px;">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Visits</th>
+                                        <th>Visual</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="entry : ${visitReport.visitsByDate}">
+                                        <td th:text="${#temporals.format(entry.key, 'MMM dd, yyyy')}">Date</td>
+                                        <td th:text="${entry.value}">0</td>
+                                        <td>
+                                            <div class="progress" style="height: 15px;">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     th:style="'width: ' + ${(entry.value * 100.0) / T(java.util.Collections).max(visitReport.visitsByDate.values())} + '%'">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Data Message -->
+        <div th:if="${visitReport == null}" class="alert alert-info text-center">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <h5>No Visit Data Available</h5>
+            <p>No visits found for the selected date range and filters. Try adjusting your search criteria.</p>
+            <a th:href="@{/dashboard/reports}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function exportReport(format) {
+            const startDate = /*[[${startDate}]]*/ '';
+            const endDate = /*[[${endDate}]]*/ '';
+            const veterinarianId = /*[[${veterinarianId}]]*/ '';
+            const species = /*[[${species}]]*/ '';
+            
+            let url = `/dashboard/export/visits?startDate=${startDate}&endDate=${endDate}&format=${format}`;
+            if (veterinarianId) url += `&veterinarianId=${veterinarianId}`;
+            if (species) url += `&species=${species}`;
+            
+            // Create a temporary link to trigger download
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `visit-statistics-${startDate}-to-${endDate}.${format}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

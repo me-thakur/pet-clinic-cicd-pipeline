@@ -40,11 +40,18 @@ public class Visit {
     @Positive(message = "Cost must be positive")
     private BigDecimal cost;
     
+    private Boolean emergencyVisit = false;
+    private Boolean completed = false;
+    
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
     private Pet pet;
     private Veterinarian veterinarian;
+    
+    // Transient fields for form binding
+    private Long petId;
+    private Long veterinarianId;
 
     // Constructors
     public Visit() {}
@@ -133,6 +140,50 @@ public class Visit {
 
     public void setVeterinarian(Veterinarian veterinarian) {
         this.veterinarian = veterinarian;
+    }
+
+    public Boolean getEmergencyVisit() {
+        return emergencyVisit;
+    }
+
+    public void setEmergencyVisit(Boolean emergencyVisit) {
+        this.emergencyVisit = emergencyVisit;
+    }
+
+    public Boolean getCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(Boolean completed) {
+        this.completed = completed;
+    }
+
+    public Long getPetId() {
+        return pet != null ? pet.getId() : petId;
+    }
+
+    public void setPetId(Long petId) {
+        this.petId = petId;
+        if (petId != null && (pet == null || !petId.equals(pet.getId()))) {
+            // Create a temporary pet object with just the ID
+            Pet tempPet = new Pet();
+            tempPet.setId(petId);
+            this.pet = tempPet;
+        }
+    }
+
+    public Long getVeterinarianId() {
+        return veterinarian != null ? veterinarian.getId() : veterinarianId;
+    }
+
+    public void setVeterinarianId(Long veterinarianId) {
+        this.veterinarianId = veterinarianId;
+        if (veterinarianId != null && (veterinarian == null || !veterinarianId.equals(veterinarian.getId()))) {
+            // Create a temporary veterinarian object with just the ID
+            Veterinarian tempVet = new Veterinarian();
+            tempVet.setId(veterinarianId);
+            this.veterinarian = tempVet;
+        }
     }
 
     // Utility methods

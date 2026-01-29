@@ -30,7 +30,7 @@ BACKEND_PID=$!
 
 # Wait for backend to start
 echo "Waiting for backend to start..."
-until curl -f http://localhost:8081/api/actuator/health > /dev/null 2>&1; do
+until curl -f http://localhost:9090/actuator/health > /dev/null 2>&1; do
     sleep 2
 done
 
@@ -42,7 +42,7 @@ FRONTEND_PID=$!
 
 echo "Backend PID: $BACKEND_PID"
 echo "Frontend PID: $FRONTEND_PID"
-echo "Backend: http://localhost:8081/api"
+echo "Backend: http://localhost:9090/api"
 echo "Frontend: http://localhost:8080"
 echo "Logs: logs/backend.log, logs/frontend.log"
 
@@ -54,4 +54,4 @@ done
 
 echo "All services started successfully!"
 echo "Pet Clinic Application: http://localhost:8080"
-echo "Backend API: http://localhost:8081/api"
+echo "Backend API: http://localhost:9090/api"

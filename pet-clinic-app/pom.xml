@@ -27,7 +27,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.2.1</spring-boot.version>
         <mysql.version>8.0.33</mysql.version>
-        <jqwik.version>1.8.2</jqwik.version>
         <testcontainers.version>1.19.3</testcontainers.version>
     </properties>
 
@@ -52,14 +51,6 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.version}</version>
-            </dependency>
-
-            <!-- Property-Based Testing -->
-            <dependency>
-                <groupId>net.jqwik</groupId>
-                <artifactId>jqwik</artifactId>
-                <version>${jqwik.version}</version>
-                <scope>test</scope>
             </dependency>
 
             <!-- Testcontainers for Integration Testing -->

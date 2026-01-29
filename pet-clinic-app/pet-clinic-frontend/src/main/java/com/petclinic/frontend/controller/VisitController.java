@@ -18,8 +18,17 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Visit Controller
@@ -91,6 +100,7 @@ public class VisitController {
     public String showCreateForm(
             @RequestParam(required = false) Long petId,
             @RequestParam(required = false) Long veterinarianId,
+            @RequestParam(required = false) String date,
             Model model) {
         
         Visit visit = new Visit();
@@ -105,6 +115,15 @@ public class VisitController {
             Veterinarian veterinarian = new Veterinarian();
             veterinarian.setId(veterinarianId);
             visit.setVeterinarian(veterinarian);
+        }
+        if (date != null) {
+            try {
+                // Set default time to 9:00 AM for the selected date
+                LocalDate selectedDate = LocalDate.parse(date);
+                visit.setVisitDate(selectedDate.atTime(9, 0));
+            } catch (Exception e) {
+                // Ignore invalid date format
+            }
         }
         
         model.addAttribute("visit", visit);
@@ -390,5 +409,166 @@ public class VisitController {
         } catch (Exception e) {
             model.addAttribute("error", "Error loading form data: " + e.getMessage());
         }
+    }
+
+    /**
+     * Show calendar view
+     */
+    @GetMapping("/calendar")
+    public String showCalendar(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Long veterinarianId,
+            Model model) {
+        
+        try {
+            // Default to current month if not specified
+            LocalDate now = LocalDate.now();
+            int currentYear = year != null ? year : now.getYear();
+            int currentMonth = month != null ? month : now.getMonthValue() - 1; // JavaScript months are 0-based
+            
+            // Create YearMonth for the calendar
+            YearMonth yearMonth = YearMonth.of(currentYear, currentMonth + 1); // Convert back to 1-based
+            
+            // Get visits for the month
+            LocalDateTime startOfMonth = yearMonth.atDay(1).atStartOfDay();
+            LocalDateTime endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+            
+            List<Visit> monthVisits;
+            if (veterinarianId != null) {
+                // Filter by veterinarian and date range
+                monthVisits = visitService.getVisitsByDateRange(startOfMonth, endOfMonth).block()
+                    .stream()
+                    .filter(visit -> visit.getVeterinarian() != null && 
+                                   visit.getVeterinarian().getId().equals(veterinarianId))
+                    .collect(Collectors.toList());
+            } else {
+                monthVisits = visitService.getVisitsByDateRange(startOfMonth, endOfMonth).block();
+            }
+            
+            // Create calendar days
+            List<CalendarDay> calendarDays = createCalendarDays(yearMonth, monthVisits);
+            
+            // Load veterinarians for filter
+            Pageable pageable = PageRequest.of(0, 100);
+            Page<Veterinarian> veterinarians = veterinarianService.getAllVeterinarians(pageable).block();
+            
+            model.addAttribute("calendarDays", calendarDays);
+            model.addAttribute("currentYear", currentYear);
+            model.addAttribute("currentMonth", currentMonth);
+            model.addAttribute("currentMonthYear", yearMonth.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + currentYear);
+            model.addAttribute("veterinarians", veterinarians.getContent());
+            model.addAttribute("selectedVeterinarianId", veterinarianId);
+            
+            return "visits/calendar";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error loading calendar: " + e.getMessage());
+            return "visits/calendar";
+        }
+    }
+
+    /**
+     * Get visits for a specific day (AJAX endpoint)
+     */
+    @GetMapping("/calendar/day")
+    public String getDayVisits(
+            @RequestParam String date,
+            Model model) {
+        
+        try {
+            LocalDate selectedDate = LocalDate.parse(date);
+            LocalDateTime startOfDay = selectedDate.atStartOfDay();
+            LocalDateTime endOfDay = selectedDate.atTime(23, 59, 59);
+            
+            List<Visit> dayVisits = visitService.getVisitsByDateRange(startOfDay, endOfDay).block();
+            
+            model.addAttribute("visits", dayVisits);
+            model.addAttribute("selectedDate", selectedDate);
+            
+            return "visits/day-visits :: dayVisits";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error loading day visits: " + e.getMessage());
+            return "visits/day-visits :: dayVisits";
+        }
+    }
+
+    /**
+     * Get visit quick view (AJAX endpoint)
+     */
+    @GetMapping("/{id}/quick")
+    public String getVisitQuickView(@PathVariable Long id, Model model) {
+        try {
+            Visit visit = visitService.getVisitById(id).block();
+            if (visit == null) {
+                model.addAttribute("error", "Visit not found");
+                return "visits/quick-view :: quickView";
+            }
+            
+            model.addAttribute("visit", visit);
+            return "visits/quick-view :: quickView";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error loading visit: " + e.getMessage());
+            return "visits/quick-view :: quickView";
+        }
+    }
+
+    /**
+     * Create calendar days for the month view
+     */
+    private List<CalendarDay> createCalendarDays(YearMonth yearMonth, List<Visit> visits) {
+        List<CalendarDay> calendarDays = new ArrayList<>();
+        
+        // Get first day of month and calculate start of calendar (including previous month days)
+        LocalDate firstDayOfMonth = yearMonth.atDay(1);
+        LocalDate startOfCalendar = firstDayOfMonth.minusDays(firstDayOfMonth.getDayOfWeek().getValue() % 7);
+        
+        // Create 42 days (6 weeks) for the calendar
+        LocalDate today = LocalDate.now();
+        for (int i = 0; i < 42; i++) {
+            LocalDate currentDate = startOfCalendar.plusDays(i);
+            
+            CalendarDay calendarDay = new CalendarDay();
+            calendarDay.setDayNumber(currentDate.getDayOfMonth());
+            calendarDay.setDateString(currentDate.toString());
+            calendarDay.setOtherMonth(!currentDate.getMonth().equals(yearMonth.getMonth()));
+            calendarDay.setToday(currentDate.equals(today));
+            
+            // Filter visits for this day
+            List<Visit> dayVisits = visits.stream()
+                .filter(visit -> visit.getVisitDate().toLocalDate().equals(currentDate))
+                .collect(Collectors.toList());
+            calendarDay.setVisits(dayVisits);
+            
+            calendarDays.add(calendarDay);
+        }
+        
+        return calendarDays;
+    }
+
+    /**
+     * Calendar Day helper class
+     */
+    public static class CalendarDay {
+        private int dayNumber;
+        private String dateString;
+        private boolean otherMonth;
+        private boolean today;
+        private List<Visit> visits = new ArrayList<>();
+
+        // Getters and setters
+        public int getDayNumber() { return dayNumber; }
+        public void setDayNumber(int dayNumber) { this.dayNumber = dayNumber; }
+        
+        public String getDateString() { return dateString; }
+        public void setDateString(String dateString) { this.dateString = dateString; }
+        
+        public boolean isOtherMonth() { return otherMonth; }
+        public void setOtherMonth(boolean otherMonth) { this.otherMonth = otherMonth; }
+        
+        public boolean isToday() { return today; }
+        public void setToday(boolean today) { this.today = today; }
+        
+        public List<Visit> getVisits() { return visits; }
+        public void setVisits(List<Visit> visits) { this.visits = visits; }
     }
 }

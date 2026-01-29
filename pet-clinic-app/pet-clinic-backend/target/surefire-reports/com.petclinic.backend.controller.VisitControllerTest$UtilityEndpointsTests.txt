@@ -1,0 +1,28 @@
+-------------------------------------------------------------------------------
+Test set: com.petclinic.backend.controller.VisitControllerTest$UtilityEndpointsTests
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.030 s <<< FAILURE! -- in com.petclinic.backend.controller.VisitControllerTest$UtilityEndpointsTests
+com.petclinic.backend.controller.VisitControllerTest$UtilityEndpointsTests.healthCheck_ShouldReturnHealthStatus -- Time elapsed: 0.008 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200> but was:<500>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$9(StatusResultMatchers.java:637)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
+	at com.petclinic.backend.controller.VisitControllerTest$UtilityEndpointsTests.healthCheck_ShouldReturnHealthStatus(VisitControllerTest.java:660)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+com.petclinic.backend.controller.VisitControllerTest$UtilityEndpointsTests.checkVisitExists_WhenVisitExists_ShouldReturnTrue -- Time elapsed: 0.011 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<200> but was:<500>
+	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
+	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
+	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$9(StatusResultMatchers.java:637)
+	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
+	at com.petclinic.backend.controller.VisitControllerTest$UtilityEndpointsTests.checkVisitExists_WhenVisitExists_ShouldReturnTrue(VisitControllerTest.java:647)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+

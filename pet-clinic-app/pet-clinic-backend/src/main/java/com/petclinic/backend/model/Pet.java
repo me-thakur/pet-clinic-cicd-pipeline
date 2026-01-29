@@ -15,7 +15,7 @@ import java.util.Objects;
 
 /**
  * Pet entity representing a pet in the clinic system
- * Validates: Requirements 8.1, 8.2, 8.3
+ * Validates: Requirements 1.1, 1.4
  */
 @Entity
 @Table(name = "pets")

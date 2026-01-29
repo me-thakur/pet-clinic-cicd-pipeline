@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.petclinic.backend.config.EncryptionConverter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -35,15 +36,17 @@ public class Owner {
     private String lastName;
     
     @Size(max = 200, message = "Address must not exceed 200 characters")
-    @Column(name = "address", length = 200)
+    @Column(name = "address", length = 500) // Increased length for encrypted data
+    @Convert(converter = EncryptionConverter.class)
     private String address;
     
     @Size(max = 50, message = "City must not exceed 50 characters")
     @Column(name = "city", length = 50)
     private String city;
     
-    @Pattern(regexp = "^[+]?[0-9\\s\\-\\(\\)]{10,15}$", message = "Invalid telephone format")
-    @Column(name = "telephone", length = 15)
+    @Pattern(regexp = "^[+]?[0-9\\s\\-\\(\\)\\.]{7,20}$", message = "Invalid telephone format")
+    @Column(name = "telephone", length = 200) // Increased length for encrypted data
+    @Convert(converter = EncryptionConverter.class)
     private String telephone;
     
     @Email(message = "Invalid email format")

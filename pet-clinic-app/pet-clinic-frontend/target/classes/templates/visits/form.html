@@ -18,6 +18,10 @@
                         <form th:action="${visit.id != null ? '/visits/' + visit.id + '/edit' : '/visits/new'}" 
                               th:object="${visit}" method="post">
                             
+                            <!-- Hidden fields for IDs -->
+                            <input type="hidden" th:field="*{petId}" th:if="${visit.pet != null}" />
+                            <input type="hidden" th:field="*{veterinarianId}" th:if="${visit.veterinarian != null}" />
+                            
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">

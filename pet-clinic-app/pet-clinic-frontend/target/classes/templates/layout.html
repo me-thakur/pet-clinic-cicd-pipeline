@@ -8,6 +8,9 @@
     <!-- Bootstrap CSS -->
     <link th:href="@{/webjars/bootstrap/5.3.2/css/bootstrap.min.css}" rel="stylesheet">
     
+    <!-- Enhanced Search and Navigation CSS -->
+    <link th:href="@{/css/search-navigation.css}" rel="stylesheet">
+    
     <!-- Custom CSS -->
     <style>
         .navbar-brand {
@@ -43,54 +46,116 @@
                 <i class="fas fa-paw"></i> Pet Clinic
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Global Search in Navigation -->
+                <div class="navbar-search d-none d-lg-block">
+                    <form action="/search" method="get" class="d-flex">
+                        <div class="search-input-group">
+                            <input type="text" 
+                                   name="query" 
+                                   class="form-control search-input" 
+                                   placeholder="Quick search..."
+                                   autocomplete="off">
+                            <button type="submit" class="search-btn" aria-label="Search">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/}">Dashboard</a>
-                    </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            Owners
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" th:href="@{/owners}">All Owners</a></li>
-                            <li><a class="dropdown-item" th:href="@{/owners/new}">Add Owner</a></li>
-                            <li><a class="dropdown-item" th:href="@{/owners/search}">Search Owners</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" th:href="@{/owners/multiple-pets}">Multiple Pets</a></li>
+                            <li><a class="dropdown-item" th:href="@{/dashboard}"><i class="fas fa-home"></i> Main Dashboard</a></li>
+                            <li><a class="dropdown-item" th:href="@{/dashboard/reports}"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                            <li><a class="dropdown-item" th:href="@{/dashboard/analytics}"><i class="fas fa-analytics"></i> Analytics</a></li>
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            Pets
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-users"></i> Owners
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" th:href="@{/pets}">All Pets</a></li>
-                            <li><a class="dropdown-item" th:href="@{/pets/new}">Add Pet</a></li>
-                            <li><a class="dropdown-item" th:href="@{/pets/search}">Search Pets</a></li>
+                            <li><a class="dropdown-item" th:href="@{/owners}"><i class="fas fa-list"></i> All Owners</a></li>
+                            <li><a class="dropdown-item" th:href="@{/owners/new}"><i class="fas fa-plus"></i> Add Owner</a></li>
+                            <li><a class="dropdown-item" th:href="@{/search?entityType=owner}"><i class="fas fa-search"></i> Search Owners</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" th:href="@{/pets/senior}">Senior Pets</a></li>
+                            <li><a class="dropdown-item" th:href="@{/owners/multiple-pets}"><i class="fas fa-paw"></i> Multiple Pets</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-paw"></i> Pets
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/pets}"><i class="fas fa-list"></i> All Pets</a></li>
+                            <li><a class="dropdown-item" th:href="@{/pets/new}"><i class="fas fa-plus"></i> Add Pet</a></li>
+                            <li><a class="dropdown-item" th:href="@{/search?entityType=pet}"><i class="fas fa-search"></i> Search Pets</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" th:href="@{/pets/senior}"><i class="fas fa-birthday-cake"></i> Senior Pets</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-calendar-check"></i> Visits
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/visits}"><i class="fas fa-list"></i> All Visits</a></li>
+                            <li><a class="dropdown-item" th:href="@{/visits/new}"><i class="fas fa-plus"></i> Schedule Visit</a></li>
+                            <li><a class="dropdown-item" th:href="@{/visits/calendar}"><i class="fas fa-calendar"></i> Calendar View</a></li>
+                            <li><a class="dropdown-item" th:href="@{/search?entityType=visit}"><i class="fas fa-search"></i> Search Visits</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-md"></i> Veterinarians
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/veterinarians}"><i class="fas fa-list"></i> All Veterinarians</a></li>
+                            <li><a class="dropdown-item" th:href="@{/veterinarians/new}"><i class="fas fa-plus"></i> Add Veterinarian</a></li>
+                            <li><a class="dropdown-item" th:href="@{/search?entityType=veterinarian}"><i class="fas fa-search"></i> Search Veterinarians</a></li>
                         </ul>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/visits}">Visits</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:href="@{/veterinarians}">Veterinarians</a>
+                        <a class="nav-link" th:href="@{/search}">
+                            <i class="fas fa-search"></i> 
+                            <span class="d-lg-none">Global Search</span>
+                        </a>
                     </li>
                 </ul>
                 
+                <!-- Mobile Search (visible on small screens) -->
+                <div class="navbar-search d-lg-none w-100">
+                    <form action="/search" method="get" class="d-flex">
+                        <div class="search-input-group flex-grow-1">
+                            <input type="text" 
+                                   name="query" 
+                                   id="mobileSearchInput"
+                                   class="form-control search-input" 
+                                   placeholder="Search pets, owners, visits..."
+                                   autocomplete="off">
+                            <button type="submit" class="search-btn" aria-label="Search">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user"></i> <span sec:authentication="name">User</span>
                         </a>
-                        <ul class="dropdown-menu">
+                        <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="#"><i class="fas fa-user-cog"></i> Profile</a></li>
+                            <li><a class="dropdown-item" th:href="@{/search/analytics}" sec:authorize="hasRole('ADMIN')"><i class="fas fa-chart-line"></i> Search Analytics</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form th:action="@{/logout}" method="post" style="display: inline;">
@@ -153,6 +218,9 @@
     <script th:src="@{/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js}"></script>
     <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
     
+    <!-- Enhanced Search and Navigation JS -->
+    <script th:src="@{/js/search-navigation.js}"></script>
+    
     <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
     
@@ -168,6 +236,32 @@
             if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
                 e.preventDefault();
             }
+        });
+        
+        // Initialize enhanced navigation features
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu enhancements
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.querySelector('.navbar-collapse');
+            
+            if (navbarToggler && navbarCollapse) {
+                navbarToggler.addEventListener('click', function() {
+                    // Smooth animation for mobile menu
+                    navbarCollapse.style.transition = 'height 0.3s ease';
+                });
+            }
+            
+            // Quick search functionality in navbar
+            const navbarSearchForms = document.querySelectorAll('.navbar-search form');
+            navbarSearchForms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const input = form.querySelector('input[name="query"]');
+                    if (!input.value.trim()) {
+                        e.preventDefault();
+                        input.focus();
+                    }
+                });
+            });
         });
     </script>
 </body>

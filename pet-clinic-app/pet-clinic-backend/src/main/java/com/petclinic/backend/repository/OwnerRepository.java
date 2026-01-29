@@ -18,7 +18,7 @@ import java.util.Optional;
  * Validates: Requirements 8.1, 8.2, 8.3, 8.4
  */
 @Repository
-public interface OwnerRepository extends JpaRepository<Owner, Long> {
+public interface OwnerRepository extends BaseRepository<Owner, Long> {
     
     /**
      * Find owner by email (unique identifier)
@@ -176,4 +176,10 @@ public interface OwnerRepository extends JpaRepository<Owner, Long> {
      */
     @Query("SELECT DISTINCT o FROM Owner o JOIN o.pets p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :petName, '%'))")
     List<Owner> findByPetName(@Param("petName") String petName);
+    
+    /**
+     * Find owners by email containing text (case-insensitive)
+     * Supports email-based search - Requirement 8.4
+     */
+    List<Owner> findByEmailContainingIgnoreCase(String email);
 }

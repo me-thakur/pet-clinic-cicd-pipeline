@@ -173,8 +173,12 @@ public class Pet {
         return visits != null ? visits.size() : 0;
     }
 
-    public boolean isSenior() {
+    public boolean isSeniorPet() {
         return getAge() >= 7;
+    }
+
+    public boolean isYoungPet() {
+        return getAge() < 2;
     }
 
     @Override

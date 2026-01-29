@@ -15,38 +15,38 @@ import java.util.Optional;
 /**
  * Repository interface for Pet entity
  * Provides CRUD operations and custom queries for pet management
- * Validates: Requirements 8.1, 8.2, 8.3, 8.4
+ * Validates: Requirements 1.1, 1.4
  */
 @Repository
-public interface PetRepository extends JpaRepository<Pet, Long> {
+public interface PetRepository extends BaseRepository<Pet, Long> {
     
     /**
      * Find pets by name (case-insensitive)
-     * Supports search functionality - Requirement 8.4
+     * Supports search functionality - Requirement 1.3
      */
     List<Pet> findByNameContainingIgnoreCase(String name);
     
     /**
      * Find pets by species (case-insensitive)
-     * Supports filtering functionality - Requirement 8.4
+     * Supports filtering functionality - Requirement 1.3
      */
     List<Pet> findBySpeciesIgnoreCase(String species);
     
     /**
      * Find pets by breed (case-insensitive)
-     * Supports filtering functionality - Requirement 8.4
+     * Supports filtering functionality - Requirement 1.3
      */
     List<Pet> findByBreedContainingIgnoreCase(String breed);
     
     /**
      * Find pets by owner ID
-     * Supports owner-pet relationship queries - Requirement 8.3
+     * Supports owner-pet relationship queries - Requirement 1.4
      */
     List<Pet> findByOwnerId(Long ownerId);
     
     /**
      * Find pets by owner's full name (case-insensitive)
-     * Supports search functionality - Requirement 8.4
+     * Supports search functionality - Requirement 1.3
      */
     @Query("SELECT p FROM Pet p WHERE " +
            "LOWER(CONCAT(p.owner.firstName, ' ', p.owner.lastName)) LIKE LOWER(CONCAT('%', :ownerName, '%'))")
@@ -54,19 +54,19 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
     
     /**
      * Find pets born between two dates
-     * Supports age-based filtering - Requirement 8.4
+     * Supports age-based filtering - Requirement 1.3
      */
     List<Pet> findByBirthDateBetween(LocalDate startDate, LocalDate endDate);
     
     /**
      * Find pets by species and breed
-     * Supports combined filtering - Requirement 8.4
+     * Supports combined filtering - Requirement 1.3
      */
     List<Pet> findBySpeciesIgnoreCaseAndBreedContainingIgnoreCase(String species, String breed);
     
     /**
      * Find pets with medical history containing specific text
-     * Supports medical record search - Requirement 8.4
+     * Supports medical record search - Requirement 1.3
      */
     List<Pet> findByMedicalHistoryContainingIgnoreCase(String medicalHistory);
     
@@ -113,7 +113,7 @@ public interface PetRepository extends JpaRepository<Pet, Long> {
     
     /**
      * Search pets by multiple criteria
-     * Comprehensive search functionality - Requirement 8.4
+     * Comprehensive search functionality - Requirement 1.3
      */
     @Query("SELECT p FROM Pet p WHERE " +
            "(:name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +

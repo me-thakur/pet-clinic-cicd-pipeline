@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Search Analytics - Pet Clinic</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-chart-line"></i> Search Analytics</h1>
+            <a th:href="@{/search}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Back to Search
+            </a>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}">Error message</span>
+        </div>
+
+        <div th:if="${analytics != null}" class="row">
+            <!-- Search Statistics -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-bar"></i> Search Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h3 class="text-primary" th:text="${analytics.totalSearches ?: 0}">0</h3>
+                                <p class="text-muted mb-0">Total Searches</p>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="text-success" th:text="${analytics.uniqueQueries ?: 0}">0</h3>
+                                <p class="text-muted mb-0">Unique Queries</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-info" th:text="${analytics.avgResultsPerSearch ?: '0.0'}">0.0</h4>
+                                <p class="text-muted mb-0">Avg Results</p>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="text-warning" th:text="${analytics.avgResponseTime ?: '0'}">0</h4>
+                                <p class="text-muted mb-0">Avg Response (ms)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Search Terms -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-fire"></i> Popular Search Terms
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${analytics.popularTerms != null and !#lists.isEmpty(analytics.popularTerms)}">
+                            <div th:each="term, iterStat : ${analytics.popularTerms}" class="d-flex justify-content-between align-items-center mb-2">
+                                <span th:text="${term.query}">Search term</span>
+                                <span class="badge bg-primary" th:text="${term.count}">0</span>
+                            </div>
+                        </div>
+                        <div th:if="${analytics.popularTerms == null or #lists.isEmpty(analytics.popularTerms)}" class="text-muted text-center">
+                            <i class="fas fa-search fa-2x mb-2"></i>
+                            <p>No search data available yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search by Entity Type -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-layer-group"></i> Searches by Entity Type
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${analytics.searchesByEntityType != null}">
+                            <div th:each="entry : ${analytics.searchesByEntityType}" class="d-flex justify-content-between align-items-center mb-2">
+                                <span>
+                                    <i th:class="${entry.key == 'Pet' ? 'fas fa-paw' : 
+                                                 entry.key == 'Owner' ? 'fas fa-user' : 
+                                                 entry.key == 'Visit' ? 'fas fa-calendar-check' : 
+                                                 entry.key == 'Veterinarian' ? 'fas fa-user-md' : 'fas fa-file'}"
+                                       class="me-2"></i>
+                                    <span th:text="${entry.key}">Entity Type</span>
+                                </span>
+                                <span class="badge bg-secondary" th:text="${entry.value}">0</span>
+                            </div>
+                        </div>
+                        <div th:if="${analytics.searchesByEntityType == null}" class="text-muted text-center">
+                            <i class="fas fa-layer-group fa-2x mb-2"></i>
+                            <p>No entity type data available</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Search Activity -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-clock"></i> Recent Search Activity
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${analytics.recentSearches != null and !#lists.isEmpty(analytics.recentSearches)}">
+                            <div th:each="search : ${analytics.recentSearches}" class="mb-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <strong th:text="${search.query}">Search query</strong>
+                                        <br>
+                                        <small class="text-muted">
+                                            <span th:text="${search.resultCount}">0</span> results
+                                            <span th:if="${search.entityType}" th:text="'in ' + ${search.entityType}"></span>
+                                        </small>
+                                    </div>
+                                    <small class="text-muted" th:text="${search.timestamp}">timestamp</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${analytics.recentSearches == null or #lists.isEmpty(analytics.recentSearches)}" class="text-muted text-center">
+                            <i class="fas fa-clock fa-2x mb-2"></i>
+                            <p>No recent search activity</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Usage -->
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-filter"></i> Filter Usage Statistics
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${analytics.filterUsage != null}" class="row">
+                            <div class="col-md-3 text-center">
+                                <h4 class="text-primary" th:text="${analytics.filterUsage.totalFiltersApplied ?: 0}">0</h4>
+                                <p class="text-muted mb-0">Total Filters Applied</p>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h4 class="text-success" th:text="${analytics.filterUsage.mostUsedFilter ?: 'N/A'}">N/A</h4>
+                                <p class="text-muted mb-0">Most Used Filter</p>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h4 class="text-info" th:text="${analytics.filterUsage.avgFiltersPerSearch ?: '0.0'}">0.0</h4>
+                                <p class="text-muted mb-0">Avg Filters per Search</p>
+                            </div>
+                            <div class="col-md-3 text-center">
+                                <h4 class="text-warning" th:text="${analytics.filterUsage.savedFilterCombinations ?: 0}">0</h4>
+                                <p class="text-muted mb-0">Saved Combinations</p>
+                            </div>
+                        </div>
+                        <div th:if="${analytics.filterUsage == null}" class="text-muted text-center">
+                            <i class="fas fa-filter fa-2x mb-2"></i>
+                            <p>No filter usage data available</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${analytics == null}" class="text-center py-5">
+            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No Analytics Data Available</h4>
+            <p class="text-muted">Search analytics will appear here once users start searching.</p>
+            <a th:href="@{/search}" class="btn btn-primary">
+                <i class="fas fa-search"></i> Go to Search
+            </a>
+        </div>
+    </div>
+</body>
+</html>

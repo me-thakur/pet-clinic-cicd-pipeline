@@ -1,774 +1,722 @@
-# Pet Clinic CI/CD Pipeline - Cloud Deployment Guide
+# Pet Clinic AWS Cloud Deployment Guide
 
-This guide provides detailed instructions for deploying the Pet Clinic CI/CD Pipeline system to AWS cloud infrastructure in production environments.
+This comprehensive guide covers deploying the Pet Clinic application and CI/CD pipeline to AWS Cloud infrastructure.
 
 ## Table of Contents
 
-1. [Pre-Deployment Planning](#pre-deployment-planning)
-2. [AWS Account Preparation](#aws-account-preparation)
-3. [Infrastructure Deployment](#infrastructure-deployment)
-4. [Application Deployment](#application-deployment)
-5. [Post-Deployment Configuration](#post-deployment-configuration)
-6. [Production Considerations](#production-considerations)
-7. [Monitoring and Maintenance](#monitoring-and-maintenance)
-8. [Disaster Recovery](#disaster-recovery)
+1. [Overview](#overview)
+2. [Prerequisites](#prerequisites)
+3. [Infrastructure Architecture](#infrastructure-architecture)
+4. [Pre-Deployment Setup](#pre-deployment-setup)
+5. [Infrastructure Deployment](#infrastructure-deployment)
+6. [Application Deployment](#application-deployment)
+7. [CI/CD Pipeline Setup](#cicd-pipeline-setup)
+8. [Monitoring and Alerting](#monitoring-and-alerting)
+9. [Security Configuration](#security-configuration)
+10. [Backup and Disaster Recovery](#backup-and-disaster-recovery)
+11. [Troubleshooting](#troubleshooting)
+12. [Cost Optimization](#cost-optimization)
+13. [Maintenance](#maintenance)
 
-## Pre-Deployment Planning
+## Overview
 
-### 1. Architecture Review
+The Pet Clinic application is deployed on AWS using a comprehensive infrastructure-as-code approach with:
 
-Before deployment, review the target architecture:
+- **Multi-tier architecture** with separate frontend and backend services
+- **Auto-scaling** EC2 instances with Application Load Balancer
+- **RDS MySQL** database with Multi-AZ deployment
+- **Jenkins CI/CD pipeline** for automated deployments
+- **Comprehensive monitoring** with CloudWatch and custom metrics
+- **Security hardening** with IAM roles, security groups, and encryption
+- **Automated backups** and disaster recovery procedures
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        AWS Production Environment               │
-│                                                                 │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │  Availability   │  │  Availability   │  │    Management   │ │
-│  │    Zone A       │  │    Zone B       │  │     Zone        │ │
-│  │                 │  │                 │  │                 │ │
-│  │ ┌─────────────┐ │  │ ┌─────────────┐ │  │ ┌─────────────┐ │ │
-│  │ │   Public    │ │  │ │   Public    │ │  │ │   Jenkins   │ │ │
-│  │ │   Subnet    │ │  │ │   Subnet    │ │  │ │   Server    │ │ │
-│  │ │             │ │  │ │             │ │  │ │             │ │ │
-│  │ │ • ALB       │ │  │ │ • ALB       │ │  │ │ • CI/CD     │ │ │
-│  │ │ • NAT GW    │ │  │ │ • NAT GW    │ │  │ │ • Backups   │ │ │
-│  │ └─────────────┘ │  │ └─────────────┘ │  │ └─────────────┘ │ │
-│  │                 │  │                 │  │                 │ │
-│  │ ┌─────────────┐ │  │ ┌─────────────┐ │  │                 │ │
-│  │ │   Private   │ │  │ │   Private   │ │  │                 │ │
-│  │ │   Subnet    │ │  │ │   Subnet    │ │  │                 │ │
-│  │ │             │ │  │ │             │ │  │                 │ │
-│  │ │ • App Tier  │ │  │ │ • App Tier  │ │  │                 │ │
-│  │ │ • EFS Mount │ │  │ │ • EFS Mount │ │  │                 │ │
-│  │ └─────────────┘ │  │ └─────────────┘ │  │                 │ │
-│  │                 │  │                 │  │                 │ │
-│  │ ┌─────────────┐ │  │ ┌─────────────┐ │  │                 │ │
-│  │ │  Database   │ │  │ │  Database   │ │  │                 │ │
-│  │ │   Subnet    │ │  │ │   Subnet    │ │  │                 │ │
-│  │ │             │ │  │ │             │ │  │                 │ │
-│  │ │ • RDS       │ │  │ │ • RDS       │ │  │                 │ │
-│  │ │   Primary   │ │  │ │   Standby   │ │  │                 │ │
-│  │ └─────────────┘ │  │ └─────────────┘ │  │                 │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-```
+## Prerequisites
 
-### 2. Capacity Planning
+### AWS Account Requirements
 
-#### Compute Resources
-| Environment | Component | Instance Type | Min | Max | Target CPU |
-|-------------|-----------|---------------|-----|-----|------------|
-| Production | Jenkins | t3.large | 1 | 1 | N/A |
-| Production | Frontend | t3.medium | 2 | 8 | 70% |
-| Production | Backend | t3.medium | 2 | 8 | 70% |
-| Production | Database | db.t3.small | 1 | 1 | N/A |
+1. **AWS Account** with administrative access
+2. **AWS CLI v2** installed and configured
+3. **Sufficient service limits** for the following resources:
+   - VPCs: 1
+   - EC2 instances: 5-10 (depending on environment)
+   - RDS instances: 1-2
+   - Application Load Balancers: 1
+   - S3 buckets: 3
+   - IAM roles: 5
 
-#### Storage Requirements
-| Component | Type | Size | IOPS | Backup |
-|-----------|------|------|------|--------|
-| Jenkins | EBS gp3 | 100 GB | 3000 | Daily |
-| Application | EBS gp3 | 50 GB | 3000 | AMI |
-| Database | RDS gp3 | 100 GB | 3000 | 7 days |
-| Backups | S3 | Unlimited | N/A | Cross-region |
-
-### 3. Cost Estimation
+### Local Development Environment
 
 ```bash
-# Use AWS Pricing Calculator
-# https://calculator.aws/
-
-# Estimated monthly costs (us-east-1):
-# - EC2 instances: $150-300
-# - RDS database: $50-100
-# - Load balancer: $25
-# - S3 storage: $10-20
-# - Data transfer: $10-30
-# - CloudWatch: $10-20
-# Total: ~$255-495/month
+# Required tools
+aws --version          # AWS CLI v2.0+
+git --version         # Git 2.0+
+java --version        # Java 11+
+mvn --version         # Maven 3.6+
+docker --version      # Docker 20.0+ (optional)
 ```
 
-## AWS Account Preparation
+### Required Permissions
 
-### 1. Account Setup
+Your AWS user/role needs the following permissions:
+- CloudFormation: Full access
+- EC2: Full access
+- RDS: Full access
+- S3: Full access
+- IAM: Full access
+- VPC: Full access
+- CloudWatch: Full access
+- Systems Manager: Parameter access
 
-#### Root Account Security
-```bash
-# 1. Enable MFA on root account
-# 2. Create IAM admin user (don't use root for daily operations)
-# 3. Set up billing alerts
-# 4. Enable CloudTrail
-# 5. Configure AWS Config
+## Infrastructure Architecture
+
+### Network Architecture
+
+```
+Internet Gateway
+       |
+   Public Subnet (10.0.1.0/24)
+   ├── Jenkins Server
+   ├── NAT Gateway
+   └── Application Load Balancer
+       |
+   Private Subnet (10.0.2.0/24)
+   ├── Frontend Auto Scaling Group (2-3 instances)
+   ├── Backend Auto Scaling Group (2-3 instances)
+   └── RDS MySQL (Multi-AZ)
 ```
 
-#### Service Limits
+### Component Overview
+
+| Component | Purpose | High Availability |
+|-----------|---------|-------------------|
+| VPC | Network isolation | Single AZ |
+| Public Subnet | Internet-facing resources | Single AZ |
+| Private Subnet | Application and database | Single AZ |
+| Application Load Balancer | Traffic distribution | Multi-AZ capable |
+| Auto Scaling Groups | Application scaling | Multi-AZ capable |
+| RDS MySQL | Database | Multi-AZ |
+| S3 Buckets | Artifacts, backups, logs | Multi-AZ |
+| EFS | Shared installation scripts | Multi-AZ |
+
+## Pre-Deployment Setup
+
+### 1. Clone Repository
+
 ```bash
-# Check and request limit increases if needed
-aws service-quotas get-service-quota \
-  --service-code ec2 \
-  --quota-code L-1216C47A  # Running On-Demand instances
-
-aws service-quotas get-service-quota \
-  --service-code rds \
-  --quota-code L-7B6409FD  # DB instances
-
-# Request increases through AWS Support if needed
+git clone <repository-url>
+cd pet-clinic-cicd
 ```
 
-### 2. IAM Setup
+### 2. Configure AWS Credentials
 
-#### Create Deployment User
 ```bash
-# Create IAM user for deployment
-aws iam create-user --user-name petclinic-deployer
-
-# Create and attach policy
-cat > deployment-policy.json << 'EOF'
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "cloudformation:*",
-                "ec2:*",
-                "rds:*",
-                "s3:*",
-                "iam:*",
-                "efs:*",
-                "elasticloadbalancing:*",
-                "autoscaling:*",
-                "cloudwatch:*",
-                "logs:*",
-                "sns:*",
-                "ssm:*"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
-EOF
-
-aws iam create-policy \
-  --policy-name PetClinicDeploymentPolicy \
-  --policy-document file://deployment-policy.json
-
-aws iam attach-user-policy \
-  --user-name petclinic-deployer \
-  --policy-arn arn:aws:iam::$(aws sts get-caller-identity --query Account --output text):policy/PetClinicDeploymentPolicy
-
-# Create access keys
-aws iam create-access-key --user-name petclinic-deployer
+aws configure
+# Enter your AWS Access Key ID, Secret Access Key, Region, and Output format
 ```
 
-### 3. Network Planning
+### 3. Set Environment Variables
 
-#### VPC Design
 ```bash
-# Plan IP addressing
-# VPC CIDR: 10.0.0.0/16
-# Public Subnet AZ-A: 10.0.1.0/24
-# Public Subnet AZ-B: 10.0.2.0/24
-# Private Subnet AZ-A: 10.0.10.0/24
-# Private Subnet AZ-B: 10.0.20.0/24
-# Database Subnet AZ-A: 10.0.100.0/24
-# Database Subnet AZ-B: 10.0.200.0/24
+# Required environment variables
+export ENVIRONMENT="production"  # or "staging", "dev"
+export AWS_REGION="us-east-1"
+export DB_PASSWORD="your-secure-database-password"
+export JENKINS_ADMIN_PASSWORD="your-secure-jenkins-password"
+
+# Optional environment variables
+export INSTANCE_TYPE="t3.medium"
+export DB_INSTANCE_CLASS="db.t3.micro"
+export KEY_PAIR_NAME="your-ec2-key-pair"  # For SSH access
+export ALLOWED_CIDR="0.0.0.0/0"  # Restrict in production
 ```
 
-#### DNS Planning
+### 4. Create EC2 Key Pair (Optional)
+
 ```bash
-# Register domain or use existing
-# Plan subdomain structure:
-# - app.yourdomain.com (Application)
-# - jenkins.yourdomain.com (Jenkins)
-# - api.yourdomain.com (API)
+# Create key pair for SSH access
+aws ec2 create-key-pair \
+    --key-name pet-clinic-key \
+    --query 'KeyMaterial' \
+    --output text > ~/.ssh/pet-clinic-key.pem
+
+chmod 400 ~/.ssh/pet-clinic-key.pem
+export KEY_PAIR_NAME="pet-clinic-key"
 ```
 
 ## Infrastructure Deployment
 
-### 1. Pre-Deployment Validation
+### 1. Validate CloudFormation Templates
 
-#### Validate Templates
 ```bash
-# Validate all CloudFormation templates
-for template in cloudformation/*.yaml; do
-    echo "Validating $template..."
-    aws cloudformation validate-template \
-      --template-body file://$template
-done
-
-# Run template linting
-pip install cfn-lint
-cfn-lint cloudformation/*.yaml
+# Validate all templates
+./scripts/deploy-infrastructure.sh --validate-only
 ```
 
-#### Parameter Validation
+### 2. Deploy Infrastructure Stack
+
 ```bash
-# Create parameter file for production
-cat > cloudformation/production-parameters.json << 'EOF'
-[
-    {
-        "ParameterKey": "Environment",
-        "ParameterValue": "production"
-    },
-    {
-        "ParameterKey": "InstanceType",
-        "ParameterValue": "t3.medium"
-    },
-    {
-        "ParameterKey": "DBInstanceClass",
-        "ParameterValue": "db.t3.small"
-    },
-    {
-        "ParameterKey": "DBPassword",
-        "ParameterValue": "REPLACE_WITH_SECURE_PASSWORD"
-    },
-    {
-        "ParameterKey": "JenkinsAdminPassword",
-        "ParameterValue": "REPLACE_WITH_SECURE_PASSWORD"
-    },
-    {
-        "ParameterKey": "KeyPairName",
-        "ParameterValue": "your-key-pair"
-    },
-    {
-        "ParameterKey": "AllowedCIDR",
-        "ParameterValue": "0.0.0.0/0"
-    }
-]
-EOF
+# Deploy complete infrastructure
+./scripts/deploy-infrastructure.sh
 ```
 
-### 2. Staged Deployment
+The deployment process includes:
 
-#### Phase 1: Core Infrastructure
+1. **IAM Stack**: Roles and policies for EC2 instances
+2. **Network Stack**: VPC, subnets, security groups, NAT gateway
+3. **Storage Stack**: S3 buckets, EFS file system
+4. **Database Stack**: RDS MySQL with Multi-AZ
+5. **Compute Stack**: EC2 instances, Auto Scaling Groups, Load Balancer
+
+### 3. Monitor Deployment Progress
+
 ```bash
-# Deploy master stack
-aws cloudformation create-stack \
-  --stack-name petclinic-production \
-  --template-body file://cloudformation/master-stack.yaml \
-  --parameters file://cloudformation/production-parameters.json \
-  --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM \
-  --region us-east-1 \
-  --tags Key=Environment,Value=production Key=Project,Value=petclinic
-
-# Monitor deployment
-aws cloudformation wait stack-create-complete \
-  --stack-name petclinic-production \
-  --region us-east-1
-
 # Check stack status
 aws cloudformation describe-stacks \
-  --stack-name petclinic-production \
-  --query 'Stacks[0].StackStatus' \
-  --output text
-```
-
-#### Phase 2: Verify Infrastructure
-```bash
-# Get stack outputs
-aws cloudformation describe-stacks \
-  --stack-name petclinic-production \
-  --query 'Stacks[0].Outputs' \
-  --output table
-
-# Test connectivity
-JENKINS_URL=$(aws cloudformation describe-stacks \
-  --stack-name petclinic-production \
-  --query 'Stacks[0].Outputs[?OutputKey==`JenkinsURL`].OutputValue' \
-  --output text)
-
-ALB_URL=$(aws cloudformation describe-stacks \
-  --stack-name petclinic-production \
-  --query 'Stacks[0].Outputs[?OutputKey==`ApplicationURL`].OutputValue' \
-  --output text)
-
-echo "Jenkins URL: $JENKINS_URL"
-echo "Application URL: $ALB_URL"
-
-# Test endpoints
-curl -I $JENKINS_URL
-curl -I $ALB_URL
-```
-
-### 3. Infrastructure Validation
-
-#### Security Validation
-```bash
-# Check security groups
-aws ec2 describe-security-groups \
-  --filters "Name=group-name,Values=*petclinic*" \
-  --query 'SecurityGroups[].{Name:GroupName,Rules:IpPermissions}' \
-  --output table
-
-# Verify encryption
-aws rds describe-db-instances \
-  --query 'DBInstances[?contains(DBInstanceIdentifier, `petclinic`)].{ID:DBInstanceIdentifier,Encrypted:StorageEncrypted}'
-
-aws s3api get-bucket-encryption \
-  --bucket $(aws cloudformation describe-stacks \
     --stack-name petclinic-production \
-    --query 'Stacks[0].Outputs[?OutputKey==`BackupBucket`].OutputValue' \
-    --output text)
+    --query 'Stacks[0].StackStatus'
+
+# View stack events
+aws cloudformation describe-stack-events \
+    --stack-name petclinic-production \
+    --query 'StackEvents[0:10].{Time:Timestamp,Status:ResourceStatus,Type:ResourceType}'
 ```
 
-#### Network Validation
+### 4. Retrieve Infrastructure Outputs
+
 ```bash
-# Test network connectivity
-VPC_ID=$(aws cloudformation describe-stacks \
-  --stack-name petclinic-production \
-  --query 'Stacks[0].Outputs[?OutputKey==`VPCId`].OutputValue' \
-  --output text)
-
-# Check route tables
-aws ec2 describe-route-tables \
-  --filters "Name=vpc-id,Values=$VPC_ID" \
-  --query 'RouteTables[].{ID:RouteTableId,Routes:Routes}' \
-  --output table
-
-# Verify NAT Gateway connectivity
-aws ec2 describe-nat-gateways \
-  --filter "Name=vpc-id,Values=$VPC_ID" \
-  --query 'NatGateways[].{ID:NatGatewayId,State:State,SubnetId:SubnetId}'
+# Get all stack outputs
+aws cloudformation describe-stacks \
+    --stack-name petclinic-production \
+    --query 'Stacks[0].Outputs'
 ```
+
+Key outputs include:
+- **JenkinsURL**: Jenkins server access URL
+- **ApplicationURL**: Application Load Balancer URL
+- **DatabaseEndpoint**: RDS database endpoint
+- **VPCId**: VPC identifier
+- **BackupBucket**: S3 bucket for backups
 
 ## Application Deployment
 
-### 1. Jenkins Configuration
+### 1. Access Jenkins Server
 
-#### Initial Setup
 ```bash
-# Wait for Jenkins to be ready
-echo "Waiting for Jenkins to start..."
-until curl -s $JENKINS_URL/login > /dev/null; do
-    echo "Jenkins not ready yet, waiting 30 seconds..."
-    sleep 30
-done
-
-# Get initial admin password
-JENKINS_INSTANCE_ID=$(aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=*jenkins*" "Name=instance-state-name,Values=running" \
-  --query 'Reservations[0].Instances[0].InstanceId' \
-  --output text)
-
-# SSH into Jenkins instance to get password
-aws ssm start-session --target $JENKINS_INSTANCE_ID
-# Once connected: sudo cat /var/lib/jenkins/secrets/initialAdminPassword
-```
-
-#### Configure Jenkins
-```bash
-# Upload Jenkins configuration
-scp -i your-key.pem jenkins-config/jenkins-casc.yaml ec2-user@$JENKINS_URL:/tmp/
-
-# SSH and apply configuration
-ssh -i your-key.pem ec2-user@$JENKINS_URL << 'EOF'
-sudo cp /tmp/jenkins-casc.yaml /var/lib/jenkins/
-sudo chown jenkins:jenkins /var/lib/jenkins/jenkins-casc.yaml
-sudo systemctl restart jenkins
-EOF
-```
-
-### 2. Application Build and Deploy
-
-#### Build Application
-```bash
-# Build application locally first
-cd pet-clinic-app
-mvn clean package -DskipTests
-
-# Upload artifacts to S3
-ARTIFACT_BUCKET=$(aws cloudformation describe-stacks \
-  --stack-name petclinic-production \
-  --query 'Stacks[0].Outputs[?OutputKey==`ArtifactBucket`].OutputValue' \
-  --output text)
-
-aws s3 cp pet-clinic-backend/target/pet-clinic-backend-1.0.0.jar \
-  s3://$ARTIFACT_BUCKET/artifacts/backend/
-
-aws s3 cp pet-clinic-frontend/target/pet-clinic-frontend-1.0.0.jar \
-  s3://$ARTIFACT_BUCKET/artifacts/frontend/
-```
-
-#### Deploy to EC2 Instances
-```bash
-# Get application instance IDs
-BACKEND_INSTANCES=$(aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=*backend*" "Name=instance-state-name,Values=running" \
-  --query 'Reservations[].Instances[].InstanceId' \
-  --output text)
-
-FRONTEND_INSTANCES=$(aws ec2 describe-instances \
-  --filters "Name=tag:Name,Values=*frontend*" "Name=instance-state-name,Values=running" \
-  --query 'Reservations[].Instances[].InstanceId' \
-  --output text)
-
-# Deploy backend
-for instance in $BACKEND_INSTANCES; do
-    echo "Deploying backend to $instance"
-    aws ssm send-command \
-      --instance-ids $instance \
-      --document-name "AWS-RunShellScript" \
-      --parameters 'commands=[
-        "sudo systemctl stop petclinic-backend",
-        "aws s3 cp s3://'$ARTIFACT_BUCKET'/artifacts/backend/pet-clinic-backend-1.0.0.jar /opt/petclinic/",
-        "sudo systemctl start petclinic-backend"
-      ]'
-done
-
-# Deploy frontend
-for instance in $FRONTEND_INSTANCES; do
-    echo "Deploying frontend to $instance"
-    aws ssm send-command \
-      --instance-ids $instance \
-      --document-name "AWS-RunShellScript" \
-      --parameters 'commands=[
-        "sudo systemctl stop petclinic-frontend",
-        "aws s3 cp s3://'$ARTIFACT_BUCKET'/artifacts/frontend/pet-clinic-frontend-1.0.0.jar /opt/petclinic/",
-        "sudo systemctl start petclinic-frontend"
-      ]'
-done
-```
-
-### 3. Database Setup
-
-#### Initialize Database
-```bash
-# Get RDS endpoint
-DB_ENDPOINT=$(aws cloudformation describe-stacks \
-  --stack-name petclinic-production \
-  --query 'Stacks[0].Outputs[?OutputKey==`DatabaseEndpoint`].OutputValue' \
-  --output text)
-
-# Connect through bastion host or VPN
-# Initialize schema
-mysql -h $DB_ENDPOINT -u petclinic -p << 'EOF'
-CREATE DATABASE IF NOT EXISTS petclinic;
-USE petclinic;
-
--- Run schema creation scripts
-SOURCE pet-clinic-app/pet-clinic-backend/src/main/resources/schema.sql;
-SOURCE pet-clinic-app/pet-clinic-backend/src/main/resources/data.sql;
-EOF
-```
-
-## Post-Deployment Configuration
-
-### 1. SSL/TLS Configuration
-
-#### Request SSL Certificate
-```bash
-# Request certificate through ACM
-aws acm request-certificate \
-  --domain-name yourdomain.com \
-  --subject-alternative-names "*.yourdomain.com" \
-  --validation-method DNS \
-  --region us-east-1
-
-# Get certificate ARN
-CERT_ARN=$(aws acm list-certificates \
-  --query 'CertificateSummaryList[?DomainName==`yourdomain.com`].CertificateArn' \
-  --output text)
-
-# Update ALB to use HTTPS
-aws elbv2 create-listener \
-  --load-balancer-arn $(aws elbv2 describe-load-balancers \
-    --names petclinic-alb \
-    --query 'LoadBalancers[0].LoadBalancerArn' \
-    --output text) \
-  --protocol HTTPS \
-  --port 443 \
-  --certificates CertificateArn=$CERT_ARN \
-  --default-actions Type=forward,TargetGroupArn=$(aws elbv2 describe-target-groups \
-    --names petclinic-frontend-tg \
-    --query 'TargetGroups[0].TargetGroupArn' \
+# Get Jenkins URL from stack outputs
+JENKINS_URL=$(aws cloudformation describe-stacks \
+    --stack-name petclinic-production \
+    --query 'Stacks[0].Outputs[?OutputKey==`JenkinsURL`].OutputValue' \
     --output text)
+
+echo "Jenkins URL: $JENKINS_URL"
 ```
 
-### 2. DNS Configuration
+Access Jenkins at the provided URL:
+- **Username**: `admin`
+- **Password**: Value of `JENKINS_ADMIN_PASSWORD`
 
-#### Route 53 Setup
+### 2. Configure Jenkins
+
+Jenkins is pre-configured with:
+- **Jenkins Configuration as Code (JCasC)**
+- **Pre-installed plugins** for Maven, Git, AWS
+- **Automated job creation** for frontend and backend
+- **Security configuration** with role-based access
+
+### 3. Set Up GitHub Integration
+
+1. **Add GitHub SSH Key** to Jenkins credentials
+2. **Configure webhook** in GitHub repository
+3. **Update repository URLs** in Jenkins jobs
+
 ```bash
-# Create hosted zone (if not exists)
-aws route53 create-hosted-zone \
-  --name yourdomain.com \
-  --caller-reference $(date +%s)
-
-# Get hosted zone ID
-HOSTED_ZONE_ID=$(aws route53 list-hosted-zones \
-  --query 'HostedZones[?Name==`yourdomain.com.`].Id' \
-  --output text | cut -d'/' -f3)
-
-# Create DNS records
-cat > dns-records.json << EOF
-{
-    "Changes": [
-        {
-            "Action": "CREATE",
-            "ResourceRecordSet": {
-                "Name": "app.yourdomain.com",
-                "Type": "A",
-                "AliasTarget": {
-                    "DNSName": "$ALB_URL",
-                    "EvaluateTargetHealth": false,
-                    "HostedZoneId": "Z35SXDOTRQ7X7K"
-                }
-            }
-        },
-        {
-            "Action": "CREATE",
-            "ResourceRecordSet": {
-                "Name": "jenkins.yourdomain.com",
-                "Type": "A",
-                "TTL": 300,
-                "ResourceRecords": [
-                    {
-                        "Value": "$(aws ec2 describe-instances \
-                          --instance-ids $JENKINS_INSTANCE_ID \
-                          --query 'Reservations[0].Instances[0].PublicIpAddress' \
-                          --output text)"
-                    }
-                ]
-            }
-        }
-    ]
-}
-EOF
-
-aws route53 change-resource-record-sets \
-  --hosted-zone-id $HOSTED_ZONE_ID \
-  --change-batch file://dns-records.json
+# Generate SSH key for GitHub
+ssh-keygen -t rsa -b 4096 -C "jenkins@petclinic.local" -f ~/.ssh/jenkins_github
 ```
 
-### 3. Monitoring Setup
+### 4. Deploy Applications
 
-#### CloudWatch Dashboards
+#### Backend Deployment
+
 ```bash
-# Deploy monitoring stack
-aws cloudformation create-stack \
-  --stack-name petclinic-monitoring \
-  --template-body file://monitoring-config/cloudwatch-dashboard.yaml \
-  --parameters ParameterKey=Environment,ParameterValue=production \
-  --region us-east-1
+# Set environment variables for backend
+export DB_HOST=$(aws cloudformation describe-stacks \
+    --stack-name petclinic-production \
+    --query 'Stacks[0].Outputs[?OutputKey==`DatabaseEndpoint`].OutputValue' \
+    --output text)
 
-# Deploy alarms
-aws cloudformation create-stack \
-  --stack-name petclinic-alarms \
-  --template-body file://monitoring-config/cloudwatch-alarms.yaml \
-  --parameters ParameterKey=Environment,ParameterValue=production \
-  --region us-east-1
-```
+export DB_NAME="petclinicdb"
+export DB_USER="petclinicadmin"
+export AWS_REGION="us-east-1"
 
-#### Log Aggregation
-```bash
-# Configure CloudWatch Logs agent on instances
-for instance in $BACKEND_INSTANCES $FRONTEND_INSTANCES; do
-    aws ssm send-command \
-      --instance-ids $instance \
-      --document-name "AWS-RunShellScript" \
-      --parameters 'commands=[
-        "sudo yum install -y awslogs",
-        "sudo systemctl enable awslogsd",
-        "sudo systemctl start awslogsd"
-      ]'
-done
-```
-
-## Production Considerations
-
-### 1. Security Hardening
-
-#### Network Security
-```bash
-# Update security groups for production
-# Remove SSH access from 0.0.0.0/0
-aws ec2 authorize-security-group-ingress \
-  --group-id sg-jenkins \
-  --protocol tcp \
-  --port 22 \
-  --source-group sg-bastion
-
-# Enable VPC Flow Logs
-aws ec2 create-flow-logs \
-  --resource-type VPC \
-  --resource-ids $VPC_ID \
-  --traffic-type ALL \
-  --log-destination-type cloud-watch-logs \
-  --log-group-name VPCFlowLogs
-```
-
-#### Secrets Management
-```bash
-# Store secrets in Parameter Store
-aws ssm put-parameter \
-  --name "/petclinic/production/db-password" \
-  --value "your-secure-db-password" \
-  --type "SecureString"
-
-aws ssm put-parameter \
-  --name "/petclinic/production/jenkins-admin-password" \
-  --value "your-secure-jenkins-password" \
-  --type "SecureString"
-```
-
-### 2. Backup Configuration
-
-#### Automated Backups
-```bash
-# Configure RDS backups
-aws rds modify-db-instance \
-  --db-instance-identifier petclinic-db \
-  --backup-retention-period 7 \
-  --preferred-backup-window "03:00-04:00" \
-  --preferred-maintenance-window "sun:04:00-sun:05:00"
-
-# Setup Jenkins backup
-ssh -i your-key.pem ec2-user@$JENKINS_URL << 'EOF'
-sudo /opt/jenkins-config/setup-thinbackup.sh
-sudo /opt/jenkins-config/s3-backup-sync.sh
-EOF
-```
-
-### 3. Performance Optimization
-
-#### Auto Scaling Configuration
-```bash
-# Update Auto Scaling policies
-aws autoscaling put-scaling-policy \
-  --auto-scaling-group-name petclinic-backend-asg \
-  --policy-name scale-out \
-  --policy-type TargetTrackingScaling \
-  --target-tracking-configuration '{
-    "TargetValue": 70.0,
-    "PredefinedMetricSpecification": {
-      "PredefinedMetricType": "ASGAverageCPUUtilization"
-    }
-  }'
-```
-
-## Monitoring and Maintenance
-
-### 1. Health Monitoring
-
-#### Application Health Checks
-```bash
-# Create health check script
-cat > scripts/health-check-production.sh << 'EOF'
-#!/bin/bash
-
-echo "=== Production Health Check ==="
-
-# Check application endpoints
-echo "Checking application health..."
-curl -f https://app.yourdomain.com/health || echo "Frontend health check failed"
-curl -f https://app.yourdomain.com/api/health || echo "Backend health check failed"
-
-# Check Jenkins
-echo "Checking Jenkins..."
-curl -f https://jenkins.yourdomain.com/login || echo "Jenkins health check failed"
-
-# Check database connectivity
-echo "Checking database..."
-mysql -h $DB_ENDPOINT -u petclinic -p$DB_PASSWORD -e "SELECT 1" || echo "Database check failed"
-
-# Check AWS resources
-echo "Checking AWS resources..."
-aws cloudformation describe-stacks \
-  --stack-name petclinic-production \
-  --query 'Stacks[0].StackStatus' \
-  --output text
-
-echo "=== Health Check Complete ==="
-EOF
-
-chmod +x scripts/health-check-production.sh
-```
-
-### 2. Log Analysis
-
-#### Centralized Logging
-```bash
-# Query CloudWatch Logs
-aws logs describe-log-groups \
-  --log-group-name-prefix "/aws/ec2/petclinic"
-
-# Search for errors
-aws logs filter-log-events \
-  --log-group-name "/aws/ec2/petclinic/application" \
-  --filter-pattern "ERROR" \
-  --start-time $(date -d "1 hour ago" +%s)000
-```
-
-### 3. Performance Monitoring
-
-#### Metrics Analysis
-```bash
-# Get CloudWatch metrics
-aws cloudwatch get-metric-statistics \
-  --namespace AWS/ApplicationELB \
-  --metric-name TargetResponseTime \
-  --dimensions Name=LoadBalancer,Value=app/petclinic-alb/1234567890abcdef \
-  --statistics Average \
-  --start-time $(date -d "1 hour ago" --iso-8601) \
-  --end-time $(date --iso-8601) \
-  --period 300
-```
-
-## Disaster Recovery
-
-### 1. Backup Verification
-
-#### Test Restore Procedures
-```bash
-# Test database restore
-aws rds restore-db-instance-from-db-snapshot \
-  --db-instance-identifier petclinic-db-test \
-  --db-snapshot-identifier petclinic-db-snapshot-$(date +%Y%m%d) \
-  --db-instance-class db.t3.micro
-
-# Test Jenkins restore
-./jenkins-config/disaster-recovery.sh test
-```
-
-### 2. Failover Procedures
-
-#### Multi-Region Setup
-```bash
-# Deploy to secondary region
-aws cloudformation create-stack \
-  --stack-name petclinic-dr \
-  --template-body file://cloudformation/master-stack.yaml \
-  --parameters file://cloudformation/dr-parameters.json \
-  --capabilities CAPABILITY_IAM \
-  --region us-west-2
-```
-
-### 3. Recovery Testing
-
-#### Regular DR Drills
-```bash
-# Schedule monthly DR tests
-cat > scripts/dr-test.sh << 'EOF'
-#!/bin/bash
-echo "Starting DR test..."
-
-# Test backup restore
-./jenkins-config/disaster-recovery.sh
-
-# Test application deployment
+# Run backend deployment script
 ./deployment-scripts/deploy-backend.sh
-./deployment-scripts/deploy-frontend.sh
-
-# Verify functionality
-./scripts/health-check-production.sh
-
-echo "DR test complete"
-EOF
-
-chmod +x scripts/dr-test.sh
-
-# Add to cron for monthly execution
-echo "0 2 1 * * /path/to/scripts/dr-test.sh" | crontab -
 ```
 
-This cloud deployment guide provides comprehensive instructions for deploying and maintaining the Pet Clinic CI/CD Pipeline in a production AWS environment with proper security, monitoring, and disaster recovery capabilities.
+#### Frontend Deployment
+
+```bash
+# Set environment variables for frontend
+export BACKEND_URL="http://internal-backend-alb.amazonaws.com"
+export AWS_REGION="us-east-1"
+
+# Run frontend deployment script
+./deployment-scripts/deploy-frontend.sh
+```
+
+### 5. Verify Application Deployment
+
+```bash
+# Check application health
+curl -f http://<application-url>/actuator/health
+
+# Check backend API
+curl -f http://<application-url>/api/actuator/health
+
+# Test database connectivity
+curl -f http://<application-url>/api/actuator/health/db
+```
+
+## CI/CD Pipeline Setup
+
+### 1. Jenkins Pipeline Configuration
+
+The Jenkins server includes pre-configured pipelines:
+
+#### Backend Pipeline (`Jenkinsfile-backend`)
+- **Source Code Checkout** from GitHub
+- **Maven Build** with dependency resolution
+- **Unit Tests** execution with JUnit
+- **Property-Based Tests** with jqwik
+- **Code Quality Analysis** with SonarQube
+- **Security Scanning** with OWASP dependency check
+- **Docker Image Build** (optional)
+- **Deployment** to staging/production
+- **Health Check Verification**
+- **Rollback** on deployment failure
+
+#### Frontend Pipeline (`Jenkinsfile-frontend`)
+- **Source Code Checkout** from GitHub
+- **Maven Build** with Thymeleaf templates
+- **Unit Tests** execution
+- **Integration Tests** with Selenium
+- **Static Analysis** with ESLint/SonarQube
+- **Deployment** to staging/production
+- **UI Health Check**
+- **Rollback** on deployment failure
+
+### 2. Automated Deployment Triggers
+
+- **Push to main branch**: Triggers production deployment
+- **Pull Request**: Triggers staging deployment and testing
+- **Scheduled builds**: Nightly builds for dependency updates
+- **Manual triggers**: For hotfixes and emergency deployments
+
+### 3. Pipeline Monitoring
+
+```bash
+# View Jenkins logs
+sudo journalctl -u jenkins -f
+
+# Check pipeline status via API
+curl -u admin:$JENKINS_ADMIN_PASSWORD \
+    "$JENKINS_URL/job/pet-clinic/job/pet-clinic-backend/lastBuild/api/json"
+```
+
+## Monitoring and Alerting
+
+### 1. Deploy Monitoring Stack
+
+```bash
+# Set up comprehensive monitoring
+export ALERT_EMAIL="admin@yourcompany.com"
+export SLACK_WEBHOOK_URL="https://hooks.slack.com/services/..."  # Optional
+export PAGERDUTY_INTEGRATION_KEY="your-pagerduty-key"  # Optional
+
+./monitoring-config/setup-monitoring.sh
+```
+
+### 2. CloudWatch Dashboards
+
+The monitoring setup creates dashboards for:
+
+- **Infrastructure Metrics**: CPU, memory, disk, network
+- **Application Metrics**: Response times, error rates, throughput
+- **Database Metrics**: Connections, CPU, storage, replication lag
+- **Jenkins Metrics**: Build success rates, queue length, executor usage
+
+### 3. Alerting Configuration
+
+Automated alerts are configured for:
+
+| Metric | Threshold | Action |
+|--------|-----------|--------|
+| EC2 CPU Utilization | > 80% | Email + Slack |
+| RDS CPU Utilization | > 80% | Email + PagerDuty |
+| Application Error Rate | > 5% | Email + Slack |
+| Database Connections | > 80% | Email |
+| Disk Space | > 85% | Email |
+| Jenkins Build Failures | > 3 consecutive | Email + Slack |
+
+### 4. Custom Metrics
+
+The deployment includes a custom metrics publisher that tracks:
+- Application-specific business metrics
+- Custom performance indicators
+- Jenkins pipeline metrics
+- Security event metrics
+
+## Security Configuration
+
+### 1. Network Security
+
+- **VPC Isolation**: All resources in private VPC
+- **Security Groups**: Restrictive inbound/outbound rules
+- **NACLs**: Additional network-level protection
+- **NAT Gateway**: Secure outbound internet access for private subnets
+
+### 2. Data Encryption
+
+- **RDS Encryption**: Database encrypted at rest
+- **S3 Encryption**: All buckets encrypted with KMS
+- **EFS Encryption**: File system encrypted in transit and at rest
+- **SSL/TLS**: HTTPS enforced for all web traffic
+
+### 3. Access Control
+
+- **IAM Roles**: Least privilege access for all services
+- **Instance Profiles**: No hardcoded credentials
+- **Systems Manager**: Secure parameter storage
+- **Jenkins Security**: Role-based access control
+
+### 4. Security Monitoring
+
+```bash
+# Enable AWS Config for compliance monitoring
+aws configservice put-configuration-recorder \
+    --configuration-recorder name=default,roleARN=arn:aws:iam::account:role/config-role
+
+# Enable CloudTrail for audit logging
+aws cloudtrail create-trail \
+    --name petclinic-audit-trail \
+    --s3-bucket-name petclinic-audit-logs
+```
+
+## Backup and Disaster Recovery
+
+### 1. Automated Backups
+
+#### Database Backups
+- **RDS Automated Backups**: 7-day retention
+- **RDS Snapshots**: Weekly manual snapshots
+- **Cross-region replication**: For disaster recovery
+
+#### Application Backups
+- **Jenkins Configuration**: Daily backups to S3
+- **Application Artifacts**: Versioned storage in S3
+- **EFS Snapshots**: Daily file system backups
+
+### 2. Backup Verification
+
+```bash
+# Test database backup restoration
+./jenkins-config/backup-test.sh
+
+# Verify S3 backup integrity
+aws s3api head-object \
+    --bucket petclinic-production-backups \
+    --key jenkins/backup-$(date +%Y%m%d).tar.gz
+```
+
+### 3. Disaster Recovery Procedures
+
+#### RTO/RPO Targets
+- **Recovery Time Objective (RTO)**: 4 hours
+- **Recovery Point Objective (RPO)**: 1 hour
+
+#### Recovery Steps
+1. **Assess Impact**: Determine scope of outage
+2. **Activate DR Plan**: Notify stakeholders
+3. **Restore Infrastructure**: Deploy to alternate region
+4. **Restore Data**: From latest backups
+5. **Validate System**: Run health checks
+6. **Switch Traffic**: Update DNS/load balancer
+7. **Monitor**: Ensure stable operation
+
+### 4. Backup Testing Schedule
+
+- **Weekly**: Database backup restoration test
+- **Monthly**: Full disaster recovery drill
+- **Quarterly**: Cross-region failover test
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### 1. Infrastructure Deployment Failures
+
+```bash
+# Check CloudFormation events
+aws cloudformation describe-stack-events \
+    --stack-name petclinic-production \
+    --query 'StackEvents[?ResourceStatus==`CREATE_FAILED`]'
+
+# Common solutions:
+# - Check service limits
+# - Verify IAM permissions
+# - Ensure unique resource names
+# - Check parameter values
+```
+
+#### 2. Application Deployment Issues
+
+```bash
+# Check application logs
+sudo tail -f /var/log/pet-clinic/backend.log
+sudo tail -f /var/log/pet-clinic/frontend.log
+
+# Check service status
+sudo systemctl status pet-clinic-backend
+sudo systemctl status pet-clinic-frontend
+
+# Common solutions:
+# - Verify database connectivity
+# - Check environment variables
+# - Ensure proper file permissions
+# - Validate configuration files
+```
+
+#### 3. Database Connection Problems
+
+```bash
+# Test database connectivity
+mysql -h $DB_HOST -u $DB_USER -p$DB_PASSWORD -e "SELECT 1"
+
+# Check RDS status
+aws rds describe-db-instances \
+    --db-instance-identifier petclinic-production-db
+
+# Common solutions:
+# - Verify security group rules
+# - Check database credentials
+# - Ensure database is in available state
+# - Validate connection string
+```
+
+#### 4. Jenkins Issues
+
+```bash
+# Check Jenkins service
+sudo systemctl status jenkins
+
+# View Jenkins logs
+sudo journalctl -u jenkins -f
+
+# Check disk space
+df -h /var/lib/jenkins
+
+# Common solutions:
+# - Restart Jenkins service
+# - Clear old build artifacts
+# - Check plugin compatibility
+# - Verify Java version
+```
+
+### Monitoring and Debugging Tools
+
+```bash
+# System monitoring
+htop                    # Process monitoring
+iotop                   # I/O monitoring
+netstat -tulpn         # Network connections
+ss -tulpn              # Socket statistics
+
+# Application monitoring
+curl -f http://localhost:8080/actuator/health
+curl -f http://localhost:9090/actuator/metrics
+
+# AWS CLI debugging
+aws logs tail /aws/petclinic/application --follow
+aws cloudwatch get-metric-statistics --namespace AWS/EC2 --metric-name CPUUtilization
+```
+
+## Cost Optimization
+
+### 1. Right-Sizing Resources
+
+#### Current Resource Allocation
+- **Jenkins Server**: t3.medium (2 vCPU, 4 GB RAM)
+- **Application Servers**: t3.small (1 vCPU, 2 GB RAM)
+- **Database**: db.t3.micro (1 vCPU, 1 GB RAM)
+
+#### Optimization Recommendations
+
+```bash
+# Monitor resource utilization
+aws cloudwatch get-metric-statistics \
+    --namespace AWS/EC2 \
+    --metric-name CPUUtilization \
+    --start-time $(date -d '7 days ago' -u +%Y-%m-%dT%H:%M:%S) \
+    --end-time $(date -u +%Y-%m-%dT%H:%M:%S) \
+    --period 3600 \
+    --statistics Average
+
+# Consider downsizing if average CPU < 30%
+# Consider upsizing if average CPU > 70%
+```
+
+### 2. Storage Optimization
+
+```bash
+# S3 lifecycle policies
+aws s3api put-bucket-lifecycle-configuration \
+    --bucket petclinic-production-backups \
+    --lifecycle-configuration file://s3-lifecycle.json
+
+# EBS volume optimization
+aws ec2 describe-volumes \
+    --filters Name=attachment.instance-id,Values=i-1234567890abcdef0 \
+    --query 'Volumes[0].{Size:Size,VolumeType:VolumeType,Iops:Iops}'
+```
+
+### 3. Reserved Instances
+
+For production workloads, consider:
+- **1-year Reserved Instances** for predictable workloads
+- **Savings Plans** for flexible compute usage
+- **Spot Instances** for non-critical batch processing
+
+### 4. Cost Monitoring
+
+```bash
+# Set up billing alerts
+aws budgets create-budget \
+    --account-id $(aws sts get-caller-identity --query Account --output text) \
+    --budget file://budget-config.json
+
+# Monitor costs by service
+aws ce get-cost-and-usage \
+    --time-period Start=2024-01-01,End=2024-01-31 \
+    --granularity MONTHLY \
+    --metrics BlendedCost \
+    --group-by Type=DIMENSION,Key=SERVICE
+```
+
+### Estimated Monthly Costs (us-east-1)
+
+| Service | Configuration | Estimated Cost |
+|---------|---------------|----------------|
+| EC2 Instances | 1x t3.medium + 4x t3.small | $85-120 |
+| RDS MySQL | db.t3.micro Multi-AZ | $25-35 |
+| Application Load Balancer | 1 ALB | $20-25 |
+| S3 Storage | 100GB with lifecycle | $5-10 |
+| Data Transfer | Moderate usage | $10-20 |
+| CloudWatch | Standard monitoring | $5-15 |
+| **Total** | | **$150-225/month** |
+
+## Maintenance
+
+### 1. Regular Maintenance Tasks
+
+#### Weekly Tasks
+- Review CloudWatch alarms and metrics
+- Check backup completion status
+- Update security patches on EC2 instances
+- Review Jenkins build success rates
+
+#### Monthly Tasks
+- Rotate access keys and passwords
+- Review and optimize costs
+- Update application dependencies
+- Test disaster recovery procedures
+
+#### Quarterly Tasks
+- Security audit and penetration testing
+- Performance optimization review
+- Capacity planning assessment
+- Documentation updates
+
+### 2. Automated Maintenance
+
+```bash
+# Set up automated patching
+aws ssm create-maintenance-window \
+    --name "petclinic-maintenance-window" \
+    --schedule "cron(0 2 ? * SUN *)" \
+    --duration 4 \
+    --cutoff 1
+
+# Configure automatic backups
+aws rds modify-db-instance \
+    --db-instance-identifier petclinic-production-db \
+    --backup-retention-period 7 \
+    --preferred-backup-window "03:00-04:00"
+```
+
+### 3. Monitoring Maintenance
+
+```bash
+# Check system health
+./scripts/health-check.sh
+
+# Review logs for errors
+sudo grep -i error /var/log/pet-clinic/*.log | tail -20
+
+# Monitor disk usage
+df -h | grep -E "(80%|90%|100%)"
+
+# Check service status
+systemctl status pet-clinic-backend pet-clinic-frontend jenkins
+```
+
+### 4. Update Procedures
+
+#### Application Updates
+1. **Test in staging environment**
+2. **Create database backup**
+3. **Deploy during maintenance window**
+4. **Verify health checks**
+5. **Monitor for issues**
+6. **Rollback if necessary**
+
+#### Infrastructure Updates
+1. **Update CloudFormation templates**
+2. **Validate templates**
+3. **Deploy to staging first**
+4. **Schedule production update**
+5. **Monitor deployment**
+6. **Verify all services**
+
+---
+
+## Support and Resources
+
+### Documentation Links
+- [AWS CloudFormation Documentation](https://docs.aws.amazon.com/cloudformation/)
+- [Amazon RDS User Guide](https://docs.aws.amazon.com/rds/)
+- [Jenkins Documentation](https://www.jenkins.io/doc/)
+- [Spring Boot Reference](https://docs.spring.io/spring-boot/docs/current/reference/html/)
+
+### Emergency Contacts
+- **Infrastructure Issues**: AWS Support
+- **Application Issues**: Development Team
+- **Security Issues**: Security Team
+- **Database Issues**: DBA Team
+
+### Useful Commands Reference
+
+```bash
+# Quick status check
+aws cloudformation describe-stacks --stack-name petclinic-production --query 'Stacks[0].StackStatus'
+
+# Application health check
+curl -f http://$(aws cloudformation describe-stacks --stack-name petclinic-production --query 'Stacks[0].Outputs[?OutputKey==`ApplicationURL`].OutputValue' --output text)/actuator/health
+
+# Database connection test
+mysql -h $(aws cloudformation describe-stacks --stack-name petclinic-production --query 'Stacks[0].Outputs[?OutputKey==`DatabaseEndpoint`].OutputValue' --output text) -u petclinicadmin -p
+
+# Jenkins status
+curl -u admin:$JENKINS_ADMIN_PASSWORD $(aws cloudformation describe-stacks --stack-name petclinic-production --query 'Stacks[0].Outputs[?OutputKey==`JenkinsURL`].OutputValue' --output text)/api/json
+```
+
+This comprehensive guide provides everything needed to successfully deploy and maintain the Pet Clinic application on AWS Cloud infrastructure.
