@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title th:text="'Visit Details - ' + ${#temporals.format(visit.visitDate, 'MMM dd, yyyy')}">Visit Details</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-calendar-alt"></i> 
+                Visit Details
+                <span th:if="${visit.emergencyVisit}" class="badge bg-danger ms-2">Emergency</span>
+                <span th:if="${visit.completed != null}">
+                    <span th:if="${visit.completed}" class="badge bg-success ms-2">Completed</span>
+                    <span th:unless="${visit.completed}" class="badge bg-warning ms-2">Pending</span>
+                </span>
+            </h1>
+            <div>
+                <a th:href="@{/visits/{id}/edit(id=${visit.id})}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit Visit
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Visit Information -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Visit Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="30%">Date & Time:</th>
+                                <td>
+                                    <div th:text="${#temporals.format(visit.visitDate, 'EEEE, MMMM dd, yyyy')}">Date</div>
+                                    <small class="text-muted" th:text="${#temporals.format(visit.visitDate, 'HH:mm')}">Time</small>
+                                </td>
+                            </tr>
+                            <tr th:if="${visit.pet != null}">
+                                <th>Pet:</th>
+                                <td>
+                                    <a th:href="@{/pets/{id}(id=${visit.pet.id})}" 
+                                       th:text="${visit.pet.name}">Pet Name</a>
+                                    <small class="text-muted">
+                                        (<span th:text="${visit.pet.species}">Species</span>
+                                        <span th:if="${visit.pet.breed != null and !#strings.isEmpty(visit.pet.breed)}">
+                                            - <span th:text="${visit.pet.breed}">Breed</span>
+                                        </span>)
+                                    </small>
+                                </td>
+                            </tr>
+                            <tr th:if="${visit.pet != null and visit.pet.owner != null}">
+                                <th>Owner:</th>
+                                <td>
+                                    <a th:href="@{/owners/{id}(id=${visit.pet.owner.id})}" 
+                                       th:text="${visit.pet.owner.fullName}">Owner Name</a>
+                                </td>
+                            </tr>
+                            <tr th:if="${visit.veterinarian != null}">
+                                <th>Veterinarian:</th>
+                                <td>
+                                    <a th:href="@{/veterinarians/{id}(id=${visit.veterinarian.id})}" 
+                                       th:text="'Dr. ' + ${visit.veterinarian.firstName} + ' ' + ${visit.veterinarian.lastName}">Veterinarian Name</a>
+                                    <div th:if="${visit.veterinarian.specialty != null}" class="text-muted small">
+                                        Specialty: <span th:text="${visit.veterinarian.specialty}">Specialty</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr th:if="${visit.cost != null}">
+                                <th>Cost:</th>
+                                <td>
+                                    <span class="h5 text-success">
+                                        $<span th:text="${#numbers.formatDecimal(visit.cost, 1, 2)}">0.00</span>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Type:</th>
+                                <td>
+                                    <span th:if="${visit.emergencyVisit}" class="badge bg-danger">Emergency Visit</span>
+                                    <span th:unless="${visit.emergencyVisit}" class="badge bg-info">Regular Visit</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <span th:if="${visit.completed != null}">
+                                        <span th:if="${visit.completed}" class="badge bg-success">Completed</span>
+                                        <span th:unless="${visit.completed}" class="badge bg-warning">Pending</span>
+                                    </span>
+                                    <span th:unless="${visit.completed != null}" class="badge bg-secondary">Unknown</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${visit.createdAt != null}">
+                                <th>Scheduled:</th>
+                                <td th:text="${#temporals.format(visit.createdAt, 'MMM dd, yyyy HH:mm')}">Created Date</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visit Details -->
+            <div class="col-md-6">
+                <!-- Description -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-file-alt"></i> Description</h6>
+                    </div>
+                    <div class="card-body">
+                        <p th:text="${visit.description}" class="mb-0">Visit description</p>
+                    </div>
+                </div>
+
+                <!-- Diagnosis -->
+                <div class="card mb-3" th:if="${visit.diagnosis != null and !#strings.isEmpty(visit.diagnosis)}">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-stethoscope"></i> Diagnosis</h6>
+                    </div>
+                    <div class="card-body">
+                        <p th:text="${visit.diagnosis}" class="mb-0">Diagnosis</p>
+                    </div>
+                </div>
+
+                <!-- Treatment -->
+                <div class="card mb-3" th:if="${visit.treatment != null and !#strings.isEmpty(visit.treatment)}">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-pills"></i> Treatment</h6>
+                    </div>
+                    <div class="card-body">
+                        <p th:text="${visit.treatment}" class="mb-0">Treatment</p>
+                    </div>
+                </div>
+
+                <!-- Placeholder for empty fields -->
+                <div th:if="${(visit.diagnosis == null or #strings.isEmpty(visit.diagnosis)) and (visit.treatment == null or #strings.isEmpty(visit.treatment))}" 
+                     class="card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clipboard-list fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-2">Diagnosis and treatment details not yet recorded</p>
+                        <a th:href="@{/visits/{id}/edit(id=${visit.id})}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-edit"></i> Add Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Information -->
+        <div class="row mt-4" th:if="${visit.pet != null}">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-history"></i> Pet's Recent Visits</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${visit.pet.visits == null or #lists.isEmpty(visit.pet.visits)}" class="text-center py-3">
+                            <p class="text-muted mb-0">No other visits recorded for this pet</p>
+                        </div>
+
+                        <div th:if="${visit.pet.visits != null and !#lists.isEmpty(visit.pet.visits)}" class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Veterinarian</th>
+                                        <th>Status</th>
+                                        <th>Cost</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="otherVisit : ${visit.pet.visits}" 
+                                        th:if="${otherVisit.id != visit.id}"
+                                        th:classappend="${otherVisit.id == visit.id} ? 'table-primary'">
+                                        <td th:text="${#temporals.format(otherVisit.visitDate, 'MMM dd, yyyy')}">Date</td>
+                                        <td>
+                                            <span th:text="${otherVisit.description}">Description</span>
+                                            <span th:if="${otherVisit.emergencyVisit}" class="badge bg-danger ms-1">Emergency</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${otherVisit.veterinarian != null}" 
+                                                  th:text="'Dr. ' + ${otherVisit.veterinarian.lastName}">Vet</span>
+                                            <span th:unless="${otherVisit.veterinarian != null}" class="text-muted">-</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${otherVisit.completed != null}">
+                                                <span th:if="${otherVisit.completed}" class="badge bg-success">Completed</span>
+                                                <span th:unless="${otherVisit.completed}" class="badge bg-warning">Pending</span>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${otherVisit.cost != null}" 
+                                                  th:text="'$' + ${#numbers.formatDecimal(otherVisit.cost, 1, 2)}">Cost</span>
+                                            <span th:unless="${otherVisit.cost != null}" class="text-muted">-</span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/visits/{id}(id=${otherVisit.id})}" 
+                                               class="btn btn-sm btn-outline-info">View</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a th:href="@{/visits}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Visits
+                        </a>
+                        <a th:if="${visit.pet != null}" 
+                           th:href="@{/pets/{id}(id=${visit.pet.id})}" 
+                           class="btn btn-outline-info ms-2">
+                            <i class="fas fa-paw"></i> View Pet
+                        </a>
+                        <a th:if="${visit.veterinarian != null}" 
+                           th:href="@{/veterinarians/{id}(id=${visit.veterinarian.id})}" 
+                           class="btn btn-outline-success ms-2">
+                            <i class="fas fa-user-md"></i> View Veterinarian
+                        </a>
+                    </div>
+                    <div>
+                        <a th:href="@{/visits/{id}/edit(id=${visit.id})}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit Visit
+                        </a>
+                        <form th:action="@{/visits/{id}/delete(id=${visit.id})}" method="post" style="display: inline;" class="ms-2">
+                            <button type="submit" class="btn btn-danger btn-delete">
+                                <i class="fas fa-trash"></i> Delete Visit
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

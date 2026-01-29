@@ -50,11 +50,11 @@ public class Pet {
     @NotNull(message = "Owner is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("owner-pets")
     private Owner owner;
     
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @JsonManagedReference("pet-visits")
     private List<Visit> visits = new ArrayList<>();
     
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Veterinarians</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-user-md"></i> 
+                <span th:if="${filterByMultiSpecialty}">Multi-Specialty Veterinarians</span>
+                <span th:if="${filterByAvailable}">Available Veterinarians (Max <span th:text="${maxVisits}">50</span> visits)</span>
+                <span th:unless="${filterByMultiSpecialty or filterByAvailable}">All Veterinarians</span>
+            </h1>
+            <div>
+                <a th:href="@{/veterinarians/new}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Veterinarian
+                </a>
+                <div class="btn-group ms-2" role="group">
+                    <button type="button" class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" th:href="@{/veterinarians/multi-specialty}">Multi-Specialty</a></li>
+                        <li><a class="dropdown-item" th:href="@{/veterinarians/available}">Available</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/veterinarians/statistics}">Statistics</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" th:href="@{/veterinarians}">All Veterinarians</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Form -->
+        <div class="search-form" th:unless="${filterByMultiSpecialty or filterByAvailable}">
+            <h5><i class="fas fa-search"></i> Search Veterinarians</h5>
+            <form th:action="@{/veterinarians/search}" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="firstName" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="firstName" name="firstName" th:value="${searchFirstName}">
+                </div>
+                <div class="col-md-3">
+                    <label for="lastName" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="lastName" name="lastName" th:value="${searchLastName}">
+                </div>
+                <div class="col-md-3">
+                    <label for="specialty" class="form-label">Specialty</label>
+                    <input type="text" class="form-control" id="specialty" name="specialty" th:value="${searchSpecialty}">
+                </div>
+                <div class="col-md-3">
+                    <label for="licenseNumber" class="form-label">License Number</label>
+                    <input type="text" class="form-control" id="licenseNumber" name="licenseNumber" th:value="${searchLicenseNumber}">
+                </div>
+                <div class="col-12 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <a th:href="@{/veterinarians}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Info -->
+        <div class="row mb-3" th:if="${veterinarians != null}">
+            <div class="col-md-6">
+                <p class="text-muted">
+                    <span th:if="${searchPerformed}">Search Results: </span>
+                    <span th:if="${veterinarians.totalElements != null}" th:text="${veterinarians.totalElements}">0</span>
+                    <span th:unless="${veterinarians.totalElements != null}" th:text="${#lists.size(veterinarians)}">0</span>
+                    veterinarian(s) found
+                </p>
+            </div>
+            <div class="col-md-6 text-end" th:if="${veterinarians.totalPages != null and veterinarians.totalPages > 1}">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-end">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link" th:href="@{/veterinarians(page=${currentPage - 1})}">Previous</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, veterinarians.totalPages - 1)}" 
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/veterinarians(page=${i})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == veterinarians.totalPages - 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/veterinarians(page=${currentPage + 1})}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Veterinarians Table -->
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${veterinarians == null or #lists.isEmpty(veterinarians) or (veterinarians.content != null and #lists.isEmpty(veterinarians.content))}" 
+                     class="text-center py-5">
+                    <i class="fas fa-user-md fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No veterinarians found</h5>
+                    <p class="text-muted">
+                        <span th:if="${searchPerformed}">Try adjusting your search criteria.</span>
+                        <span th:unless="${searchPerformed}">Start by adding a new veterinarian.</span>
+                    </p>
+                    <a th:href="@{/veterinarians/new}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add First Veterinarian
+                    </a>
+                </div>
+
+                <div th:if="${veterinarians != null and (!#lists.isEmpty(veterinarians) or (veterinarians.content != null and !#lists.isEmpty(veterinarians.content)))}" 
+                     class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Specialty</th>
+                                <th>License</th>
+                                <th>Contact</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="vet : ${veterinarians.content != null ? veterinarians.content : veterinarians}">
+                                <td>
+                                    <strong th:text="'Dr. ' + ${vet.firstName} + ' ' + ${vet.lastName}">Veterinarian Name</strong>
+                                </td>
+                                <td>
+                                    <span th:text="${vet.specialty ?: 'General Practice'}">Specialty</span>
+                                </td>
+                                <td>
+                                    <code th:text="${vet.licenseNumber}">License Number</code>
+                                </td>
+                                <td>
+                                    <div th:if="${vet.phoneNumber != null}">
+                                        <i class="fas fa-phone"></i> <span th:text="${vet.phoneNumber}">Phone</span>
+                                    </div>
+                                    <div th:if="${vet.email != null}">
+                                        <i class="fas fa-envelope"></i> 
+                                        <a th:href="'mailto:' + ${vet.email}" th:text="${vet.email}">Email</a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a th:href="@{/veterinarians/{id}(id=${vet.id})}" 
+                                           class="btn btn-outline-info btn-action" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:href="@{/veterinarians/{id}/edit(id=${vet.id})}" 
+                                           class="btn btn-outline-primary btn-action" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a th:href="@{/visits/new(veterinarianId=${vet.id})}" 
+                                           class="btn btn-outline-success btn-action" title="Schedule Visit">
+                                            <i class="fas fa-calendar-plus"></i>
+                                        </a>
+                                        <a th:href="@{/visits/veterinarian/{id}(id=${vet.id})}" 
+                                           class="btn btn-outline-warning btn-action" title="View Visits">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </a>
+                                        <form th:action="@{/veterinarians/{id}/delete(id=${vet.id})}" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-outline-danger btn-action btn-delete" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row mt-4" th:unless="${searchPerformed or filterByMultiSpecialty or filterByAvailable}">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Veterinarians</h5>
+                        <h2 class="text-primary" th:text="${veterinarians.totalElements ?: #lists.size(veterinarians)}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Specialties</h5>
+                        <p class="mb-0">
+                            <a th:href="@{/veterinarians/statistics}" class="btn btn-outline-info">
+                                <i class="fas fa-chart-bar"></i> View Statistics
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Available Now</h5>
+                        <p class="mb-0">
+                            <a th:href="@{/veterinarians/available}" class="btn btn-outline-success">
+                                <i class="fas fa-check-circle"></i> View Available
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -19,16 +19,16 @@ import java.util.Optional;
  * Validates: Requirements 8.1, 8.2, 8.3, 8.4
  */
 @RestController
-@RequestMapping(&quot;/api/veterinarians&quot;)
+@RequestMapping(&quot;/veterinarians&quot;)
 @CrossOrigin(origins = &quot;*&quot;)
-<span class="nc" id="L24">public class VeterinarianController {</span>
+<span class="fc" id="L24">public class VeterinarianController {</span>
 
     @Autowired
     private VeterinarianRepository veterinarianRepository;
 
     /**
      * Get all veterinarians with pagination
-     * GET /api/veterinarians
+     * GET /veterinarians
      */
     @GetMapping
     public ResponseEntity&lt;Page&lt;Veterinarian&gt;&gt; getAllVeterinarians(Pageable pageable) {
@@ -42,7 +42,7 @@ import java.util.Optional;
 
     /**
      * Get veterinarian by ID
-     * GET /api/veterinarians/{id}
+     * GET /veterinarians/{id}
      */
     @GetMapping(&quot;/{id}&quot;)
     public ResponseEntity&lt;Veterinarian&gt; getVeterinarianById(@PathVariable Long id) {
@@ -57,7 +57,7 @@ import java.util.Optional;
 
     /**
      * Create new veterinarian
-     * POST /api/veterinarians
+     * POST /veterinarians
      */
     @PostMapping
     public ResponseEntity&lt;Veterinarian&gt; createVeterinarian(@Valid @RequestBody Veterinarian veterinarian) {
@@ -73,7 +73,7 @@ import java.util.Optional;
 
     /**
      * Update existing veterinarian
-     * PUT /api/veterinarians/{id}
+     * PUT /veterinarians/{id}
      */
     @PutMapping(&quot;/{id}&quot;)
     public ResponseEntity&lt;Veterinarian&gt; updateVeterinarian(@PathVariable Long id, @Valid @RequestBody Veterinarian veterinarianDetails) {
@@ -98,7 +98,7 @@ import java.util.Optional;
 
     /**
      * Delete veterinarian
-     * DELETE /api/veterinarians/{id}
+     * DELETE /veterinarians/{id}
      */
     @DeleteMapping(&quot;/{id}&quot;)
     public ResponseEntity&lt;Void&gt; deleteVeterinarian(@PathVariable Long id) {
@@ -115,7 +115,7 @@ import java.util.Optional;
 
     /**
      * Search veterinarians by first name (case-insensitive)
-     * GET /api/veterinarians/search/by-first-name?name={name}
+     * GET /veterinarians/search/by-first-name?name={name}
      */
     @GetMapping(&quot;/search/by-first-name&quot;)
     public ResponseEntity&lt;List&lt;Veterinarian&gt;&gt; searchByFirstName(@RequestParam String name) {
@@ -129,7 +129,7 @@ import java.util.Optional;
 
     /**
      * Search veterinarians by last name (case-insensitive)
-     * GET /api/veterinarians/search/by-last-name?name={name}
+     * GET /veterinarians/search/by-last-name?name={name}
      */
     @GetMapping(&quot;/search/by-last-name&quot;)
     public ResponseEntity&lt;List&lt;Veterinarian&gt;&gt; searchByLastName(@RequestParam String name) {
@@ -143,7 +143,7 @@ import java.util.Optional;
 
     /**
      * Search veterinarians by specialty
-     * GET /api/veterinarians/search/by-specialty?specialty={specialty}
+     * GET /veterinarians/search/by-specialty?specialty={specialty}
      */
     @GetMapping(&quot;/search/by-specialty&quot;)
     public ResponseEntity&lt;List&lt;Veterinarian&gt;&gt; searchBySpecialty(@RequestParam String specialty) {
@@ -157,7 +157,7 @@ import java.util.Optional;
 
     /**
      * Find veterinarian by license number
-     * GET /api/veterinarians/search/by-license?license={license}
+     * GET /veterinarians/search/by-license?license={license}
      */
     @GetMapping(&quot;/search/by-license&quot;)
     public ResponseEntity&lt;Veterinarian&gt; searchByLicenseNumber(@RequestParam String license) {
@@ -172,7 +172,7 @@ import java.util.Optional;
 
     /**
      * Get veterinarians with multiple specialties
-     * GET /api/veterinarians/multi-specialty
+     * GET /veterinarians/multi-specialty
      */
     @GetMapping(&quot;/multi-specialty&quot;)
     public ResponseEntity&lt;List&lt;Veterinarian&gt;&gt; getVeterinariansWithMultipleSpecialties() {
@@ -186,7 +186,7 @@ import java.util.Optional;
 
     /**
      * Get available veterinarians (those with fewer visits)
-     * GET /api/veterinarians/available?maxVisits={maxVisits}
+     * GET /veterinarians/available?maxVisits={maxVisits}
      */
     @GetMapping(&quot;/available&quot;)
     public ResponseEntity&lt;List&lt;Veterinarian&gt;&gt; getAvailableVeterinarians(@RequestParam(defaultValue = &quot;50&quot;) int maxVisits) {
@@ -200,7 +200,7 @@ import java.util.Optional;
 
     /**
      * Get veterinarian statistics
-     * GET /api/veterinarians/statistics
+     * GET /veterinarians/statistics
      */
     @GetMapping(&quot;/statistics&quot;)
     public ResponseEntity&lt;Object[]&gt; getVeterinarianStatistics() {
@@ -214,7 +214,7 @@ import java.util.Optional;
 
     /**
      * Get most common specialties
-     * GET /api/veterinarians/common-specialties?limit={limit}
+     * GET /veterinarians/common-specialties?limit={limit}
      */
     @GetMapping(&quot;/common-specialties&quot;)
     public ResponseEntity&lt;List&lt;Object[]&gt;&gt; getMostCommonSpecialties(@RequestParam(defaultValue = &quot;10&quot;) int limit) {
@@ -229,7 +229,7 @@ import java.util.Optional;
 
     /**
      * Advanced search with multiple criteria
-     * GET /api/veterinarians/search
+     * GET /veterinarians/search
      */
     @GetMapping(&quot;/search&quot;)
     public ResponseEntity&lt;Page&lt;Veterinarian&gt;&gt; searchVeterinarians(

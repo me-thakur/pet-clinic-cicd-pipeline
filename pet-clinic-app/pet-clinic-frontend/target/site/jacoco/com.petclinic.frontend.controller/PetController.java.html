@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PetController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Pet Clinic Frontend</a> &gt; <a href="index.source.html" class="el_package">com.petclinic.frontend.controller</a> &gt; <span class="el_source">PetController.java</span></div><h1>PetController.java</h1><pre class="source lang-java linenums">package com.petclinic.frontend.controller;
+
+import com.petclinic.frontend.model.Pet;
+import com.petclinic.frontend.model.Owner;
+import com.petclinic.frontend.service.PetService;
+import com.petclinic.frontend.service.OwnerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import jakarta.validation.Valid;
+import java.util.List;
+
+/**
+ * Pet Controller
+ * 
+ * Handles web requests for pet management operations.
+ * Provides endpoints for listing, creating, editing, and deleting pets.
+ * 
+ * Validates: Requirements 8.1, 8.2, 8.4
+ */
+@Controller
+@RequestMapping(&quot;/pets&quot;)
+public class PetController {
+
+    private final PetService petService;
+    private final OwnerService ownerService;
+
+    @Autowired
+<span class="nc" id="L36">    public PetController(PetService petService, OwnerService ownerService) {</span>
+<span class="nc" id="L37">        this.petService = petService;</span>
+<span class="nc" id="L38">        this.ownerService = ownerService;</span>
+<span class="nc" id="L39">    }</span>
+
+    /**
+     * List all pets with pagination
+     */
+    @GetMapping
+    public String listPets(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size,
+            Model model) {
+        
+        try {
+<span class="nc" id="L51">            Pageable pageable = PageRequest.of(page, size);</span>
+<span class="nc" id="L52">            Page&lt;Pet&gt; pets = petService.getAllPets(pageable).block();</span>
+            
+<span class="nc" id="L54">            model.addAttribute(&quot;pets&quot;, pets);</span>
+<span class="nc" id="L55">            model.addAttribute(&quot;currentPage&quot;, page);</span>
+<span class="nc" id="L56">            model.addAttribute(&quot;totalPages&quot;, pets.getTotalPages());</span>
+<span class="nc" id="L57">            model.addAttribute(&quot;totalElements&quot;, pets.getTotalElements());</span>
+            
+<span class="nc" id="L59">            return &quot;pets/list&quot;;</span>
+<span class="nc" id="L60">        } catch (Exception e) {</span>
+<span class="nc" id="L61">            model.addAttribute(&quot;error&quot;, &quot;Error loading pets: &quot; + e.getMessage());</span>
+<span class="nc" id="L62">            return &quot;pets/list&quot;;</span>
+        }
+    }
+
+    /**
+     * Show pet details
+     */
+    @GetMapping(&quot;/{id}&quot;)
+    public String showPet(@PathVariable Long id, Model model) {
+<span class="nc" id="L71">        Pet pet = petService.getPetById(id).block();</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (pet == null) {</span>
+<span class="nc" id="L73">            model.addAttribute(&quot;error&quot;, &quot;Pet not found&quot;);</span>
+<span class="nc" id="L74">            return &quot;redirect:/pets&quot;;</span>
+        }
+        
+<span class="nc" id="L77">        model.addAttribute(&quot;pet&quot;, pet);</span>
+<span class="nc" id="L78">        return &quot;pets/details&quot;;</span>
+    }
+
+    /**
+     * Show create pet form
+     */
+    @GetMapping(&quot;/new&quot;)
+    public String showCreateForm(
+            @RequestParam(required = false) Long ownerId,
+            Model model) {
+        
+<span class="nc" id="L89">        Pet pet = new Pet();</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (ownerId != null) {</span>
+<span class="nc" id="L91">            pet.setOwnerId(ownerId);</span>
+        }
+        
+<span class="nc" id="L94">        model.addAttribute(&quot;pet&quot;, pet);</span>
+        
+        // Load owners for dropdown
+        try {
+<span class="nc" id="L98">            Pageable pageable = PageRequest.of(0, 100); // Get first 100 owners</span>
+<span class="nc" id="L99">            Page&lt;Owner&gt; owners = ownerService.getAllOwners(pageable).block();</span>
+<span class="nc" id="L100">            model.addAttribute(&quot;owners&quot;, owners.getContent());</span>
+<span class="nc" id="L101">        } catch (Exception e) {</span>
+<span class="nc" id="L102">            model.addAttribute(&quot;error&quot;, &quot;Error loading owners: &quot; + e.getMessage());</span>
+<span class="nc" id="L103">        }</span>
+        
+<span class="nc" id="L105">        return &quot;pets/form&quot;;</span>
+    }
+
+    /**
+     * Process create pet form
+     */
+    @PostMapping(&quot;/new&quot;)
+    public String createPet(
+            @Valid @ModelAttribute Pet pet,
+            BindingResult result,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (result.hasErrors()) {</span>
+            // Reload owners for dropdown
+            try {
+<span class="nc" id="L121">                Pageable pageable = PageRequest.of(0, 100);</span>
+<span class="nc" id="L122">                Page&lt;Owner&gt; owners = ownerService.getAllOwners(pageable).block();</span>
+<span class="nc" id="L123">                model.addAttribute(&quot;owners&quot;, owners.getContent());</span>
+<span class="nc" id="L124">            } catch (Exception e) {</span>
+<span class="nc" id="L125">                model.addAttribute(&quot;error&quot;, &quot;Error loading owners: &quot; + e.getMessage());</span>
+<span class="nc" id="L126">            }</span>
+<span class="nc" id="L127">            return &quot;pets/form&quot;;</span>
+        }
+
+        try {
+<span class="nc" id="L131">            Pet savedPet = petService.createPet(pet).block();</span>
+<span class="nc" id="L132">            redirectAttributes.addFlashAttribute(&quot;success&quot;, &quot;Pet created successfully!&quot;);</span>
+<span class="nc" id="L133">            return &quot;redirect:/pets/&quot; + savedPet.getId();</span>
+<span class="nc" id="L134">        } catch (Exception e) {</span>
+<span class="nc" id="L135">            model.addAttribute(&quot;error&quot;, &quot;Error creating pet: &quot; + e.getMessage());</span>
+            // Reload owners for dropdown
+            try {
+<span class="nc" id="L138">                Pageable pageable = PageRequest.of(0, 100);</span>
+<span class="nc" id="L139">                Page&lt;Owner&gt; owners = ownerService.getAllOwners(pageable).block();</span>
+<span class="nc" id="L140">                model.addAttribute(&quot;owners&quot;, owners.getContent());</span>
+<span class="nc" id="L141">            } catch (Exception ex) {</span>
+<span class="nc" id="L142">                model.addAttribute(&quot;error&quot;, &quot;Error loading owners: &quot; + ex.getMessage());</span>
+<span class="nc" id="L143">            }</span>
+<span class="nc" id="L144">            return &quot;pets/form&quot;;</span>
+        }
+    }
+
+    /**
+     * Show edit pet form
+     */
+    @GetMapping(&quot;/{id}/edit&quot;)
+    public String showEditForm(@PathVariable Long id, Model model) {
+<span class="nc" id="L153">        Pet pet = petService.getPetById(id).block();</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        if (pet == null) {</span>
+<span class="nc" id="L155">            model.addAttribute(&quot;error&quot;, &quot;Pet not found&quot;);</span>
+<span class="nc" id="L156">            return &quot;redirect:/pets&quot;;</span>
+        }
+        
+        // Set ownerId for form binding
+<span class="nc bnc" id="L160" title="All 2 branches missed.">        if (pet.getOwner() != null) {</span>
+<span class="nc" id="L161">            pet.setOwnerId(pet.getOwner().getId());</span>
+        }
+        
+<span class="nc" id="L164">        model.addAttribute(&quot;pet&quot;, pet);</span>
+        
+        // Load owners for dropdown
+        try {
+<span class="nc" id="L168">            Pageable pageable = PageRequest.of(0, 100);</span>
+<span class="nc" id="L169">            Page&lt;Owner&gt; owners = ownerService.getAllOwners(pageable).block();</span>
+<span class="nc" id="L170">            model.addAttribute(&quot;owners&quot;, owners.getContent());</span>
+<span class="nc" id="L171">        } catch (Exception e) {</span>
+<span class="nc" id="L172">            model.addAttribute(&quot;error&quot;, &quot;Error loading owners: &quot; + e.getMessage());</span>
+<span class="nc" id="L173">        }</span>
+        
+<span class="nc" id="L175">        return &quot;pets/form&quot;;</span>
+    }
+
+    /**
+     * Process edit pet form
+     */
+    @PostMapping(&quot;/{id}/edit&quot;)
+    public String updatePet(
+            @PathVariable Long id,
+            @Valid @ModelAttribute Pet pet,
+            BindingResult result,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        if (result.hasErrors()) {</span>
+<span class="nc" id="L190">            pet.setId(id);</span>
+            // Reload owners for dropdown
+            try {
+<span class="nc" id="L193">                Pageable pageable = PageRequest.of(0, 100);</span>
+<span class="nc" id="L194">                Page&lt;Owner&gt; owners = ownerService.getAllOwners(pageable).block();</span>
+<span class="nc" id="L195">                model.addAttribute(&quot;owners&quot;, owners.getContent());</span>
+<span class="nc" id="L196">            } catch (Exception e) {</span>
+<span class="nc" id="L197">                model.addAttribute(&quot;error&quot;, &quot;Error loading owners: &quot; + e.getMessage());</span>
+<span class="nc" id="L198">            }</span>
+<span class="nc" id="L199">            return &quot;pets/form&quot;;</span>
+        }
+
+        try {
+<span class="nc" id="L203">            petService.updatePet(id, pet).block();</span>
+<span class="nc" id="L204">            redirectAttributes.addFlashAttribute(&quot;success&quot;, &quot;Pet updated successfully!&quot;);</span>
+<span class="nc" id="L205">            return &quot;redirect:/pets/&quot; + id;</span>
+<span class="nc" id="L206">        } catch (Exception e) {</span>
+<span class="nc" id="L207">            model.addAttribute(&quot;error&quot;, &quot;Error updating pet: &quot; + e.getMessage());</span>
+<span class="nc" id="L208">            pet.setId(id);</span>
+            // Reload owners for dropdown
+            try {
+<span class="nc" id="L211">                Pageable pageable = PageRequest.of(0, 100);</span>
+<span class="nc" id="L212">                Page&lt;Owner&gt; owners = ownerService.getAllOwners(pageable).block();</span>
+<span class="nc" id="L213">                model.addAttribute(&quot;owners&quot;, owners.getContent());</span>
+<span class="nc" id="L214">            } catch (Exception ex) {</span>
+<span class="nc" id="L215">                model.addAttribute(&quot;error&quot;, &quot;Error loading owners: &quot; + ex.getMessage());</span>
+<span class="nc" id="L216">            }</span>
+<span class="nc" id="L217">            return &quot;pets/form&quot;;</span>
+        }
+    }
+
+    /**
+     * Delete pet
+     */
+    @PostMapping(&quot;/{id}/delete&quot;)
+    public String deletePet(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+<span class="nc" id="L227">            petService.deletePet(id).block();</span>
+<span class="nc" id="L228">            redirectAttributes.addFlashAttribute(&quot;success&quot;, &quot;Pet deleted successfully!&quot;);</span>
+<span class="nc" id="L229">        } catch (Exception e) {</span>
+<span class="nc" id="L230">            redirectAttributes.addFlashAttribute(&quot;error&quot;, &quot;Error deleting pet: &quot; + e.getMessage());</span>
+<span class="nc" id="L231">        }</span>
+<span class="nc" id="L232">        return &quot;redirect:/pets&quot;;</span>
+    }
+
+    /**
+     * Search pets
+     */
+    @GetMapping(&quot;/search&quot;)
+    public String searchPets(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String species,
+            @RequestParam(required = false) String breed,
+            @RequestParam(required = false) Integer minAge,
+            @RequestParam(required = false) Integer maxAge,
+            @RequestParam(required = false) String medicalHistory,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size,
+            Model model) {
+        
+        try {
+<span class="nc" id="L251">            List&lt;Pet&gt; pets = null;</span>
+            
+<span class="nc bnc" id="L253" title="All 4 branches missed.">            if (name != null &amp;&amp; !name.trim().isEmpty()) {</span>
+<span class="nc" id="L254">                pets = petService.searchByName(name.trim()).block();</span>
+<span class="nc bnc" id="L255" title="All 4 branches missed.">            } else if (species != null &amp;&amp; !species.trim().isEmpty()) {</span>
+<span class="nc" id="L256">                pets = petService.searchBySpecies(species.trim()).block();</span>
+<span class="nc bnc" id="L257" title="All 4 branches missed.">            } else if (breed != null &amp;&amp; !breed.trim().isEmpty()) {</span>
+<span class="nc" id="L258">                pets = petService.searchByBreed(breed.trim()).block();</span>
+<span class="nc bnc" id="L259" title="All 4 branches missed.">            } else if (minAge != null &amp;&amp; maxAge != null) {</span>
+<span class="nc" id="L260">                pets = petService.searchByAgeRange(minAge, maxAge).block();</span>
+<span class="nc bnc" id="L261" title="All 4 branches missed.">            } else if (medicalHistory != null &amp;&amp; !medicalHistory.trim().isEmpty()) {</span>
+<span class="nc" id="L262">                pets = petService.searchByMedicalHistory(medicalHistory.trim()).block();</span>
+            } else {
+                // No search criteria, redirect to list
+<span class="nc" id="L265">                return &quot;redirect:/pets&quot;;</span>
+            }
+            
+<span class="nc" id="L268">            model.addAttribute(&quot;pets&quot;, pets);</span>
+<span class="nc" id="L269">            model.addAttribute(&quot;searchPerformed&quot;, true);</span>
+<span class="nc" id="L270">            model.addAttribute(&quot;searchName&quot;, name);</span>
+<span class="nc" id="L271">            model.addAttribute(&quot;searchSpecies&quot;, species);</span>
+<span class="nc" id="L272">            model.addAttribute(&quot;searchBreed&quot;, breed);</span>
+<span class="nc" id="L273">            model.addAttribute(&quot;searchMinAge&quot;, minAge);</span>
+<span class="nc" id="L274">            model.addAttribute(&quot;searchMaxAge&quot;, maxAge);</span>
+<span class="nc" id="L275">            model.addAttribute(&quot;searchMedicalHistory&quot;, medicalHistory);</span>
+            
+<span class="nc" id="L277">            return &quot;pets/list&quot;;</span>
+<span class="nc" id="L278">        } catch (Exception e) {</span>
+<span class="nc" id="L279">            model.addAttribute(&quot;error&quot;, &quot;Error searching pets: &quot; + e.getMessage());</span>
+<span class="nc" id="L280">            return &quot;pets/list&quot;;</span>
+        }
+    }
+
+    /**
+     * Show pets by owner
+     */
+    @GetMapping(&quot;/owner/{ownerId}&quot;)
+    public String petsByOwner(@PathVariable Long ownerId, Model model) {
+        try {
+<span class="nc" id="L290">            List&lt;Pet&gt; pets = petService.getPetsByOwnerId(ownerId).block();</span>
+<span class="nc" id="L291">            Owner owner = ownerService.getOwnerById(ownerId).block();</span>
+            
+<span class="nc" id="L293">            model.addAttribute(&quot;pets&quot;, pets);</span>
+<span class="nc" id="L294">            model.addAttribute(&quot;owner&quot;, owner);</span>
+<span class="nc" id="L295">            model.addAttribute(&quot;filterByOwner&quot;, true);</span>
+            
+<span class="nc" id="L297">            return &quot;pets/list&quot;;</span>
+<span class="nc" id="L298">        } catch (Exception e) {</span>
+<span class="nc" id="L299">            model.addAttribute(&quot;error&quot;, &quot;Error loading pets for owner: &quot; + e.getMessage());</span>
+<span class="nc" id="L300">            return &quot;redirect:/pets&quot;;</span>
+        }
+    }
+
+    /**
+     * Show senior pets
+     */
+    @GetMapping(&quot;/senior&quot;)
+    public String seniorPets(
+            @RequestParam(defaultValue = &quot;7&quot;) int age,
+            Model model) {
+        
+        try {
+<span class="nc" id="L313">            List&lt;Pet&gt; pets = petService.getSeniorPets(age).block();</span>
+            
+<span class="nc" id="L315">            model.addAttribute(&quot;pets&quot;, pets);</span>
+<span class="nc" id="L316">            model.addAttribute(&quot;seniorAge&quot;, age);</span>
+<span class="nc" id="L317">            model.addAttribute(&quot;filterBySenior&quot;, true);</span>
+            
+<span class="nc" id="L319">            return &quot;pets/list&quot;;</span>
+<span class="nc" id="L320">        } catch (Exception e) {</span>
+<span class="nc" id="L321">            model.addAttribute(&quot;error&quot;, &quot;Error loading senior pets: &quot; + e.getMessage());</span>
+<span class="nc" id="L322">            return &quot;pets/list&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

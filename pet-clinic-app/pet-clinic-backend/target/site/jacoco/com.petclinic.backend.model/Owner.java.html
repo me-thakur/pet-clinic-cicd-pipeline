@@ -52,7 +52,7 @@ public class Owner {
     private String email;
     
 <span class="fc" id="L54">    @OneToMany(mappedBy = &quot;owner&quot;, cascade = CascadeType.ALL, fetch = FetchType.LAZY)</span>
-    @JsonManagedReference
+    @JsonManagedReference(&quot;owner-pets&quot;)
     private List&lt;Pet&gt; pets = new ArrayList&lt;&gt;();
     
     @Column(name = &quot;created_at&quot;, nullable = false, updatable = false)
@@ -145,8 +145,8 @@ public class Owner {
     }
     
     public void setPets(List&lt;Pet&gt; pets) {
-<span class="nc" id="L148">        this.pets = pets;</span>
-<span class="nc" id="L149">    }</span>
+<span class="fc" id="L148">        this.pets = pets;</span>
+<span class="fc" id="L149">    }</span>
     
     public void addPet(Pet pet) {
 <span class="nc" id="L152">        pets.add(pet);</span>

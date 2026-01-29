@@ -30,6 +30,9 @@ spring:
     init:
       mode: never
 
+server:
+  port: 0  # Use random available port for tests
+
 logging:
   level:
     com.petclinic: WARN

@@ -19,7 +19,7 @@ import java.util.Optional;
  * Validates: Requirements 8.1, 8.2, 8.3, 8.4
  */
 @RestController
-@RequestMapping("/api/owners")
+@RequestMapping("/owners")
 @CrossOrigin(origins = "*")
 public class OwnerController {
 
@@ -28,7 +28,7 @@ public class OwnerController {
 
     /**
      * Get all owners with pagination
-     * GET /api/owners
+     * GET /owners
      */
     @GetMapping
     public ResponseEntity<Page<Owner>> getAllOwners(Pageable pageable) {
@@ -42,7 +42,7 @@ public class OwnerController {
 
     /**
      * Get owner by ID
-     * GET /api/owners/{id}
+     * GET /owners/{id}
      */
     @GetMapping("/{id}")
     public ResponseEntity<Owner> getOwnerById(@PathVariable Long id) {
@@ -57,7 +57,7 @@ public class OwnerController {
 
     /**
      * Create new owner
-     * POST /api/owners
+     * POST /owners
      */
     @PostMapping
     public ResponseEntity<Owner> createOwner(@Valid @RequestBody Owner owner) {
@@ -73,7 +73,7 @@ public class OwnerController {
 
     /**
      * Update existing owner
-     * PUT /api/owners/{id}
+     * PUT /owners/{id}
      */
     @PutMapping("/{id}")
     public ResponseEntity<Owner> updateOwner(@PathVariable Long id, @Valid @RequestBody Owner ownerDetails) {
@@ -100,7 +100,7 @@ public class OwnerController {
 
     /**
      * Delete owner
-     * DELETE /api/owners/{id}
+     * DELETE /owners/{id}
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteOwner(@PathVariable Long id) {
@@ -117,7 +117,7 @@ public class OwnerController {
 
     /**
      * Search owners by first name (case-insensitive)
-     * GET /api/owners/search/by-first-name?name={name}
+     * GET /owners/search/by-first-name?name={name}
      */
     @GetMapping("/search/by-first-name")
     public ResponseEntity<List<Owner>> searchByFirstName(@RequestParam String name) {
@@ -131,7 +131,7 @@ public class OwnerController {
 
     /**
      * Search owners by last name (case-insensitive)
-     * GET /api/owners/search/by-last-name?name={name}
+     * GET /owners/search/by-last-name?name={name}
      */
     @GetMapping("/search/by-last-name")
     public ResponseEntity<List<Owner>> searchByLastName(@RequestParam String name) {
@@ -145,7 +145,7 @@ public class OwnerController {
 
     /**
      * Search owners by email
-     * GET /api/owners/search/by-email?email={email}
+     * GET /owners/search/by-email?email={email}
      */
     @GetMapping("/search/by-email")
     public ResponseEntity<Owner> searchByEmail(@RequestParam String email) {
@@ -160,7 +160,7 @@ public class OwnerController {
 
     /**
      * Search owners by city
-     * GET /api/owners/search/by-city?city={city}
+     * GET /owners/search/by-city?city={city}
      */
     @GetMapping("/search/by-city")
     public ResponseEntity<List<Owner>> searchByCity(@RequestParam String city) {
@@ -174,7 +174,7 @@ public class OwnerController {
 
     /**
      * Get owners with multiple pets
-     * GET /api/owners/with-multiple-pets
+     * GET /owners/with-multiple-pets
      */
     @GetMapping("/with-multiple-pets")
     public ResponseEntity<List<Owner>> getOwnersWithMultiplePets() {
@@ -188,7 +188,7 @@ public class OwnerController {
 
     /**
      * Get owner statistics
-     * GET /api/owners/statistics
+     * GET /owners/statistics
      */
     @GetMapping("/statistics")
     public ResponseEntity<Object[]> getOwnerStatistics() {

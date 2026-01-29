@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title th:text="${visit.id != null ? 'Edit Visit' : 'Schedule Visit'}">Visit Form</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span th:text="${visit.id != null ? 'Edit Visit' : 'Schedule New Visit'}">Visit Form</span>
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${visit.id != null ? '/visits/' + visit.id + '/edit' : '/visits/new'}" 
+                              th:object="${visit}" method="post">
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="petId" class="form-label">Pet *</label>
+                                        <select class="form-select" 
+                                                th:field="*{petId}" 
+                                                th:classappend="${#fields.hasErrors('petId')} ? 'is-invalid'" 
+                                                id="petId" required>
+                                            <option value="">Select Pet</option>
+                                            <option th:each="pet : ${pets}" 
+                                                    th:value="${pet.id}" 
+                                                    th:text="${pet.name + ' (' + pet.species + ') - Owner: ' + (pet.owner != null ? pet.owner.fullName : 'Unknown')}">Pet Name</option>
+                                        </select>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('petId')}" 
+                                             th:errors="*{petId}">Pet error</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="veterinarianId" class="form-label">Veterinarian *</label>
+                                        <select class="form-select" 
+                                                th:field="*{veterinarianId}" 
+                                                th:classappend="${#fields.hasErrors('veterinarianId')} ? 'is-invalid'" 
+                                                id="veterinarianId" required>
+                                            <option value="">Select Veterinarian</option>
+                                            <option th:each="vet : ${veterinarians}" 
+                                                    th:value="${vet.id}" 
+                                                    th:text="'Dr. ' + ${vet.firstName} + ' ' + ${vet.lastName} + ' - ' + ${vet.specialty}">Veterinarian Name</option>
+                                        </select>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('veterinarianId')}" 
+                                             th:errors="*{veterinarianId}">Veterinarian error</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="visitDate" class="form-label">Visit Date & Time *</label>
+                                        <input type="datetime-local" class="form-control" 
+                                               th:field="*{visitDate}" 
+                                               th:classappend="${#fields.hasErrors('visitDate')} ? 'is-invalid'" 
+                                               id="visitDate" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('visitDate')}" 
+                                             th:errors="*{visitDate}">Visit date error</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="cost" class="form-label">Cost ($)</label>
+                                        <input type="number" step="0.01" min="0" class="form-control" 
+                                               th:field="*{cost}" 
+                                               th:classappend="${#fields.hasErrors('cost')} ? 'is-invalid'" 
+                                               id="cost" placeholder="0.00">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('cost')}" 
+                                             th:errors="*{cost}">Cost error</div>
+                                        <div class="form-text">Leave empty if cost is not determined yet</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description *</label>
+                                <textarea class="form-control" 
+                                          th:field="*{description}" 
+                                          th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'" 
+                                          id="description" rows="3" required
+                                          placeholder="Brief description of the visit purpose (e.g., Annual checkup, Vaccination, Injury examination)"></textarea>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" 
+                                     th:errors="*{description}">Description error</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="diagnosis" class="form-label">Diagnosis</label>
+                                <textarea class="form-control" 
+                                          th:field="*{diagnosis}" 
+                                          th:classappend="${#fields.hasErrors('diagnosis')} ? 'is-invalid'" 
+                                          id="diagnosis" rows="3"
+                                          placeholder="Veterinarian's diagnosis (can be filled during or after the visit)"></textarea>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('diagnosis')}" 
+                                     th:errors="*{diagnosis}">Diagnosis error</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="treatment" class="form-label">Treatment</label>
+                                <textarea class="form-control" 
+                                          th:field="*{treatment}" 
+                                          th:classappend="${#fields.hasErrors('treatment')} ? 'is-invalid'" 
+                                          id="treatment" rows="3"
+                                          placeholder="Treatment provided or prescribed (medications, procedures, recommendations)"></textarea>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('treatment')}" 
+                                     th:errors="*{treatment}">Treatment error</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" 
+                                               th:field="*{emergencyVisit}" 
+                                               id="emergencyVisit">
+                                        <label class="form-check-label" for="emergencyVisit">
+                                            <i class="fas fa-exclamation-triangle text-danger"></i> Emergency Visit
+                                        </label>
+                                        <div class="form-text">Check if this is an emergency or urgent care visit</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" th:if="${visit.id != null}">
+                                    <div class="form-check mb-3">
+                                        <input class="form-check-input" type="checkbox" 
+                                               th:field="*{completed}" 
+                                               id="completed">
+                                        <label class="form-check-label" for="completed">
+                                            <i class="fas fa-check-circle text-success"></i> Visit Completed
+                                        </label>
+                                        <div class="form-text">Check when the visit is finished</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i>
+                                        <span th:text="${visit.id != null ? 'Update Visit' : 'Schedule Visit'}">Save Visit</span>
+                                    </button>
+                                    <a th:href="@{/visits}" class="btn btn-outline-secondary ms-2">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </a>
+                                </div>
+                                <div th:if="${visit.id != null}">
+                                    <a th:href="@{/visits/{id}(id=${visit.id})}" class="btn btn-outline-info">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Help Card -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-info-circle"></i> Visit Guidelines</h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            <li>Fields marked with * are required</li>
+                            <li><strong>Description:</strong> Brief reason for the visit (required for scheduling)</li>
+                            <li><strong>Diagnosis & Treatment:</strong> Can be filled during or after the visit by the veterinarian</li>
+                            <li><strong>Emergency visits:</strong> Will be prioritized in the schedule</li>
+                            <li><strong>Cost:</strong> Can be added when determined (during or after visit)</li>
+                            <li><strong>Completed status:</strong> Mark when the visit is finished</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

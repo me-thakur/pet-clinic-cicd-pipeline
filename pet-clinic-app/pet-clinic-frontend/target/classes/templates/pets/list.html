@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Pets</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-paw"></i> 
+                <span th:if="${filterByOwner}">Pets for <span th:text="${owner.fullName}">Owner</span></span>
+                <span th:if="${filterBySenior}">Senior Pets (Age <span th:text="${seniorAge}">7</span>+)</span>
+                <span th:unless="${filterByOwner or filterBySenior}">All Pets</span>
+            </h1>
+            <div>
+                <a th:href="@{/pets/new}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Pet
+                </a>
+                <a th:href="@{/pets/senior}" class="btn btn-outline-info">
+                    <i class="fas fa-birthday-cake"></i> Senior Pets
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Form -->
+        <div class="search-form" th:unless="${filterByOwner or filterBySenior}">
+            <h5><i class="fas fa-search"></i> Search Pets</h5>
+            <form th:action="@{/pets/search}" method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label for="name" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="name" name="name" th:value="${searchName}">
+                </div>
+                <div class="col-md-3">
+                    <label for="species" class="form-label">Species</label>
+                    <input type="text" class="form-control" id="species" name="species" th:value="${searchSpecies}">
+                </div>
+                <div class="col-md-3">
+                    <label for="breed" class="form-label">Breed</label>
+                    <input type="text" class="form-control" id="breed" name="breed" th:value="${searchBreed}">
+                </div>
+                <div class="col-md-3">
+                    <label for="medicalHistory" class="form-label">Medical History</label>
+                    <input type="text" class="form-control" id="medicalHistory" name="medicalHistory" th:value="${searchMedicalHistory}">
+                </div>
+                <div class="col-md-2">
+                    <label for="minAge" class="form-label">Min Age</label>
+                    <input type="number" class="form-control" id="minAge" name="minAge" th:value="${searchMinAge}">
+                </div>
+                <div class="col-md-2">
+                    <label for="maxAge" class="form-label">Max Age</label>
+                    <input type="number" class="form-control" id="maxAge" name="maxAge" th:value="${searchMaxAge}">
+                </div>
+                <div class="col-md-8 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary me-2">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    <a th:href="@{/pets}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Info -->
+        <div class="row mb-3" th:if="${pets != null}">
+            <div class="col-md-6">
+                <p class="text-muted">
+                    <span th:if="${searchPerformed}">Search Results: </span>
+                    <span th:if="${pets.totalElements != null}" th:text="${pets.totalElements}">0</span>
+                    <span th:unless="${pets.totalElements != null}" th:text="${#lists.size(pets)}">0</span>
+                    pet(s) found
+                </p>
+            </div>
+            <div class="col-md-6 text-end" th:if="${pets.totalPages != null and pets.totalPages > 1}">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-end">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link" th:href="@{/pets(page=${currentPage - 1})}">Previous</a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, pets.totalPages - 1)}" 
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/pets(page=${i})}" th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == pets.totalPages - 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/pets(page=${currentPage + 1})}">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Pets Table -->
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${pets == null or #lists.isEmpty(pets) or (pets.content != null and #lists.isEmpty(pets.content))}" 
+                     class="text-center py-5">
+                    <i class="fas fa-paw fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No pets found</h5>
+                    <p class="text-muted">
+                        <span th:if="${searchPerformed}">Try adjusting your search criteria.</span>
+                        <span th:unless="${searchPerformed}">Start by adding a new pet.</span>
+                    </p>
+                    <a th:href="@{/pets/new}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add First Pet
+                    </a>
+                </div>
+
+                <div th:if="${pets != null and (!#lists.isEmpty(pets) or (pets.content != null and !#lists.isEmpty(pets.content)))}" 
+                     class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Species</th>
+                                <th>Breed</th>
+                                <th>Age</th>
+                                <th>Owner</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="pet : ${pets.content != null ? pets.content : pets}">
+                                <td>
+                                    <strong th:text="${pet.name}">Pet Name</strong>
+                                    <span th:if="${pet.youngPet}" class="badge bg-success ms-1">Young</span>
+                                    <span th:if="${pet.seniorPet}" class="badge bg-warning ms-1">Senior</span>
+                                </td>
+                                <td th:text="${pet.species}">Species</td>
+                                <td th:text="${pet.breed}">Breed</td>
+                                <td th:text="${pet.age}">Age</td>
+                                <td>
+                                    <a th:if="${pet.owner != null}" 
+                                       th:href="@{/owners/{id}(id=${pet.owner.id})}" 
+                                       th:text="${pet.owner.fullName}">Owner Name</a>
+                                    <span th:unless="${pet.owner != null}" class="text-muted">No owner</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a th:href="@{/pets/{id}(id=${pet.id})}" 
+                                           class="btn btn-outline-info btn-action" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:href="@{/pets/{id}/edit(id=${pet.id})}" 
+                                           class="btn btn-outline-primary btn-action" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a th:href="@{/visits/new(petId=${pet.id})}" 
+                                           class="btn btn-outline-success btn-action" title="Schedule Visit">
+                                            <i class="fas fa-calendar-plus"></i>
+                                        </a>
+                                        <form th:action="@{/pets/{id}/delete(id=${pet.id})}" method="post" style="display: inline;">
+                                            <button type="submit" class="btn btn-outline-danger btn-action btn-delete" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back to Owner Link -->
+        <div th:if="${filterByOwner}" class="mt-3">
+            <a th:href="@{/owners/{id}(id=${owner.id})}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to <span th:text="${owner.fullName}">Owner</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

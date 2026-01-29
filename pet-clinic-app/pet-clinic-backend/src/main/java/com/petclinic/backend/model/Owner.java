@@ -52,7 +52,7 @@ public class Owner {
     private String email;
     
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @JsonManagedReference("owner-pets")
     private List<Pet> pets = new ArrayList<>();
     
     @Column(name = "created_at", nullable = false, updatable = false)

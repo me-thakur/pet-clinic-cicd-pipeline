@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OwnerController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Pet Clinic Frontend</a> &gt; <a href="index.source.html" class="el_package">com.petclinic.frontend.controller</a> &gt; <span class="el_source">OwnerController.java</span></div><h1>OwnerController.java</h1><pre class="source lang-java linenums">package com.petclinic.frontend.controller;
+
+import com.petclinic.frontend.model.Owner;
+import com.petclinic.frontend.service.OwnerService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
+
+/**
+ * Owner Controller
+ * 
+ * Handles web requests for owner management operations.
+ * Provides CRUD operations and search functionality through Thymeleaf templates.
+ * 
+ * Validates: Requirements 8.2, 8.3, 8.4, 8.5
+ */
+@Controller
+@RequestMapping(&quot;/owners&quot;)
+public class OwnerController {
+
+    private final OwnerService ownerService;
+
+    @Autowired
+<span class="fc" id="L33">    public OwnerController(OwnerService ownerService) {</span>
+<span class="fc" id="L34">        this.ownerService = ownerService;</span>
+<span class="fc" id="L35">    }</span>
+
+    /**
+     * List all owners with pagination
+     */
+    @GetMapping
+    public String listOwners(
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;10&quot;) int size,
+            Model model) {
+        
+<span class="nc" id="L46">        Pageable pageable = PageRequest.of(page, size);</span>
+<span class="nc" id="L47">        Page&lt;Owner&gt; ownersPage = ownerService.getAllOwners(pageable).block();</span>
+        
+<span class="nc" id="L49">        model.addAttribute(&quot;owners&quot;, ownersPage.getContent());</span>
+<span class="nc" id="L50">        model.addAttribute(&quot;currentPage&quot;, page);</span>
+<span class="nc" id="L51">        model.addAttribute(&quot;totalPages&quot;, ownersPage.getTotalPages());</span>
+<span class="nc" id="L52">        model.addAttribute(&quot;totalElements&quot;, ownersPage.getTotalElements());</span>
+<span class="nc" id="L53">        model.addAttribute(&quot;size&quot;, size);</span>
+        
+<span class="nc" id="L55">        return &quot;owners/list&quot;;</span>
+    }
+
+    /**
+     * Show owner details
+     */
+    @GetMapping(&quot;/{id}&quot;)
+    public String showOwner(@PathVariable Long id, Model model) {
+<span class="nc" id="L63">        Owner owner = ownerService.getOwnerById(id).block();</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if (owner == null) {</span>
+<span class="nc" id="L65">            return &quot;redirect:/owners?error=notfound&quot;;</span>
+        }
+        
+<span class="nc" id="L68">        model.addAttribute(&quot;owner&quot;, owner);</span>
+<span class="nc" id="L69">        return &quot;owners/details&quot;;</span>
+    }
+
+    /**
+     * Show create owner form
+     */
+    @GetMapping(&quot;/new&quot;)
+    public String showCreateForm(Model model) {
+<span class="nc" id="L77">        model.addAttribute(&quot;owner&quot;, new Owner());</span>
+<span class="nc" id="L78">        return &quot;owners/form&quot;;</span>
+    }
+
+    /**
+     * Process create owner form
+     */
+    @PostMapping(&quot;/new&quot;)
+    public String createOwner(
+            @Valid @ModelAttribute Owner owner,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+        
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        if (bindingResult.hasErrors()) {</span>
+<span class="nc" id="L91">            return &quot;owners/form&quot;;</span>
+        }
+        
+        try {
+<span class="nc" id="L95">            Owner savedOwner = ownerService.createOwner(owner).block();</span>
+<span class="nc" id="L96">            redirectAttributes.addFlashAttribute(&quot;success&quot;, &quot;Owner created successfully!&quot;);</span>
+<span class="nc" id="L97">            return &quot;redirect:/owners/&quot; + savedOwner.getId();</span>
+<span class="nc" id="L98">        } catch (Exception e) {</span>
+<span class="nc" id="L99">            bindingResult.rejectValue(&quot;email&quot;, &quot;error.owner&quot;, &quot;Failed to create owner. Please try again.&quot;);</span>
+<span class="nc" id="L100">            return &quot;owners/form&quot;;</span>
+        }
+    }
+
+    /**
+     * Show edit owner form
+     */
+    @GetMapping(&quot;/{id}/edit&quot;)
+    public String showEditForm(@PathVariable Long id, Model model) {
+<span class="nc" id="L109">        Owner owner = ownerService.getOwnerById(id).block();</span>
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (owner == null) {</span>
+<span class="nc" id="L111">            return &quot;redirect:/owners?error=notfound&quot;;</span>
+        }
+        
+<span class="nc" id="L114">        model.addAttribute(&quot;owner&quot;, owner);</span>
+<span class="nc" id="L115">        return &quot;owners/form&quot;;</span>
+    }
+
+    /**
+     * Process edit owner form
+     */
+    @PostMapping(&quot;/{id}/edit&quot;)
+    public String updateOwner(
+            @PathVariable Long id,
+            @Valid @ModelAttribute Owner owner,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+        
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        if (bindingResult.hasErrors()) {</span>
+<span class="nc" id="L129">            return &quot;owners/form&quot;;</span>
+        }
+        
+        try {
+<span class="nc" id="L133">            ownerService.updateOwner(id, owner).block();</span>
+<span class="nc" id="L134">            redirectAttributes.addFlashAttribute(&quot;success&quot;, &quot;Owner updated successfully!&quot;);</span>
+<span class="nc" id="L135">            return &quot;redirect:/owners/&quot; + id;</span>
+<span class="nc" id="L136">        } catch (Exception e) {</span>
+<span class="nc" id="L137">            bindingResult.rejectValue(&quot;email&quot;, &quot;error.owner&quot;, &quot;Failed to update owner. Please try again.&quot;);</span>
+<span class="nc" id="L138">            return &quot;owners/form&quot;;</span>
+        }
+    }
+
+    /**
+     * Delete owner
+     */
+    @PostMapping(&quot;/{id}/delete&quot;)
+    public String deleteOwner(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+<span class="nc" id="L148">            ownerService.deleteOwner(id).block();</span>
+<span class="nc" id="L149">            redirectAttributes.addFlashAttribute(&quot;success&quot;, &quot;Owner deleted successfully!&quot;);</span>
+<span class="nc" id="L150">        } catch (Exception e) {</span>
+<span class="nc" id="L151">            redirectAttributes.addFlashAttribute(&quot;error&quot;, &quot;Failed to delete owner. Please try again.&quot;);</span>
+<span class="nc" id="L152">        }</span>
+        
+<span class="nc" id="L154">        return &quot;redirect:/owners&quot;;</span>
+    }
+
+    /**
+     * Search owners
+     */
+    @GetMapping(&quot;/search&quot;)
+    public String searchOwners(
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String city,
+            Model model) {
+        
+<span class="nc" id="L168">        List&lt;Owner&gt; owners = null;</span>
+<span class="nc" id="L169">        String searchType = &quot;&quot;;</span>
+<span class="nc" id="L170">        String searchTerm = &quot;&quot;;</span>
+        
+        try {
+<span class="nc bnc" id="L173" title="All 4 branches missed.">            if (firstName != null &amp;&amp; !firstName.trim().isEmpty()) {</span>
+<span class="nc" id="L174">                owners = ownerService.searchByFirstName(firstName.trim()).block();</span>
+<span class="nc" id="L175">                searchType = &quot;first name&quot;;</span>
+<span class="nc" id="L176">                searchTerm = firstName.trim();</span>
+<span class="nc bnc" id="L177" title="All 4 branches missed.">            } else if (lastName != null &amp;&amp; !lastName.trim().isEmpty()) {</span>
+<span class="nc" id="L178">                owners = ownerService.searchByLastName(lastName.trim()).block();</span>
+<span class="nc" id="L179">                searchType = &quot;last name&quot;;</span>
+<span class="nc" id="L180">                searchTerm = lastName.trim();</span>
+<span class="nc bnc" id="L181" title="All 4 branches missed.">            } else if (email != null &amp;&amp; !email.trim().isEmpty()) {</span>
+<span class="nc" id="L182">                Owner owner = ownerService.searchByEmail(email.trim()).block();</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">                owners = owner != null ? List.of(owner) : List.of();</span>
+<span class="nc" id="L184">                searchType = &quot;email&quot;;</span>
+<span class="nc" id="L185">                searchTerm = email.trim();</span>
+<span class="nc bnc" id="L186" title="All 4 branches missed.">            } else if (city != null &amp;&amp; !city.trim().isEmpty()) {</span>
+<span class="nc" id="L187">                owners = ownerService.searchByCity(city.trim()).block();</span>
+<span class="nc" id="L188">                searchType = &quot;city&quot;;</span>
+<span class="nc" id="L189">                searchTerm = city.trim();</span>
+            }
+<span class="nc" id="L191">        } catch (Exception e) {</span>
+<span class="nc" id="L192">            model.addAttribute(&quot;error&quot;, &quot;Search failed. Please try again.&quot;);</span>
+<span class="nc" id="L193">            owners = List.of();</span>
+<span class="nc" id="L194">        }</span>
+        
+<span class="nc bnc" id="L196" title="All 2 branches missed.">        model.addAttribute(&quot;owners&quot;, owners != null ? owners : List.of());</span>
+<span class="nc" id="L197">        model.addAttribute(&quot;searchType&quot;, searchType);</span>
+<span class="nc" id="L198">        model.addAttribute(&quot;searchTerm&quot;, searchTerm);</span>
+<span class="nc" id="L199">        model.addAttribute(&quot;firstName&quot;, firstName);</span>
+<span class="nc" id="L200">        model.addAttribute(&quot;lastName&quot;, lastName);</span>
+<span class="nc" id="L201">        model.addAttribute(&quot;email&quot;, email);</span>
+<span class="nc" id="L202">        model.addAttribute(&quot;city&quot;, city);</span>
+        
+<span class="nc" id="L204">        return &quot;owners/search&quot;;</span>
+    }
+
+    /**
+     * Show owners with multiple pets
+     */
+    @GetMapping(&quot;/multiple-pets&quot;)
+    public String ownersWithMultiplePets(Model model) {
+        try {
+<span class="nc" id="L213">            List&lt;Owner&gt; owners = ownerService.getOwnersWithMultiplePets().block();</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">            model.addAttribute(&quot;owners&quot;, owners != null ? owners : List.of());</span>
+<span class="nc" id="L215">        } catch (Exception e) {</span>
+<span class="nc" id="L216">            model.addAttribute(&quot;error&quot;, &quot;Failed to load owners with multiple pets.&quot;);</span>
+<span class="nc" id="L217">            model.addAttribute(&quot;owners&quot;, List.of());</span>
+<span class="nc" id="L218">        }</span>
+        
+<span class="nc" id="L220">        return &quot;owners/multiple-pets&quot;;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

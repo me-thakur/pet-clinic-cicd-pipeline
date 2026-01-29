@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.petclinic.backend.repository.PetClinicDataPersistenceTest
 -------------------------------------------------------------------------------
-Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.262 s -- in com.petclinic.backend.repository.PetClinicDataPersistenceTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.198 s -- in com.petclinic.backend.repository.PetClinicDataPersistenceTest

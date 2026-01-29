@@ -47,11 +47,12 @@ public class Visit {
     @NotNull(message = "Pet is required")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pet_id", nullable = false)
-    @JsonBackReference
+    @JsonBackReference("pet-visits")
     private Pet pet;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "veterinarian_id")
+    @JsonBackReference("veterinarian-visits")
     private Veterinarian veterinarian;
     
     @Column(name = "created_at", nullable = false, updatable = false)

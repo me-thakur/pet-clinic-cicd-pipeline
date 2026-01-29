@@ -43,7 +43,7 @@ public class Veterinarian {
     private String licenseNumber;
     
 <span class="fc" id="L45">    @OneToMany(mappedBy = &quot;veterinarian&quot;, cascade = CascadeType.ALL, fetch = FetchType.LAZY)</span>
-    @JsonManagedReference
+    @JsonManagedReference(&quot;veterinarian-visits&quot;)
     private List&lt;Visit&gt; visits = new ArrayList&lt;&gt;();
     
     @Column(name = &quot;created_at&quot;, nullable = false, updatable = false)

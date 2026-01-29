@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${veterinarian.id != null ? 'Edit Veterinarian' : 'Add New Veterinarian'}">Veterinarian Form</title>
+</head>
+<body th:replace="~{layout :: layout(~{::main}, ${veterinarian.id != null ? 'Edit Veterinarian' : 'Add New Veterinarian'})}">
+    <main>
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 th:text="${veterinarian.id != null ? 'Edit Veterinarian' : 'Add New Veterinarian'}">Veterinarian Form</h3>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${veterinarian.id != null ? '/veterinarians/' + veterinarian.id + '/edit' : '/veterinarians/new'}" 
+                              th:object="${veterinarian}" method="post">
+                            
+                            <!-- First Name -->
+                            <div class="mb-3">
+                                <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="firstName" th:field="*{firstName}" 
+                                       th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid' : ''" required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">
+                                    First name error
+                                </div>
+                            </div>
+
+                            <!-- Last Name -->
+                            <div class="mb-3">
+                                <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="lastName" th:field="*{lastName}" 
+                                       th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid' : ''" required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">
+                                    Last name error
+                                </div>
+                            </div>
+
+                            <!-- Specialties -->
+                            <div class="mb-3">
+                                <label for="specialties" class="form-label">Specialties <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="specialties" th:field="*{specialties}" rows="3"
+                                          th:classappend="${#fields.hasErrors('specialties')} ? 'is-invalid' : ''" 
+                                          placeholder="Enter specialties separated by commas (e.g., Surgery, Cardiology, Dermatology)" required></textarea>
+                                <div class="form-text">Enter multiple specialties separated by commas</div>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('specialties')}" th:errors="*{specialties}">
+                                    Specialties error
+                                </div>
+                            </div>
+
+                            <!-- License Number -->
+                            <div class="mb-3">
+                                <label for="licenseNumber" class="form-label">License Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="licenseNumber" th:field="*{licenseNumber}" 
+                                       th:classappend="${#fields.hasErrors('licenseNumber')} ? 'is-invalid' : ''" 
+                                       placeholder="Enter veterinary license number" required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('licenseNumber')}" th:errors="*{licenseNumber}">
+                                    License number error
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="d-flex justify-content-between">
+                                <a th:href="@{/veterinarians}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to List
+                                </a>
+                                <div>
+                                    <button type="reset" class="btn btn-outline-secondary me-2">
+                                        <i class="fas fa-undo"></i> Reset
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> 
+                                        <span th:text="${veterinarian.id != null ? 'Update Veterinarian' : 'Create Veterinarian'}">Save</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

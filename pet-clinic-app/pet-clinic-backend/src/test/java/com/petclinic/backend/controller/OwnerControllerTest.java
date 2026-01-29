@@ -2,13 +2,16 @@ package com.petclinic.backend.controller;
 
 import com.petclinic.backend.model.Owner;
 import com.petclinic.backend.repository.OwnerRepository;
+import com.petclinic.backend.config.SecurityConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Arrays;
@@ -17,7 +20,6 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -27,6 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Validates: Requirements 8.1, 8.2, 8.3, 8.4
  */
 @WebMvcTest(OwnerController.class)
+@Import(SecurityConfig.class)
+@ActiveProfiles("test")
 public class OwnerControllerTest {
 
     @Autowired
@@ -52,7 +56,7 @@ public class OwnerControllerTest {
         when(ownerRepository.findById(1L)).thenReturn(Optional.of(owner));
 
         // Act & Assert
-        mockMvc.perform(get("/api/owners/1"))
+        mockMvc.perform(get("/owners/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
@@ -69,7 +73,7 @@ public class OwnerControllerTest {
         when(ownerRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        mockMvc.perform(get("/api/owners/999"))
+        mockMvc.perform(get("/owners/999"))
                 .andExpect(status().isNotFound());
     }
 
@@ -93,10 +97,9 @@ public class OwnerControllerTest {
         when(ownerRepository.save(any(Owner.class))).thenReturn(savedOwner);
 
         // Act & Assert
-        mockMvc.perform(post("/api/owners")
+        mockMvc.perform(post("/owners")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(inputOwner))
-                .with(csrf()))
+                .content(objectMapper.writeValueAsString(inputOwner)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(2))
@@ -133,10 +136,9 @@ public class OwnerControllerTest {
         when(ownerRepository.save(any(Owner.class))).thenReturn(updatedOwner);
 
         // Act & Assert
-        mockMvc.perform(put("/api/owners/1")
+        mockMvc.perform(put("/owners/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateData))
-                .with(csrf()))
+                .content(objectMapper.writeValueAsString(updateData)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(1))
@@ -157,10 +159,9 @@ public class OwnerControllerTest {
         when(ownerRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        mockMvc.perform(put("/api/owners/999")
+        mockMvc.perform(put("/owners/999")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(updateData))
-                .with(csrf()))
+                .content(objectMapper.writeValueAsString(updateData)))
                 .andExpect(status().isNotFound());
     }
 
@@ -171,7 +172,7 @@ public class OwnerControllerTest {
         when(ownerRepository.existsById(1L)).thenReturn(true);
 
         // Act & Assert
-        mockMvc.perform(delete("/api/owners/1").with(csrf()))
+        mockMvc.perform(delete("/owners/1"))
                 .andExpect(status().isNoContent());
     }
 
@@ -182,7 +183,7 @@ public class OwnerControllerTest {
         when(ownerRepository.existsById(999L)).thenReturn(false);
 
         // Act & Assert
-        mockMvc.perform(delete("/api/owners/999").with(csrf()))
+        mockMvc.perform(delete("/owners/999"))
                 .andExpect(status().isNotFound());
     }
 
@@ -204,7 +205,7 @@ public class OwnerControllerTest {
                 .thenReturn(Arrays.asList(owner1, owner2));
 
         // Act & Assert
-        mockMvc.perform(get("/api/owners/search/by-first-name")
+        mockMvc.perform(get("/owners/search/by-first-name")
                 .param("name", "john"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -228,7 +229,7 @@ public class OwnerControllerTest {
                 .thenReturn(Optional.of(owner));
 
         // Act & Assert
-        mockMvc.perform(get("/api/owners/search/by-email")
+        mockMvc.perform(get("/owners/search/by-email")
                 .param("email", "john.doe@example.com"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -244,7 +245,7 @@ public class OwnerControllerTest {
                 .thenReturn(Optional.empty());
 
         // Act & Assert
-        mockMvc.perform(get("/api/owners/search/by-email")
+        mockMvc.perform(get("/owners/search/by-email")
                 .param("email", "nonexistent@example.com"))
                 .andExpect(status().isNotFound());
     }

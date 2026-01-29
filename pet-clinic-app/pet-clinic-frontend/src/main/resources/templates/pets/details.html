@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title th:text="'Pet Details - ' + ${pet.name}">Pet Details</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-paw"></i> 
+                <span th:text="${pet.name}">Pet Name</span>
+                <span th:if="${pet.youngPet}" class="badge bg-success ms-2">Young</span>
+                <span th:if="${pet.seniorPet}" class="badge bg-warning ms-2">Senior</span>
+            </h1>
+            <div>
+                <a th:href="@{/pets/{id}/edit(id=${pet.id})}" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit Pet
+                </a>
+                <a th:href="@{/visits/new(petId=${pet.id})}" class="btn btn-success">
+                    <i class="fas fa-calendar-plus"></i> Schedule Visit
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Pet Information -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Pet Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="30%">Name:</th>
+                                <td th:text="${pet.name}">Pet Name</td>
+                            </tr>
+                            <tr>
+                                <th>Species:</th>
+                                <td th:text="${pet.species}">Species</td>
+                            </tr>
+                            <tr>
+                                <th>Breed:</th>
+                                <td th:text="${pet.breed ?: 'Not specified'}">Breed</td>
+                            </tr>
+                            <tr>
+                                <th>Age:</th>
+                                <td>
+                                    <span th:text="${pet.age}">Age</span> years old
+                                    <span th:if="${pet.birthDate != null}" class="text-muted">
+                                        (Born: <span th:text="${#temporals.format(pet.birthDate, 'MMM dd, yyyy')}">Birth Date</span>)
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr th:if="${pet.owner != null}">
+                                <th>Owner:</th>
+                                <td>
+                                    <a th:href="@{/owners/{id}(id=${pet.owner.id})}" 
+                                       th:text="${pet.owner.fullName}">Owner Name</a>
+                                </td>
+                            </tr>
+                            <tr th:if="${pet.createdAt != null}">
+                                <th>Added:</th>
+                                <td th:text="${#temporals.format(pet.createdAt, 'MMM dd, yyyy')}">Created Date</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Medical History -->
+                <div class="card mt-4" th:if="${pet.medicalHistory != null and !#strings.isEmpty(pet.medicalHistory)}">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-notes-medical"></i> Medical History</h5>
+                    </div>
+                    <div class="card-body">
+                        <p th:text="${pet.medicalHistory}" class="mb-0">Medical history</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Visits -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Recent Visits</h5>
+                        <a th:href="@{/visits/pet/{id}(id=${pet.id})}" class="btn btn-sm btn-outline-primary">
+                            View All
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${pet.visits == null or #lists.isEmpty(pet.visits)}" class="text-center py-4">
+                            <i class="fas fa-calendar-times fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-2">No visits recorded yet</p>
+                            <a th:href="@{/visits/new(petId=${pet.id})}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus"></i> Schedule First Visit
+                            </a>
+                        </div>
+
+                        <div th:if="${pet.visits != null and !#lists.isEmpty(pet.visits)}">
+                            <div th:each="visit, iterStat : ${pet.visits}" 
+                                 th:if="${iterStat.index < 5}" 
+                                 class="border-bottom pb-2 mb-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            <a th:href="@{/visits/{id}(id=${visit.id})}" 
+                                               th:text="${visit.description ?: 'Visit'}">Visit Description</a>
+                                            <span th:if="${visit.emergencyVisit}" class="badge bg-danger ms-1">Emergency</span>
+                                        </h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar"></i>
+                                            <span th:text="${#temporals.format(visit.visitDate, 'MMM dd, yyyy HH:mm')}">Visit Date</span>
+                                        </small>
+                                        <div th:if="${visit.diagnosis != null and !#strings.isEmpty(visit.diagnosis)}">
+                                            <small><strong>Diagnosis:</strong> <span th:text="${visit.diagnosis}">Diagnosis</span></small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span th:if="${visit.cost != null}" class="badge bg-info">
+                                            $<span th:text="${#numbers.formatDecimal(visit.cost, 1, 2)}">0.00</span>
+                                        </span>
+                                        <div th:if="${visit.completed != null}">
+                                            <span th:if="${visit.completed}" class="badge bg-success">Completed</span>
+                                            <span th:unless="${visit.completed}" class="badge bg-warning">Pending</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div th:if="${#lists.size(pet.visits) > 5}" class="text-center mt-3">
+                                <a th:href="@{/visits/pet/{id}(id=${pet.id})}" class="btn btn-sm btn-outline-primary">
+                                    View All <span th:text="${#lists.size(pet.visits)}">0</span> Visits
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a th:href="@{/pets}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Pets
+                        </a>
+                        <a th:if="${pet.owner != null}" 
+                           th:href="@{/owners/{id}(id=${pet.owner.id})}" 
+                           class="btn btn-outline-info ms-2">
+                            <i class="fas fa-user"></i> View Owner
+                        </a>
+                    </div>
+                    <div>
+                        <a th:href="@{/pets/{id}/edit(id=${pet.id})}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit Pet
+                        </a>
+                        <form th:action="@{/pets/{id}/delete(id=${pet.id})}" method="post" style="display: inline;" class="ms-2">
+                            <button type="submit" class="btn btn-danger btn-delete">
+                                <i class="fas fa-trash"></i> Delete Pet
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

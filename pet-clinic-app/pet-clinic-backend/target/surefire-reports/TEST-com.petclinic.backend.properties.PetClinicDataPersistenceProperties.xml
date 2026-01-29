@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="1.525" tests="5" errors="5" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="1.992" tests="5" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="21"/>
     <property name="sun.jnu.encoding" value="UTF-8"/>
-    <property name="java.class.path" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/test-classes:/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/classes:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-web/3.2.1/spring-boot-starter-web-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter/3.2.1/spring-boot-starter-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.2.1/spring-boot-starter-logging-3.2.1.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.21.1/log4j-to-slf4j-2.21.1.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-api/2.21.1/log4j-api-2.21.1.jar:/Users/Vivek/.m2/repository/org/slf4j/jul-to-slf4j/2.0.9/jul-to-slf4j-2.0.9.jar:/Users/Vivek/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/Vivek/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.2.1/spring-boot-starter-json-3.2.1.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.15.3/jackson-datatype-jdk8-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.15.3/jackson-datatype-jsr310-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.15.3/jackson-module-parameter-names-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-tomcat/3.2.1/spring-boot-starter-tomcat-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.17/tomcat-embed-core-10.1.17.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-websocket/10.1.17/tomcat-embed-websocket-10.1.17.jar:/Users/Vivek/.m2/repository/org/springframework/spring-web/6.1.2/spring-web-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-beans/6.1.2/spring-beans-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-webmvc/6.1.2/spring-webmvc-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-context/6.1.2/spring-context-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-expression/6.1.2/spring-expression-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-data-jpa/3.2.1/spring-boot-starter-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-aop/3.2.1/spring-boot-starter-aop-3.2.1.jar:/Users/Vivek/.m2/repository/org/aspectj/aspectjweaver/1.9.21/aspectjweaver-1.9.21.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-jdbc/3.2.1/spring-boot-starter-jdbc-3.2.1.jar:/Users/Vivek/.m2/repository/com/zaxxer/HikariCP/5.0.1/HikariCP-5.0.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jdbc/6.1.2/spring-jdbc-6.1.2.jar:/Users/Vivek/.m2/repository/org/hibernate/orm/hibernate-core/6.4.1.Final/hibernate-core-6.4.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/Users/Vivek/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/Users/Vivek/.m2/repository/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final.jar:/Users/Vivek/.m2/repository/io/smallrye/jandex/3.1.2/jandex-3.1.2.jar:/Users/Vivek/.m2/repository/com/fasterxml/classmate/1.6.0/classmate-1.6.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy/1.14.10/byte-buddy-1.14.10.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.4/jaxb-runtime-4.0.4.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.4/jaxb-core-4.0.4.jar:/Users/Vivek/.m2/repository/org/eclipse/angus/angus-activation/2.0.1/angus-activation-2.0.1.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/txw2/4.0.4/txw2-4.0.4.jar:/Users/Vivek/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/Users/Vivek/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-jpa/3.2.1/spring-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-commons/3.2.1/spring-data-commons-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-orm/6.1.2/spring-orm-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-tx/6.1.2/spring-tx-6.1.2.jar:/Users/Vivek/.m2/repository/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aspects/6.1.2/spring-aspects-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.2.1/spring-boot-starter-validation-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.17/tomcat-embed-el-10.1.17.jar:/Users/Vivek/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-security/3.2.1/spring-boot-starter-security-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aop/6.1.2/spring-aop-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-config/6.2.1/spring-security-config-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-web/6.2.1/spring-security-web-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.2.1/spring-boot-starter-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.2.1/spring-boot-actuator-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator/3.2.1/spring-boot-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-observation/1.12.1/micrometer-observation-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-commons/1.12.1/micrometer-commons-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-jakarta9/1.12.1/micrometer-jakarta9-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-core/1.12.1/micrometer-core-1.12.1.jar:/Users/Vivek/.m2/repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.jar:/Users/Vivek/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/Users/Vivek/.m2/repository/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar:/Users/Vivek/.m2/repository/com/h2database/h2/2.2.224/h2-2.2.224.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.3/jackson-databind-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.3/jackson-annotations-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.3/jackson-core-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.2.1/spring-boot-starter-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test/3.2.1/spring-boot-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.2.1/spring-boot-test-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/com/jayway/jsonpath/json-path/2.8.0/json-path-2.8.0.jar:/Users/Vivek/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.1/jakarta.xml.bind-api-4.0.1.jar:/Users/Vivek/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.2/jakarta.activation-api-2.1.2.jar:/Users/Vivek/.m2/repository/net/minidev/json-smart/2.5.0/json-smart-2.5.0.jar:/Users/Vivek/.m2/repository/net/minidev/accessors-smart/2.5.0/accessors-smart-2.5.0.jar:/Users/Vivek/.m2/repository/org/ow2/asm/asm/9.3/asm-9.3.jar:/Users/Vivek/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/Vivek/.m2/repository/org/awaitility/awaitility/4.2.0/awaitility-4.2.0.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.1/junit-jupiter-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.1/junit-jupiter-api-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.1/junit-jupiter-params-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.1/junit-jupiter-engine-5.10.1.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-core/5.7.0/mockito-core-5.7.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.10/byte-buddy-agent-1.14.10.jar:/Users/Vivek/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-junit-jupiter/5.7.0/mockito-junit-jupiter-5.7.0.jar:/Users/Vivek/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/Users/Vivek/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-core/6.1.2/spring-core-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jcl/6.1.2/spring-jcl-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-test/6.1.2/spring-test-6.1.2.jar:/Users/Vivek/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-test/6.2.1/spring-security-test-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-core/6.2.1/spring-security-core-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-crypto/6.2.1/spring-security-crypto-6.2.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik/1.8.2/jqwik-1.8.2.jar:/Users/Vivek/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-api/1.8.2/jqwik-api-1.8.2.jar:/Users/Vivek/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-commons/1.10.1/junit-platform-commons-1.10.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-web/1.8.2/jqwik-web-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-time/1.8.2/jqwik-time-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-engine/1.8.2/jqwik-engine-1.8.2.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-engine/1.10.1/junit-platform-engine-1.10.1.jar:/Users/Vivek/.m2/repository/org/testcontainers/junit-jupiter/1.19.3/junit-jupiter-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/testcontainers/1.19.3/testcontainers-1.19.3.jar:/Users/Vivek/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/Users/Vivek/.m2/repository/org/apache/commons/commons-compress/1.24.0/commons-compress-1.24.0.jar:/Users/Vivek/.m2/repository/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar:/Users/Vivek/.m2/repository/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-api/3.3.4/docker-java-api-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport-zerodep/3.3.4/docker-java-transport-zerodep-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport/3.3.4/docker-java-transport-3.3.4.jar:/Users/Vivek/.m2/repository/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar:/Users/Vivek/.m2/repository/org/testcontainers/mysql/1.19.3/mysql-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/jdbc/1.19.3/jdbc-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/database-commons/1.19.3/database-commons-1.19.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-devtools/3.2.1/spring-boot-devtools-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot/3.2.1/spring-boot-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.2.1/spring-boot-autoconfigure-3.2.1.jar:"/>
+    <property name="java.class.path" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-backend/target/test-classes:/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-backend/target/classes:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-web/3.2.1/spring-boot-starter-web-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter/3.2.1/spring-boot-starter-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.2.1/spring-boot-starter-logging-3.2.1.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.21.1/log4j-to-slf4j-2.21.1.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-api/2.21.1/log4j-api-2.21.1.jar:/Users/Vivek/.m2/repository/org/slf4j/jul-to-slf4j/2.0.9/jul-to-slf4j-2.0.9.jar:/Users/Vivek/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/Vivek/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.2.1/spring-boot-starter-json-3.2.1.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.15.3/jackson-datatype-jdk8-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.15.3/jackson-datatype-jsr310-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.15.3/jackson-module-parameter-names-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-tomcat/3.2.1/spring-boot-starter-tomcat-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.17/tomcat-embed-core-10.1.17.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-websocket/10.1.17/tomcat-embed-websocket-10.1.17.jar:/Users/Vivek/.m2/repository/org/springframework/spring-web/6.1.2/spring-web-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-beans/6.1.2/spring-beans-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-webmvc/6.1.2/spring-webmvc-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-context/6.1.2/spring-context-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-expression/6.1.2/spring-expression-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-data-jpa/3.2.1/spring-boot-starter-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-aop/3.2.1/spring-boot-starter-aop-3.2.1.jar:/Users/Vivek/.m2/repository/org/aspectj/aspectjweaver/1.9.21/aspectjweaver-1.9.21.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-jdbc/3.2.1/spring-boot-starter-jdbc-3.2.1.jar:/Users/Vivek/.m2/repository/com/zaxxer/HikariCP/5.0.1/HikariCP-5.0.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jdbc/6.1.2/spring-jdbc-6.1.2.jar:/Users/Vivek/.m2/repository/org/hibernate/orm/hibernate-core/6.4.1.Final/hibernate-core-6.4.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/Users/Vivek/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/Users/Vivek/.m2/repository/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final.jar:/Users/Vivek/.m2/repository/io/smallrye/jandex/3.1.2/jandex-3.1.2.jar:/Users/Vivek/.m2/repository/com/fasterxml/classmate/1.6.0/classmate-1.6.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy/1.14.10/byte-buddy-1.14.10.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.4/jaxb-runtime-4.0.4.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.4/jaxb-core-4.0.4.jar:/Users/Vivek/.m2/repository/org/eclipse/angus/angus-activation/2.0.1/angus-activation-2.0.1.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/txw2/4.0.4/txw2-4.0.4.jar:/Users/Vivek/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/Users/Vivek/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-jpa/3.2.1/spring-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-commons/3.2.1/spring-data-commons-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-orm/6.1.2/spring-orm-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-tx/6.1.2/spring-tx-6.1.2.jar:/Users/Vivek/.m2/repository/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aspects/6.1.2/spring-aspects-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.2.1/spring-boot-starter-validation-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.17/tomcat-embed-el-10.1.17.jar:/Users/Vivek/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-security/3.2.1/spring-boot-starter-security-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aop/6.1.2/spring-aop-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-config/6.2.1/spring-security-config-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-web/6.2.1/spring-security-web-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.2.1/spring-boot-starter-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.2.1/spring-boot-actuator-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator/3.2.1/spring-boot-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-observation/1.12.1/micrometer-observation-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-commons/1.12.1/micrometer-commons-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-jakarta9/1.12.1/micrometer-jakarta9-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-core/1.12.1/micrometer-core-1.12.1.jar:/Users/Vivek/.m2/repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.jar:/Users/Vivek/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/Users/Vivek/.m2/repository/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar:/Users/Vivek/.m2/repository/com/h2database/h2/2.2.224/h2-2.2.224.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.3/jackson-databind-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.3/jackson-annotations-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.3/jackson-core-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.2.1/spring-boot-starter-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test/3.2.1/spring-boot-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.2.1/spring-boot-test-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/com/jayway/jsonpath/json-path/2.8.0/json-path-2.8.0.jar:/Users/Vivek/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.1/jakarta.xml.bind-api-4.0.1.jar:/Users/Vivek/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.2/jakarta.activation-api-2.1.2.jar:/Users/Vivek/.m2/repository/net/minidev/json-smart/2.5.0/json-smart-2.5.0.jar:/Users/Vivek/.m2/repository/net/minidev/accessors-smart/2.5.0/accessors-smart-2.5.0.jar:/Users/Vivek/.m2/repository/org/ow2/asm/asm/9.3/asm-9.3.jar:/Users/Vivek/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/Vivek/.m2/repository/org/awaitility/awaitility/4.2.0/awaitility-4.2.0.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.1/junit-jupiter-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.1/junit-jupiter-api-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.1/junit-jupiter-params-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.1/junit-jupiter-engine-5.10.1.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-core/5.7.0/mockito-core-5.7.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.10/byte-buddy-agent-1.14.10.jar:/Users/Vivek/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-junit-jupiter/5.7.0/mockito-junit-jupiter-5.7.0.jar:/Users/Vivek/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/Users/Vivek/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-core/6.1.2/spring-core-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jcl/6.1.2/spring-jcl-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-test/6.1.2/spring-test-6.1.2.jar:/Users/Vivek/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-test/6.2.1/spring-security-test-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-core/6.2.1/spring-security-core-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-crypto/6.2.1/spring-security-crypto-6.2.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik/1.8.2/jqwik-1.8.2.jar:/Users/Vivek/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-api/1.8.2/jqwik-api-1.8.2.jar:/Users/Vivek/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-commons/1.10.1/junit-platform-commons-1.10.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-web/1.8.2/jqwik-web-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-time/1.8.2/jqwik-time-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-engine/1.8.2/jqwik-engine-1.8.2.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-engine/1.10.1/junit-platform-engine-1.10.1.jar:/Users/Vivek/.m2/repository/org/testcontainers/junit-jupiter/1.19.3/junit-jupiter-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/testcontainers/1.19.3/testcontainers-1.19.3.jar:/Users/Vivek/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/Users/Vivek/.m2/repository/org/apache/commons/commons-compress/1.24.0/commons-compress-1.24.0.jar:/Users/Vivek/.m2/repository/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar:/Users/Vivek/.m2/repository/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-api/3.3.4/docker-java-api-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport-zerodep/3.3.4/docker-java-transport-zerodep-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport/3.3.4/docker-java-transport-3.3.4.jar:/Users/Vivek/.m2/repository/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar:/Users/Vivek/.m2/repository/org/testcontainers/mysql/1.19.3/mysql-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/jdbc/1.19.3/jdbc-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/database-commons/1.19.3/database-commons-1.19.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-devtools/3.2.1/spring-boot-devtools-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot/3.2.1/spring-boot-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.2.1/spring-boot-autoconfigure-3.2.1.jar:"/>
     <property name="java.vm.vendor" value="Oracle Corporation"/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="java.vendor.url" value="https://java.oracle.com/"/>
     <property name="user.timezone" value="Asia/Kolkata"/>
+    <property name="org.jboss.logging.provider" value="slf4j"/>
     <property name="os.name" value="Mac OS X"/>
     <property name="java.vm.specification.version" value="21"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="IN"/>
     <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib"/>
-    <property name="sun.java.command" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/surefire/surefirebooter-20260128213240317_3.jar /Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/surefire 2026-01-28T21-32-40_279-jvmRun1 surefire-20260128213240317_1tmp surefire_0-20260128213240317_2tmp"/>
+    <property name="sun.java.command" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-backend/target/surefire/surefirebooter-20260129133123889_3.jar /Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-backend/target/surefire 2026-01-29T13-31-23_848-jvmRun1 surefire-20260129133123889_1tmp surefire_0-20260129133123889_2tmp"/>
     <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="jdk.debug" value="release"/>
-    <property name="test" value="PetClinicDataPersistenceProperties"/>
-    <property name="surefire.test.class.path" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/test-classes:/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/classes:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-web/3.2.1/spring-boot-starter-web-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter/3.2.1/spring-boot-starter-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.2.1/spring-boot-starter-logging-3.2.1.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.21.1/log4j-to-slf4j-2.21.1.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-api/2.21.1/log4j-api-2.21.1.jar:/Users/Vivek/.m2/repository/org/slf4j/jul-to-slf4j/2.0.9/jul-to-slf4j-2.0.9.jar:/Users/Vivek/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/Vivek/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.2.1/spring-boot-starter-json-3.2.1.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.15.3/jackson-datatype-jdk8-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.15.3/jackson-datatype-jsr310-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.15.3/jackson-module-parameter-names-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-tomcat/3.2.1/spring-boot-starter-tomcat-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.17/tomcat-embed-core-10.1.17.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-websocket/10.1.17/tomcat-embed-websocket-10.1.17.jar:/Users/Vivek/.m2/repository/org/springframework/spring-web/6.1.2/spring-web-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-beans/6.1.2/spring-beans-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-webmvc/6.1.2/spring-webmvc-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-context/6.1.2/spring-context-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-expression/6.1.2/spring-expression-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-data-jpa/3.2.1/spring-boot-starter-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-aop/3.2.1/spring-boot-starter-aop-3.2.1.jar:/Users/Vivek/.m2/repository/org/aspectj/aspectjweaver/1.9.21/aspectjweaver-1.9.21.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-jdbc/3.2.1/spring-boot-starter-jdbc-3.2.1.jar:/Users/Vivek/.m2/repository/com/zaxxer/HikariCP/5.0.1/HikariCP-5.0.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jdbc/6.1.2/spring-jdbc-6.1.2.jar:/Users/Vivek/.m2/repository/org/hibernate/orm/hibernate-core/6.4.1.Final/hibernate-core-6.4.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/Users/Vivek/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/Users/Vivek/.m2/repository/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final.jar:/Users/Vivek/.m2/repository/io/smallrye/jandex/3.1.2/jandex-3.1.2.jar:/Users/Vivek/.m2/repository/com/fasterxml/classmate/1.6.0/classmate-1.6.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy/1.14.10/byte-buddy-1.14.10.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.4/jaxb-runtime-4.0.4.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.4/jaxb-core-4.0.4.jar:/Users/Vivek/.m2/repository/org/eclipse/angus/angus-activation/2.0.1/angus-activation-2.0.1.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/txw2/4.0.4/txw2-4.0.4.jar:/Users/Vivek/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/Users/Vivek/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-jpa/3.2.1/spring-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-commons/3.2.1/spring-data-commons-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-orm/6.1.2/spring-orm-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-tx/6.1.2/spring-tx-6.1.2.jar:/Users/Vivek/.m2/repository/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aspects/6.1.2/spring-aspects-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.2.1/spring-boot-starter-validation-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.17/tomcat-embed-el-10.1.17.jar:/Users/Vivek/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-security/3.2.1/spring-boot-starter-security-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aop/6.1.2/spring-aop-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-config/6.2.1/spring-security-config-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-web/6.2.1/spring-security-web-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.2.1/spring-boot-starter-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.2.1/spring-boot-actuator-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator/3.2.1/spring-boot-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-observation/1.12.1/micrometer-observation-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-commons/1.12.1/micrometer-commons-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-jakarta9/1.12.1/micrometer-jakarta9-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-core/1.12.1/micrometer-core-1.12.1.jar:/Users/Vivek/.m2/repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.jar:/Users/Vivek/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/Users/Vivek/.m2/repository/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar:/Users/Vivek/.m2/repository/com/h2database/h2/2.2.224/h2-2.2.224.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.3/jackson-databind-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.3/jackson-annotations-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.3/jackson-core-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.2.1/spring-boot-starter-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test/3.2.1/spring-boot-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.2.1/spring-boot-test-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/com/jayway/jsonpath/json-path/2.8.0/json-path-2.8.0.jar:/Users/Vivek/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.1/jakarta.xml.bind-api-4.0.1.jar:/Users/Vivek/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.2/jakarta.activation-api-2.1.2.jar:/Users/Vivek/.m2/repository/net/minidev/json-smart/2.5.0/json-smart-2.5.0.jar:/Users/Vivek/.m2/repository/net/minidev/accessors-smart/2.5.0/accessors-smart-2.5.0.jar:/Users/Vivek/.m2/repository/org/ow2/asm/asm/9.3/asm-9.3.jar:/Users/Vivek/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/Vivek/.m2/repository/org/awaitility/awaitility/4.2.0/awaitility-4.2.0.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.1/junit-jupiter-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.1/junit-jupiter-api-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.1/junit-jupiter-params-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.1/junit-jupiter-engine-5.10.1.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-core/5.7.0/mockito-core-5.7.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.10/byte-buddy-agent-1.14.10.jar:/Users/Vivek/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-junit-jupiter/5.7.0/mockito-junit-jupiter-5.7.0.jar:/Users/Vivek/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/Users/Vivek/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-core/6.1.2/spring-core-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jcl/6.1.2/spring-jcl-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-test/6.1.2/spring-test-6.1.2.jar:/Users/Vivek/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-test/6.2.1/spring-security-test-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-core/6.2.1/spring-security-core-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-crypto/6.2.1/spring-security-crypto-6.2.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik/1.8.2/jqwik-1.8.2.jar:/Users/Vivek/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-api/1.8.2/jqwik-api-1.8.2.jar:/Users/Vivek/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-commons/1.10.1/junit-platform-commons-1.10.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-web/1.8.2/jqwik-web-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-time/1.8.2/jqwik-time-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-engine/1.8.2/jqwik-engine-1.8.2.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-engine/1.10.1/junit-platform-engine-1.10.1.jar:/Users/Vivek/.m2/repository/org/testcontainers/junit-jupiter/1.19.3/junit-jupiter-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/testcontainers/1.19.3/testcontainers-1.19.3.jar:/Users/Vivek/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/Users/Vivek/.m2/repository/org/apache/commons/commons-compress/1.24.0/commons-compress-1.24.0.jar:/Users/Vivek/.m2/repository/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar:/Users/Vivek/.m2/repository/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-api/3.3.4/docker-java-api-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport-zerodep/3.3.4/docker-java-transport-zerodep-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport/3.3.4/docker-java-transport-3.3.4.jar:/Users/Vivek/.m2/repository/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar:/Users/Vivek/.m2/repository/org/testcontainers/mysql/1.19.3/mysql-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/jdbc/1.19.3/jdbc-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/database-commons/1.19.3/database-commons-1.19.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-devtools/3.2.1/spring-boot-devtools-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot/3.2.1/spring-boot-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.2.1/spring-boot-autoconfigure-3.2.1.jar:"/>
+    <property name="surefire.test.class.path" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-backend/target/test-classes:/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-backend/target/classes:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-web/3.2.1/spring-boot-starter-web-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter/3.2.1/spring-boot-starter-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-logging/3.2.1/spring-boot-starter-logging-3.2.1.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-classic/1.4.14/logback-classic-1.4.14.jar:/Users/Vivek/.m2/repository/ch/qos/logback/logback-core/1.4.14/logback-core-1.4.14.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.21.1/log4j-to-slf4j-2.21.1.jar:/Users/Vivek/.m2/repository/org/apache/logging/log4j/log4j-api/2.21.1/log4j-api-2.21.1.jar:/Users/Vivek/.m2/repository/org/slf4j/jul-to-slf4j/2.0.9/jul-to-slf4j-2.0.9.jar:/Users/Vivek/.m2/repository/jakarta/annotation/jakarta.annotation-api/2.1.1/jakarta.annotation-api-2.1.1.jar:/Users/Vivek/.m2/repository/org/yaml/snakeyaml/2.2/snakeyaml-2.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-json/3.2.1/spring-boot-starter-json-3.2.1.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.15.3/jackson-datatype-jdk8-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.15.3/jackson-datatype-jsr310-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.15.3/jackson-module-parameter-names-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-tomcat/3.2.1/spring-boot-starter-tomcat-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.17/tomcat-embed-core-10.1.17.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-websocket/10.1.17/tomcat-embed-websocket-10.1.17.jar:/Users/Vivek/.m2/repository/org/springframework/spring-web/6.1.2/spring-web-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-beans/6.1.2/spring-beans-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-webmvc/6.1.2/spring-webmvc-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-context/6.1.2/spring-context-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-expression/6.1.2/spring-expression-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-data-jpa/3.2.1/spring-boot-starter-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-aop/3.2.1/spring-boot-starter-aop-3.2.1.jar:/Users/Vivek/.m2/repository/org/aspectj/aspectjweaver/1.9.21/aspectjweaver-1.9.21.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-jdbc/3.2.1/spring-boot-starter-jdbc-3.2.1.jar:/Users/Vivek/.m2/repository/com/zaxxer/HikariCP/5.0.1/HikariCP-5.0.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jdbc/6.1.2/spring-jdbc-6.1.2.jar:/Users/Vivek/.m2/repository/org/hibernate/orm/hibernate-core/6.4.1.Final/hibernate-core-6.4.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/persistence/jakarta.persistence-api/3.1.0/jakarta.persistence-api-3.1.0.jar:/Users/Vivek/.m2/repository/jakarta/transaction/jakarta.transaction-api/2.0.1/jakarta.transaction-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/jboss/logging/jboss-logging/3.5.3.Final/jboss-logging-3.5.3.Final.jar:/Users/Vivek/.m2/repository/org/hibernate/common/hibernate-commons-annotations/6.0.6.Final/hibernate-commons-annotations-6.0.6.Final.jar:/Users/Vivek/.m2/repository/io/smallrye/jandex/3.1.2/jandex-3.1.2.jar:/Users/Vivek/.m2/repository/com/fasterxml/classmate/1.6.0/classmate-1.6.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy/1.14.10/byte-buddy-1.14.10.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-runtime/4.0.4/jaxb-runtime-4.0.4.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/jaxb-core/4.0.4/jaxb-core-4.0.4.jar:/Users/Vivek/.m2/repository/org/eclipse/angus/angus-activation/2.0.1/angus-activation-2.0.1.jar:/Users/Vivek/.m2/repository/org/glassfish/jaxb/txw2/4.0.4/txw2-4.0.4.jar:/Users/Vivek/.m2/repository/com/sun/istack/istack-commons-runtime/4.1.2/istack-commons-runtime-4.1.2.jar:/Users/Vivek/.m2/repository/jakarta/inject/jakarta.inject-api/2.0.1/jakarta.inject-api-2.0.1.jar:/Users/Vivek/.m2/repository/org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-jpa/3.2.1/spring-data-jpa-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/data/spring-data-commons/3.2.1/spring-data-commons-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-orm/6.1.2/spring-orm-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-tx/6.1.2/spring-tx-6.1.2.jar:/Users/Vivek/.m2/repository/org/slf4j/slf4j-api/2.0.9/slf4j-api-2.0.9.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aspects/6.1.2/spring-aspects-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-validation/3.2.1/spring-boot-starter-validation-3.2.1.jar:/Users/Vivek/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/10.1.17/tomcat-embed-el-10.1.17.jar:/Users/Vivek/.m2/repository/org/hibernate/validator/hibernate-validator/8.0.1.Final/hibernate-validator-8.0.1.Final.jar:/Users/Vivek/.m2/repository/jakarta/validation/jakarta.validation-api/3.0.2/jakarta.validation-api-3.0.2.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-security/3.2.1/spring-boot-starter-security-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-aop/6.1.2/spring-aop-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-config/6.2.1/spring-security-config-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-web/6.2.1/spring-security-web-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/3.2.1/spring-boot-starter-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/3.2.1/spring-boot-actuator-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-actuator/3.2.1/spring-boot-actuator-3.2.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-observation/1.12.1/micrometer-observation-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-commons/1.12.1/micrometer-commons-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-jakarta9/1.12.1/micrometer-jakarta9-1.12.1.jar:/Users/Vivek/.m2/repository/io/micrometer/micrometer-core/1.12.1/micrometer-core-1.12.1.jar:/Users/Vivek/.m2/repository/org/hdrhistogram/HdrHistogram/2.1.12/HdrHistogram-2.1.12.jar:/Users/Vivek/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar:/Users/Vivek/.m2/repository/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar:/Users/Vivek/.m2/repository/com/h2database/h2/2.2.224/h2-2.2.224.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.15.3/jackson-databind-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.15.3/jackson-annotations-2.15.3.jar:/Users/Vivek/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.15.3/jackson-core-2.15.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-starter-test/3.2.1/spring-boot-starter-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test/3.2.1/spring-boot-test-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-test-autoconfigure/3.2.1/spring-boot-test-autoconfigure-3.2.1.jar:/Users/Vivek/.m2/repository/com/jayway/jsonpath/json-path/2.8.0/json-path-2.8.0.jar:/Users/Vivek/.m2/repository/jakarta/xml/bind/jakarta.xml.bind-api/4.0.1/jakarta.xml.bind-api-4.0.1.jar:/Users/Vivek/.m2/repository/jakarta/activation/jakarta.activation-api/2.1.2/jakarta.activation-api-2.1.2.jar:/Users/Vivek/.m2/repository/net/minidev/json-smart/2.5.0/json-smart-2.5.0.jar:/Users/Vivek/.m2/repository/net/minidev/accessors-smart/2.5.0/accessors-smart-2.5.0.jar:/Users/Vivek/.m2/repository/org/ow2/asm/asm/9.3/asm-9.3.jar:/Users/Vivek/.m2/repository/org/assertj/assertj-core/3.24.2/assertj-core-3.24.2.jar:/Users/Vivek/.m2/repository/org/awaitility/awaitility/4.2.0/awaitility-4.2.0.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter/5.10.1/junit-jupiter-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.10.1/junit-jupiter-api-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.10.1/junit-jupiter-params-5.10.1.jar:/Users/Vivek/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.10.1/junit-jupiter-engine-5.10.1.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-core/5.7.0/mockito-core-5.7.0.jar:/Users/Vivek/.m2/repository/net/bytebuddy/byte-buddy-agent/1.14.10/byte-buddy-agent-1.14.10.jar:/Users/Vivek/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/Users/Vivek/.m2/repository/org/mockito/mockito-junit-jupiter/5.7.0/mockito-junit-jupiter-5.7.0.jar:/Users/Vivek/.m2/repository/org/skyscreamer/jsonassert/1.5.1/jsonassert-1.5.1.jar:/Users/Vivek/.m2/repository/com/vaadin/external/google/android-json/0.0.20131108.vaadin1/android-json-0.0.20131108.vaadin1.jar:/Users/Vivek/.m2/repository/org/springframework/spring-core/6.1.2/spring-core-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-jcl/6.1.2/spring-jcl-6.1.2.jar:/Users/Vivek/.m2/repository/org/springframework/spring-test/6.1.2/spring-test-6.1.2.jar:/Users/Vivek/.m2/repository/org/xmlunit/xmlunit-core/2.9.1/xmlunit-core-2.9.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-test/6.2.1/spring-security-test-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-core/6.2.1/spring-security-core-6.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/security/spring-security-crypto/6.2.1/spring-security-crypto-6.2.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik/1.8.2/jqwik-1.8.2.jar:/Users/Vivek/.m2/repository/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-api/1.8.2/jqwik-api-1.8.2.jar:/Users/Vivek/.m2/repository/org/opentest4j/opentest4j/1.3.0/opentest4j-1.3.0.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-commons/1.10.1/junit-platform-commons-1.10.1.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-web/1.8.2/jqwik-web-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-time/1.8.2/jqwik-time-1.8.2.jar:/Users/Vivek/.m2/repository/net/jqwik/jqwik-engine/1.8.2/jqwik-engine-1.8.2.jar:/Users/Vivek/.m2/repository/org/junit/platform/junit-platform-engine/1.10.1/junit-platform-engine-1.10.1.jar:/Users/Vivek/.m2/repository/org/testcontainers/junit-jupiter/1.19.3/junit-jupiter-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/testcontainers/1.19.3/testcontainers-1.19.3.jar:/Users/Vivek/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar:/Users/Vivek/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/Users/Vivek/.m2/repository/org/apache/commons/commons-compress/1.24.0/commons-compress-1.24.0.jar:/Users/Vivek/.m2/repository/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar:/Users/Vivek/.m2/repository/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-api/3.3.4/docker-java-api-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport-zerodep/3.3.4/docker-java-transport-zerodep-3.3.4.jar:/Users/Vivek/.m2/repository/com/github/docker-java/docker-java-transport/3.3.4/docker-java-transport-3.3.4.jar:/Users/Vivek/.m2/repository/net/java/dev/jna/jna/5.13.0/jna-5.13.0.jar:/Users/Vivek/.m2/repository/org/testcontainers/mysql/1.19.3/mysql-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/jdbc/1.19.3/jdbc-1.19.3.jar:/Users/Vivek/.m2/repository/org/testcontainers/database-commons/1.19.3/database-commons-1.19.3.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-devtools/3.2.1/spring-boot-devtools-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot/3.2.1/spring-boot-3.2.1.jar:/Users/Vivek/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/3.2.1/spring-boot-autoconfigure-3.2.1.jar:"/>
     <property name="sun.cpu.endian" value="little"/>
     <property name="user.home" value="/Users/Vivek"/>
     <property name="user.language" value="en"/>
@@ -25,13 +25,15 @@
     <property name="java.version.date" value="2023-10-17"/>
     <property name="java.home" value="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home"/>
     <property name="file.separator" value="/"/>
-    <property name="basedir" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend"/>
+    <property name="basedir" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-backend"/>
     <property name="java.vm.compressedOopsMode" value="Zero based"/>
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="FILE_LOG_CHARSET" value="UTF-8"/>
+    <property name="java.awt.headless" value="true"/>
     <property name="apple.awt.application.name" value="ForkedBooter"/>
-    <property name="surefire.real.class.path" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend/target/surefire/surefirebooter-20260128213240317_3.jar"/>
+    <property name="surefire.real.class.path" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-backend/target/surefire/surefirebooter-20260129133123889_3.jar"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="java.runtime.version" value="21.0.1+12-LTS-29"/>
@@ -45,10 +47,13 @@
     <property name="localRepository" value="/Users/Vivek/.m2/repository"/>
     <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
     <property name="java.io.tmpdir" value="/var/folders/fk/zkm1gx4s01q35hdcv7wqj2pc0000gn/T/"/>
+    <property name="com.zaxxer.hikari.pool_number" value="1"/>
     <property name="java.version" value="21.0.1"/>
-    <property name="user.dir" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic/pet-clinic-app/pet-clinic-backend"/>
+    <property name="user.dir" value="/Users/Vivek/Desktop/Cloud &amp; Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-backend"/>
     <property name="os.arch" value="aarch64"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="PID" value="68036"/>
+    <property name="CONSOLE_LOG_CHARSET" value="UTF-8"/>
     <property name="native.encoding" value="UTF-8"/>
     <property name="java.library.path" value="/Users/Vivek/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
     <property name="java.vm.info" value="mixed mode, sharing"/>
@@ -58,486 +63,33 @@
     <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
     <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
     <property name="java.class.version" value="65.0"/>
+    <property name="LOGGED_APPLICATION_NAME" value="[pet-clinic-backend-test] "/>
   </properties>
-  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 11: Pet data persistence maintains integrity" classname="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="0.701">
-    <error message="Cannot invoke &quot;com.petclinic.backend.repository.OwnerRepository.save(Object)&quot; because &quot;this.ownerRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
-	at com.petclinic.backend.properties.PetClinicDataPersistenceProperties.petDataPersistenceIntegrity(PetClinicDataPersistenceProperties.java:120)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
-	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
-	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
-	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
-	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
-	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
-	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
-	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
-	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
-	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
-	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
-	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
-	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
-	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
-	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
-	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
-	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
-	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
-	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
-	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrinkSingleParameter(OneAfterTheOtherParameterShrinker.java:43)
-	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrink(OneAfterTheOtherParameterShrinker.java:25)
-	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkOneParameterAfterTheOther(ShrinkingAlgorithm.java:52)
-	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:32)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
-	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
-	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
-	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
-	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
-	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
-	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
-	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
-]]></error>
-    <system-out><![CDATA[timestamp = 2026-01-28T21:32:41.665195, PetClinicDataPersistenceProperties:Feature: pet-clinic-cicd-pipeline, Property 11: Pet data persistence maintains integrity = 
-  java.lang.NullPointerException:
-    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
+  <testcase name="testDataPersistenceAcrossTransactions" classname="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="0.019">
+    <system-out><![CDATA[
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.1)
 
-                              |-----------------------jqwik-----------------------
-tries = 1                     | # of calls to property
-checks = 1                    | # of not rejected calls
-generation = RANDOMIZED       | parameters are randomly generated
-after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
-when-fixed-seed = ALLOW       | fixing the random seed is allowed
-edge-cases#mode = MIXIN       | edge cases are mixed in
-edge-cases#total = 0          | # of all combined edge cases
-edge-cases#tried = 0          | # of edge cases tried in current run
-seed = -2831570603861479356   | random seed to reproduce generated values
+2026-01-29T13:31:30.912+05:30  INFO 68036 --- [pet-clinic-backend-test] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-01-29T13:31:30.927+05:30  INFO 68036 --- [pet-clinic-backend-test] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn19: url=jdbc:h2:mem:testdb user=SA
+2026-01-29T13:31:30.928+05:30  INFO 68036 --- [pet-clinic-backend-test] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-01-29T13:31:30.933+05:30  WARN 68036 --- [pet-clinic-backend-test] [           main] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-01-29T13:31:31.490+05:30  WARN 68036 --- [pet-clinic-backend-test] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-01-29T13:31:31.512+05:30  WARN 68036 --- [pet-clinic-backend-test] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
 
-Shrunk Sample (29 steps)
-------------------------
-  petName: "!"
-  species: "!"
-  breed: ""
-  medicalHistory: ""
-  ownerFirstName: "!"
-  ownerLastName: "!"
-  ownerEmail: ""
+Using generated security password: 05007b0c-38b1-45a4-9453-27f70e914d2f
 
-Original Sample
----------------
-  petName: "膇帶蛑ꁂꎬ᧟奏啢鴂紺"
-  species: "駖⫃"
-  breed: "숬쀛ৎ⍿뿮썵"
-  medicalHistory: "䐀긛足꡴읅똊華䨩뢱汚"
-  ownerFirstName: "崿퓢"
-  ownerLastName: "砂琦銙ﻲԜૐ꧚兺"
-  ownerEmail:
-    "묽⫉쉚㸦⿸ⅷ땨飰폤魬ᡑ㑠닚簉髗幀❤辭嬸⟌㛱馭வ⻳ꩻ꽊韆퓢㲗Ⱏ闙쀣諊褔꺊喟ꕤᅶԻ貖뽓ၐ穻휭ꞑㆪ鬎㋈፞琬㾻浏䀸鈝葵奂ᐽ띁႑鼿澝ព疩য덻꾪᪦샞튩Ԭ糝⊹鰭╡랩畦뻣뗭䯉놬䪌ো⳨婪튿牮ὕ숟렶ᦙ뫸恠뭦鯅ઝ땔ꓭ꽒럠鴸흕苎骂⢎䳁衉㼟쑶铑錿瘜䌠솱银瞖蓙﮿ᘖ቙ﴲ쳄ႛᾄ뼙쌭撻䲧渥嶖켅徑᪌啧ቕ驌槨觼戳壟崎苄ꢼ꾚않짦佚窐솿赿뤄쥠䠻ᙎࢎ⺬觍ׅ꘹̕䆑瘕䴴䍝慥깟䃺᧧˄螶綜卩쬊擛᧝՞늄胖݊胓뽨燋奙딥즏건릢⛰駉⟡虹贝유௅졢뱼ᗎ娦鍙ꆵ劊젠画ᯰ墾轪锫ཀ摴❈㨾켧쾵洲䷌윴䧑櫆曋ﯣ電⊃䐴Ờ䫝ٲΧⷱ簌럍ꋐ螁蹲៾뾉ᗦ걤탹놭闌Ԙ៨句"
-
-  Original Error
-  --------------
-  java.lang.NullPointerException:
-    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
-
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
 
 ]]></system-out>
   </testcase>
-  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 11: Data persistence survives transaction boundaries" classname="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="0.191">
-    <error message="Cannot invoke &quot;com.petclinic.backend.repository.OwnerRepository.save(Object)&quot; because &quot;this.ownerRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
-	at com.petclinic.backend.properties.PetClinicDataPersistenceProperties.dataPersistenceSurvivesTransactionBoundaries(PetClinicDataPersistenceProperties.java:271)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
-	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
-	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
-	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
-	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
-	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
-	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
-	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
-	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
-	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
-	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
-	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
-	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
-	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
-	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
-	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
-	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
-	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
-	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
-	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrinkSingleParameter(OneAfterTheOtherParameterShrinker.java:43)
-	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrink(OneAfterTheOtherParameterShrinker.java:25)
-	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkOneParameterAfterTheOther(ShrinkingAlgorithm.java:52)
-	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:32)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
-	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
-	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
-	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
-	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
-	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
-	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
-	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
-]]></error>
-    <system-out><![CDATA[timestamp = 2026-01-28T21:32:41.878805, PetClinicDataPersistenceProperties:Feature: pet-clinic-cicd-pipeline, Property 11: Data persistence survives transaction boundaries = 
-  java.lang.NullPointerException:
-    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
-
-                              |-----------------------jqwik-----------------------
-tries = 1                     | # of calls to property
-checks = 1                    | # of not rejected calls
-generation = RANDOMIZED       | parameters are randomly generated
-after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
-when-fixed-seed = ALLOW       | fixing the random seed is allowed
-edge-cases#mode = MIXIN       | edge cases are mixed in
-edge-cases#total = 0          | # of all combined edge cases
-edge-cases#tried = 0          | # of edge cases tried in current run
-seed = -2026671867037913024   | random seed to reproduce generated values
-
-Shrunk Sample (12 steps)
-------------------------
-  firstName: "!"
-  lastName: "!"
-  email: ""
-
-Original Sample
----------------
-  firstName: "럘햱嵒쟎鏧熟ᮁ"
-  lastName:
-    "물Ⲻ똽廅㏾∴׺㗫濦⧿⎺娦얖咆靉试ྒྷ劑䴄譥ൾ跡仭綀ꙏ/ӭ㍣꧙遊돌넂炨귪䩧밾댍ḙ컥鼀唇ꋦ폽勽裎芹㮛䨰餽憈粕ᩊ꟬匽쾇徉ㄌΥ豖냅䩸鈱ꌚ㊬硫洪ₕ셎녑栔챖晲褦貨᷆멎糀鴗턴觝瀔蚘䍢蝹酲鴡襺⮇꒶镻꣤ꇜ࣋熖鶃蠒鈃전ხ禴붖롰慊獲鲒摾昆∸냍ꅘ럎ᐈ夓ᴰፁ䘻ܓ榢屚柲譓ꅨ响⟴恑ᓚ莆䗶쪔ᘆ䠻愋챟朳뻋탰瞑ᢄꥲ撮翆瞙寕ꪕ暴猘՟핮ﴂ塮십᙮ҵ༵狀蛄䉸菂瓧ࠈ曆酱禐䷭Ɛ裏ᾅ푸"
-  email: "톶藭ꉈ烋䕦睼赽"
-
-  Original Error
-  --------------
-  java.lang.NullPointerException:
-    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
-
-
-]]></system-out>
-  </testcase>
-  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 11: Veterinarian data persistence maintains integrity" classname="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="0.152">
-    <error message="Cannot invoke &quot;com.petclinic.backend.repository.VeterinarianRepository.save(Object)&quot; because &quot;this.veterinarianRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.VeterinarianRepository.save(Object)" because "this.veterinarianRepository" is null
-	at com.petclinic.backend.properties.PetClinicDataPersistenceProperties.veterinarianDataPersistenceIntegrity(PetClinicDataPersistenceProperties.java:236)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
-	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
-	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
-	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
-	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
-	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
-	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
-	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
-	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
-	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
-	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
-	at java.base/java.util.stream.Streams$ConcatSpliterator.tryAdvance(Streams.java:720)
-	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
-	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
-	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
-	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
-	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
-	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
-	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
-	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrinkSingleParameter(OneAfterTheOtherParameterShrinker.java:43)
-	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrink(OneAfterTheOtherParameterShrinker.java:25)
-	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkOneParameterAfterTheOther(ShrinkingAlgorithm.java:52)
-	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:32)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
-	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
-	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
-	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
-	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
-	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
-	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
-	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
-]]></error>
-    <system-out><![CDATA[timestamp = 2026-01-28T21:32:42.032049, PetClinicDataPersistenceProperties:Feature: pet-clinic-cicd-pipeline, Property 11: Veterinarian data persistence maintains integrity = 
-  java.lang.NullPointerException:
-    Cannot invoke "com.petclinic.backend.repository.VeterinarianRepository.save(Object)" because "this.veterinarianRepository" is null
-
-                              |-----------------------jqwik-----------------------
-tries = 1                     | # of calls to property
-checks = 1                    | # of not rejected calls
-generation = RANDOMIZED       | parameters are randomly generated
-after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
-when-fixed-seed = ALLOW       | fixing the random seed is allowed
-edge-cases#mode = MIXIN       | edge cases are mixed in
-edge-cases#total = 0          | # of all combined edge cases
-edge-cases#tried = 0          | # of edge cases tried in current run
-seed = -2161652475952810446   | random seed to reproduce generated values
-
-Shrunk Sample (22 steps)
-------------------------
-  firstName: "!"
-  lastName: "!"
-  specialties: ""
-  licenseNumber: "!"
-
-Original Sample
----------------
-  firstName: "皚ꆭ蝜ꦑ䟸"
-  lastName: "읃舥"
-  specialties: "坨뎉쀆啭"
-  licenseNumber: "졟轘뚓뫴䵶壶錿ﻓꎾ먬턍鵢駈ヿ왣ᑎ횂镊옚✐鱽₶蒓ઔꇕ⟝炌壐鬟"
-
-  Original Error
-  --------------
-  java.lang.NullPointerException:
-    Cannot invoke "com.petclinic.backend.repository.VeterinarianRepository.save(Object)" because "this.veterinarianRepository" is null
-
-
-]]></system-out>
-  </testcase>
-  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 11: Owner data persistence maintains integrity" classname="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="0.201">
-    <error message="Cannot invoke &quot;com.petclinic.backend.repository.OwnerRepository.save(Object)&quot; because &quot;this.ownerRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
-	at com.petclinic.backend.properties.PetClinicDataPersistenceProperties.ownerDataPersistenceIntegrity(PetClinicDataPersistenceProperties.java:78)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
-	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
-	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
-	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
-	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
-	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
-	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
-	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
-	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
-	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
-	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
-	at net.jqwik.engine.support.StreamConcatenation$ConcatSpliterator.tryAdvance(StreamConcatenation.java:302)
-	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
-	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
-	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
-	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
-	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
-	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
-	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
-	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrinkSingleParameter(OneAfterTheOtherParameterShrinker.java:43)
-	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrink(OneAfterTheOtherParameterShrinker.java:25)
-	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkOneParameterAfterTheOther(ShrinkingAlgorithm.java:52)
-	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:32)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
-	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
-	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
-	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
-	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
-	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
-	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
-	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
-]]></error>
-    <system-out><![CDATA[timestamp = 2026-01-28T21:32:42.233521, PetClinicDataPersistenceProperties:Feature: pet-clinic-cicd-pipeline, Property 11: Owner data persistence maintains integrity = 
-  java.lang.NullPointerException:
-    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
-
-                              |-----------------------jqwik-----------------------
-tries = 1                     | # of calls to property
-checks = 1                    | # of not rejected calls
-generation = RANDOMIZED       | parameters are randomly generated
-after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
-when-fixed-seed = ALLOW       | fixing the random seed is allowed
-edge-cases#mode = MIXIN       | edge cases are mixed in
-edge-cases#total = 0          | # of all combined edge cases
-edge-cases#tried = 0          | # of edge cases tried in current run
-seed = 4902519256441206215    | random seed to reproduce generated values
-
-Shrunk Sample (28 steps)
-------------------------
-  firstName: "!"
-  lastName: "!"
-  address: ""
-  city: ""
-  telephone: ""
-  email: ""
-
-Original Sample
----------------
-  firstName: "谛㶼ᎈ麺炛ǀ姁ﻐ끃ǣ漟皸銰菖㽔윕ጚࡳ㱪枀僲屬郞椟줦雩殺⧋뭥쀧ᓇ⺖ᰃ黼ꓘ쿡흜ｅﮒ熰쪾藠줜꒿扛➦伨淹겠輂컡⎿賽舯楟렧ヘ灸笯ꚠ濤砡㓿셓忟ᗢ桇꘥⨀ႍ錏斩鏮酳"
-  lastName: "ퟺ郷癩㒬밧塰ǥ䲘컜毟"
-  address: "뛟"
-  city: "峯틫鷽剷"
-  telephone:
-    "法鎹軑ᬶᔶ٨꿟鲩㻿ㆣ퐘췂쵥懑⤊ẳﰛἛ遙ᥟ๩掟⴬ષ팺豰䨲論᥆苅䎿꾔曡푷餱⌤袙㮉鶻䑄᷸灣싦ᐝꐻ衤嫅雘눚襵哆틼뭏ᘦ羘㛡ˬ䚲㶿謌鞰ﲚହ竢Ầ먯矴⇗涛Ķ䥜⏍杺偁柴곱ჼ䟐臺驛㮦깏퓸ﴏ㣒찮竣Ḏ⹬藦仏㤂ᒩⳡ苭灐ໟ彛뇬帪⋥Ὧင응ඌ숬諼駍⣔褕茎ꐞ఼꩜但耺ꀥ蹵䭀䛥䠤妥㜏쪓枅愍ꌯ텢믢ꤑ鸌鎖皾筲螩푉ꊞ钻娙갟⩽▼⓫⻎肇碭툓邎ͳ뙦蘷㌭⪠폨춅ᡡ䎂ꖔﱑ틚姀漭ꏈ鄫ਜﶫ囊㱹ᷔ"
-  email: "ｭ"
-
-  Original Error
-  --------------
-  java.lang.NullPointerException:
-    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
-
-
-]]></system-out>
-  </testcase>
-  <testcase name="Feature: pet-clinic-cicd-pipeline, Property 11: Visit data persistence maintains integrity" classname="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="0.263">
-    <error message="Cannot invoke &quot;com.petclinic.backend.repository.OwnerRepository.save(Object)&quot; because &quot;this.ownerRepository&quot; is null" type="java.lang.NullPointerException"><![CDATA[java.lang.NullPointerException: Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
-	at com.petclinic.backend.properties.PetClinicDataPersistenceProperties.visitDataPersistenceIntegrity(PetClinicDataPersistenceProperties.java:175)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$1(CheckedPropertyFactory.java:84)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createRawFunction$2(CheckedPropertyFactory.java:91)
-	at net.jqwik.engine.properties.CheckedFunction.execute(CheckedFunction.java:17)
-	at net.jqwik.api.lifecycle.AroundTryHook.lambda$static$0(AroundTryHook.java:57)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
-	at net.jqwik.engine.hooks.lifecycle.TryLifecycleMethodsHook.aroundTry(TryLifecycleMethodsHook.java:56)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$2(HookSupport.java:48)
-	at net.jqwik.engine.hooks.lifecycle.BeforeTryMembersHook.aroundTry(BeforeTryMembersHook.java:69)
-	at net.jqwik.engine.execution.lifecycle.HookSupport.lambda$wrap$3(HookSupport.java:53)
-	at net.jqwik.engine.execution.CheckedPropertyFactory.lambda$createTryExecutor$0(CheckedPropertyFactory.java:60)
-	at net.jqwik.engine.execution.lifecycle.AroundTryLifecycle.execute(AroundTryLifecycle.java:23)
-	at net.jqwik.engine.properties.GenericProperty.lambda$createFalsifier$1(GenericProperty.java:229)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$0(PropertyShrinker.java:55)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrinkAsLongAsSampleImproves$6(PropertyShrinker.java:122)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$falsify$5(AbstractSampleShrinker.java:91)
-	at java.base/java.util.HashMap.computeIfAbsent(HashMap.java:1228)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.falsify(AbstractSampleShrinker.java:91)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.lambda$shrink$2(AbstractSampleShrinker.java:53)
-	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
-	at java.base/java.util.stream.ReferencePipeline$15$1.accept(ReferencePipeline.java:541)
-	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
-	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.tryAdvance(StreamSpliterators.java:300)
-	at java.base/java.util.stream.Streams$ConcatSpliterator.tryAdvance(Streams.java:720)
-	at java.base/java.util.stream.ReferencePipeline.forEachWithCancel(ReferencePipeline.java:129)
-	at java.base/java.util.stream.AbstractPipeline.copyIntoWithCancel(AbstractPipeline.java:527)
-	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:513)
-	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
-	at java.base/java.util.stream.FindOps$FindOp.evaluateSequential(FindOps.java:150)
-	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
-	at java.base/java.util.stream.ReferencePipeline.findAny(ReferencePipeline.java:652)
-	at net.jqwik.engine.properties.shrinking.AbstractSampleShrinker.shrink(AbstractSampleShrinker.java:63)
-	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrinkSingleParameter(OneAfterTheOtherParameterShrinker.java:43)
-	at net.jqwik.engine.properties.shrinking.OneAfterTheOtherParameterShrinker.shrink(OneAfterTheOtherParameterShrinker.java:25)
-	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrinkOneParameterAfterTheOther(ShrinkingAlgorithm.java:52)
-	at net.jqwik.engine.properties.shrinking.ShrinkingAlgorithm.shrink(ShrinkingAlgorithm.java:32)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.shrinkAsLongAsSampleImproves(PropertyShrinker.java:135)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$shrink$3(PropertyShrinker.java:87)
-	at net.jqwik.engine.execution.lifecycle.CurrentTestDescriptor.runWithDescriptor(CurrentTestDescriptor.java:17)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$4(PropertyShrinker.java:103)
-	at net.jqwik.engine.execution.lifecycle.CurrentDomainContext.runWithContext(CurrentDomainContext.java:28)
-	at net.jqwik.engine.properties.shrinking.PropertyShrinker.lambda$withTimeout$5(PropertyShrinker.java:101)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
-	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
-	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
-	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312)
-	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843)
-	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808)
-	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
-]]></error>
-    <system-out><![CDATA[timestamp = 2026-01-28T21:32:42.497210, PetClinicDataPersistenceProperties:Feature: pet-clinic-cicd-pipeline, Property 11: Visit data persistence maintains integrity = 
-  java.lang.NullPointerException:
-    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
-
-                              |-----------------------jqwik-----------------------
-tries = 1                     | # of calls to property
-checks = 1                    | # of not rejected calls
-generation = RANDOMIZED       | parameters are randomly generated
-after-failure = SAMPLE_FIRST  | try previously failed sample, then previous seed
-when-fixed-seed = ALLOW       | fixing the random seed is allowed
-edge-cases#mode = MIXIN       | edge cases are mixed in
-edge-cases#total = 0          | # of all combined edge cases
-edge-cases#tried = 0          | # of edge cases tried in current run
-seed = -2774633281982844285   | random seed to reproduce generated values
-
-Shrunk Sample (33 steps)
-------------------------
-  description: "!"
-  diagnosis: ""
-  treatment: ""
-  cost: 0.01
-  petName: "!"
-  species: "!"
-  ownerFirstName: "!"
-  ownerLastName: "!"
-
-Original Sample
----------------
-  description: "兽㒈놀Ᏽ訊缾ܑ霊璟ㄢ"
-  diagnosis: "注걍后鐣溦ዓ쬸汍鷁釶"
-  treatment: "譯伬ᥩ㘰庠"
-  cost:
-    226035545427553016511542707573337955232233088660347499664971912608393545436391063980208489288567511069400443349430427213806019873736145054198326250004197289802965098593834664209268560755559868810354964301380882861859575868.62
-  petName:
-    "ᠾ晣줽찧쿌ꛃ᫪腱⒤蕖펔揵䪸ㆆ旁촦湽䶦त閿캩럐⸚꛴䳈⁧䉊ȡ疾伉쫽謃桝⯸ꗈ檩씫옓巈ৣ탮֯㎒旵ꌚࢽ睐됷燌⨭䂮⦤౪ｓǠ측⑎溷懦읱۴㛱㻼붓橍랪꟦蟉꧂强欞ⲃ䩄꠳읣㑣수첚언腬ﻲ╨鶃蜼찥鄭⛻鎃꼐᠗㦢곒羊뼒彀┘䑅㫫뒳蜍듞꜅ⵧ뢺ᵬ蠉匍蘺幄궃疵楄ᠹ丶팢蔨ꑰ⬿藁ḡ퉞勔쩙氦䄕䳬Ṩ吱쏓‚귿ᝈ蘫귫课רඏⳜ졄뻁练趟蟨梨譧瓚愀೥豂拚⌬ꚠ蛴렒权蕌屏攈ᴶ誂Ჟ儔笯飁螣䍻铂唝嫪坟♾씃襇ӛ᧴Ⱞ쌦ᐝ找"
-  species: "Ṝﵽ쬗턍冱쭰"
-  ownerFirstName: "㓵ꐾě䡫䛜嫎"
-  ownerLastName: "徧"
-
-  Original Error
-  --------------
-  java.lang.NullPointerException:
-    Cannot invoke "com.petclinic.backend.repository.OwnerRepository.save(Object)" because "this.ownerRepository" is null
-
-
-]]></system-out>
-  </testcase>
+  <testcase name="testVisitDataPersistenceWithFixedData" classname="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="0.007"/>
+  <testcase name="testVeterinarianDataPersistenceWithFixedData" classname="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="0.003"/>
+  <testcase name="testOwnerDataPersistenceWithFixedData" classname="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="0.003"/>
+  <testcase name="testPetDataPersistenceWithFixedData" classname="com.petclinic.backend.properties.PetClinicDataPersistenceProperties" time="0.004"/>
 </testsuite>

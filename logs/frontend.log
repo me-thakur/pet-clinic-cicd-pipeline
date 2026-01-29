@@ -1,0 +1,91 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< com.petclinic:pet-clinic-frontend >------------------
+[INFO] Building Pet Clinic Frontend 1.0.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.2.1:run (default-cli) > test-compile @ pet-clinic-frontend >>>
+[INFO] 
+[INFO] --- jacoco:0.8.11:prepare-agent (default) @ pet-clinic-frontend ---
+[INFO] argLine set to "-javaagent:/Users/Vivek/.m2/repository/org/jacoco/org.jacoco.agent/0.8.11/org.jacoco.agent-0.8.11-runtime.jar=destfile=/Users/Vivek/Desktop/Cloud & Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-frontend/target/jacoco.exec"
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ pet-clinic-frontend ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] Copying 15 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ pet-clinic-frontend ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 16 source files with javac [debug release 11] to target/classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ pet-clinic-frontend ---
+[INFO] skip non existing resourceDirectory /Users/Vivek/Desktop/Cloud & Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-frontend/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ pet-clinic-frontend ---
+[INFO] Changes detected - recompiling the module! :dependency
+[INFO] Compiling 1 source file with javac [debug release 11] to target/test-classes
+[INFO] 
+[INFO] <<< spring-boot:3.2.1:run (default-cli) < test-compile @ pet-clinic-frontend <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.1:run (default-cli) @ pet-clinic-frontend ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.1)
+
+2026-01-29T13:00:14.041+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] c.p.f.PetClinicFrontendApplication       : Starting PetClinicFrontendApplication using Java 21.0.1 with PID 59483 (/Users/Vivek/Desktop/Cloud & Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-frontend/target/classes started by Vivek in /Users/Vivek/Desktop/Cloud & Devops/pet-clinic-cicd-pipeline/pet-clinic-app/pet-clinic-frontend)
+2026-01-29T13:00:14.042+05:30 DEBUG 59483 --- [pet-clinic-frontend] [  restartedMain] c.p.f.PetClinicFrontendApplication       : Running with Spring Boot v3.2.1, Spring v6.1.2
+2026-01-29T13:00:14.042+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] c.p.f.PetClinicFrontendApplication       : The following 1 profile is active: "dev"
+2026-01-29T13:00:14.060+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-01-29T13:00:14.061+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-01-29T13:00:14.609+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-29T13:00:14.616+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-29T13:00:14.616+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.17]
+2026-01-29T13:00:14.633+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-29T13:00:14.634+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 572 ms
+2026-01-29T13:00:14.702+05:30 DEBUG 59483 --- [pet-clinic-frontend] [  restartedMain] o.s.w.f.ServerHttpObservationFilter      : Filter 'webMvcObservationFilter' configured for use
+2026-01-29T13:00:14.702+05:30 DEBUG 59483 --- [pet-clinic-frontend] [  restartedMain] o.s.w.s.r.ResourceUrlEncodingFilter      : Filter 'resourceUrlEncodingFilter' configured for use
+2026-01-29T13:00:15.110+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page template: index
+2026-01-29T13:00:15.142+05:30 DEBUG 59483 --- [pet-clinic-frontend] [  restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : 50 mappings in 'requestMappingHandlerMapping'
+2026-01-29T13:00:15.258+05:30 DEBUG 59483 --- [pet-clinic-frontend] [  restartedMain] o.s.w.s.handler.SimpleUrlHandlerMapping  : Patterns [/webjars/**, /**] in 'resourceHandlerMapping'
+2026-01-29T13:00:15.285+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoint(s) beneath base path '/actuator'
+2026-01-29T13:00:15.303+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@2e4c1f0a, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@16d312a7, org.springframework.security.web.context.SecurityContextHolderFilter@4ebc4f96, org.springframework.security.web.header.HeaderWriterFilter@87d50d7, org.springframework.web.filter.CorsFilter@67ec8969, org.springframework.security.web.csrf.CsrfFilter@7e3178b1, org.springframework.security.web.authentication.logout.LogoutFilter@32e20df9, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter@53b44f43, org.springframework.security.web.session.ConcurrentSessionFilter@90419ee, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@434952d5, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@58f20ec1, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@65f534f9, org.springframework.security.web.session.SessionManagementFilter@b200849, org.springframework.security.web.access.ExceptionTranslationFilter@7245bd14, org.springframework.security.web.access.intercept.AuthorizationFilter@7719f7cb]
+2026-01-29T13:00:15.356+05:30 DEBUG 59483 --- [pet-clinic-frontend] [  restartedMain] s.w.s.m.m.a.RequestMappingHandlerAdapter : ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2026-01-29T13:00:15.366+05:30 DEBUG 59483 --- [pet-clinic-frontend] [  restartedMain] .m.m.a.ExceptionHandlerExceptionResolver : ControllerAdvice beans: 0 @ExceptionHandler, 1 ResponseBodyAdvice
+2026-01-29T13:00:15.422+05:30  WARN 59483 --- [pet-clinic-frontend] [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : Unable to start LiveReload server
+2026-01-29T13:00:15.449+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2026-01-29T13:00:15.456+05:30  INFO 59483 --- [pet-clinic-frontend] [  restartedMain] c.p.f.PetClinicFrontendApplication       : Started PetClinicFrontendApplication in 1.582 seconds (process running for 1.765)
+2026-01-29T13:00:34.855+05:30  INFO 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-29T13:00:34.856+05:30  INFO 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-01-29T13:00:34.856+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected StandardServletMultipartResolver
+2026-01-29T13:00:34.856+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected AcceptHeaderLocaleResolver
+2026-01-29T13:00:34.857+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected FixedThemeResolver
+2026-01-29T13:00:34.858+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@1dbb4a2b
+2026-01-29T13:00:34.859+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.support.SessionFlashMapManager@3007bec5
+2026-01-29T13:00:34.859+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+2026-01-29T13:00:34.859+05:30  INFO 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+2026-01-29T13:00:34.872+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /pets/new
+2026-01-29T13:00:34.877+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-01-29T13:00:34.888+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8080/pets/new?continue to session
+2026-01-29T13:00:34.888+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-1] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8080/login
+2026-01-29T13:00:50.721+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /visits/new
+2026-01-29T13:00:50.722+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-01-29T13:00:50.724+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-3] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8080/visits/new?continue to session
+2026-01-29T13:00:50.724+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-3] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8080/login
+2026-01-29T13:00:57.952+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /owners/search
+2026-01-29T13:00:57.952+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-01-29T13:00:57.953+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-5] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8080/owners/search?continue to session
+2026-01-29T13:00:57.953+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-5] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8080/login
+2026-01-29T13:01:05.953+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /login
+2026-01-29T13:01:05.957+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-01-29T13:01:05.970+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /login
+2026-01-29T13:01:05.991+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-7] o.s.web.servlet.DispatcherServlet        : GET "/login", parameters={}
+2026-01-29T13:01:05.997+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-7] s.w.s.m.m.a.RequestMappingHandlerMapping : Mapped to com.petclinic.frontend.controller.HomeController#login()
+2026-01-29T13:01:06.020+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-7] o.s.w.s.v.ContentNegotiatingViewResolver : Selected '*/*' given [*/*]
+2026-01-29T13:01:06.158+05:30 DEBUG 59483 --- [pet-clinic-frontend] [nio-8080-exec-7] o.s.web.servlet.DispatcherServlet        : Completed 200 OK

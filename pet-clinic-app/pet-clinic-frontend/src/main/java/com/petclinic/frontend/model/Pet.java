@@ -48,6 +48,9 @@ public class Pet {
     
     private Owner owner;
     private List<Visit> visits = new ArrayList<>();
+    
+    // Transient field for form binding
+    private Long ownerId;
 
     // Constructors
     public Pet() {}
@@ -137,6 +140,20 @@ public class Pet {
 
     public void setVisits(List<Visit> visits) {
         this.visits = visits;
+    }
+    
+    public Long getOwnerId() {
+        return owner != null ? owner.getId() : ownerId;
+    }
+    
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
+        if (ownerId != null && (owner == null || !ownerId.equals(owner.getId()))) {
+            // Create a temporary owner object with just the ID
+            Owner tempOwner = new Owner();
+            tempOwner.setId(ownerId);
+            this.owner = tempOwner;
+        }
     }
 
     // Utility methods

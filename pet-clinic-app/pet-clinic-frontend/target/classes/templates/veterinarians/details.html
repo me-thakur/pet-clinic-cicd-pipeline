@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Dr. ' + ${veterinarian.firstName} + ' ' + ${veterinarian.lastName}">Veterinarian Details</title>
+</head>
+<body th:replace="~{layout :: layout(~{::main}, 'Veterinarian Details')}">
+    <main>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3>
+                            <i class="fas fa-user-md"></i> 
+                            Dr. <span th:text="${veterinarian.firstName}">First</span> 
+                            <span th:text="${veterinarian.lastName}">Last</span>
+                        </h3>
+                        <div>
+                            <a th:href="@{'/veterinarians/' + ${veterinarian.id} + '/edit'}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <form th:action="@{'/veterinarians/' + ${veterinarian.id} + '/delete'}" method="post" 
+                                  style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this veterinarian?');">
+                                <button type="submit" class="btn btn-danger btn-sm btn-delete">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Personal Information</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>First Name:</strong></td>
+                                        <td th:text="${veterinarian.firstName}">John</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Last Name:</strong></td>
+                                        <td th:text="${veterinarian.lastName}">Doe</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>License Number:</strong></td>
+                                        <td th:text="${veterinarian.licenseNumber}">VET123456</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Specialties</h5>
+                                <div class="mb-3">
+                                    <span th:each="specialty, iterStat : ${#strings.listSplit(veterinarian.specialties, ',')}" 
+                                          class="badge bg-primary me-1 mb-1" th:text="${#strings.trim(specialty)}">Specialty</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-tools"></i> Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a th:href="@{'/visits?veterinarianId=' + ${veterinarian.id}}" class="btn btn-outline-primary">
+                                <i class="fas fa-calendar-check"></i> View Visits
+                            </a>
+                            <a th:href="@{'/visits/new?veterinarianId=' + ${veterinarian.id}}" class="btn btn-outline-success">
+                                <i class="fas fa-plus"></i> Schedule Visit
+                            </a>
+                            <a th:href="@{'/veterinarians/' + ${veterinarian.id} + '/statistics'}" class="btn btn-outline-info">
+                                <i class="fas fa-chart-bar"></i> View Statistics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Visits -->
+                <div class="card mt-3" th:if="${recentVisits != null and !recentVisits.empty}">
+                    <div class="card-header">
+                        <h5><i class="fas fa-history"></i> Recent Visits</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <div th:each="visit : ${recentVisits}" class="list-group-item px-0">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1" th:text="${visit.pet.name}">Pet Name</h6>
+                                        <p class="mb-1 text-muted small" th:text="${visit.description}">Visit description</p>
+                                        <small class="text-muted" th:text="${#temporals.format(visit.visitDate, 'MMM dd, yyyy')}">Date</small>
+                                    </div>
+                                    <a th:href="@{'/visits/' + ${visit.id}}" class="btn btn-sm btn-outline-primary">View</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-2">
+                            <a th:href="@{'/visits?veterinarianId=' + ${veterinarian.id}}" class="btn btn-sm btn-link">
+                                View All Visits
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="row mt-3">
+            <div class="col-12">
+                <nav aria-label="Veterinarian navigation">
+                    <div class="d-flex justify-content-between">
+                        <a th:href="@{/veterinarians}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Veterinarians
+                        </a>
+                        <div>
+                            <a th:if="${previousVet != null}" th:href="@{'/veterinarians/' + ${previousVet.id}}" 
+                               class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                            <a th:if="${nextVet != null}" th:href="@{'/veterinarians/' + ${nextVet.id}}" 
+                               class="btn btn-outline-secondary">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

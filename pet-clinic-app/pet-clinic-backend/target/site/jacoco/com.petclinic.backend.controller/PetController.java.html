@@ -20,16 +20,16 @@ import java.util.Optional;
  * Validates: Requirements 8.1, 8.2, 8.3, 8.4
  */
 @RestController
-@RequestMapping(&quot;/api/pets&quot;)
+@RequestMapping(&quot;/pets&quot;)
 @CrossOrigin(origins = &quot;*&quot;)
-<span class="nc" id="L25">public class PetController {</span>
+<span class="fc" id="L25">public class PetController {</span>
 
     @Autowired
     private PetRepository petRepository;
 
     /**
      * Get all pets with pagination
-     * GET /api/pets
+     * GET /pets
      */
     @GetMapping
     public ResponseEntity&lt;Page&lt;Pet&gt;&gt; getAllPets(Pageable pageable) {
@@ -43,7 +43,7 @@ import java.util.Optional;
 
     /**
      * Get pet by ID
-     * GET /api/pets/{id}
+     * GET /pets/{id}
      */
     @GetMapping(&quot;/{id}&quot;)
     public ResponseEntity&lt;Pet&gt; getPetById(@PathVariable Long id) {
@@ -58,7 +58,7 @@ import java.util.Optional;
 
     /**
      * Create new pet
-     * POST /api/pets
+     * POST /pets
      */
     @PostMapping
     public ResponseEntity&lt;Pet&gt; createPet(@Valid @RequestBody Pet pet) {
@@ -74,7 +74,7 @@ import java.util.Optional;
 
     /**
      * Update existing pet
-     * PUT /api/pets/{id}
+     * PUT /pets/{id}
      */
     @PutMapping(&quot;/{id}&quot;)
     public ResponseEntity&lt;Pet&gt; updatePet(@PathVariable Long id, @Valid @RequestBody Pet petDetails) {
@@ -101,7 +101,7 @@ import java.util.Optional;
 
     /**
      * Delete pet
-     * DELETE /api/pets/{id}
+     * DELETE /pets/{id}
      */
     @DeleteMapping(&quot;/{id}&quot;)
     public ResponseEntity&lt;Void&gt; deletePet(@PathVariable Long id) {
@@ -118,7 +118,7 @@ import java.util.Optional;
 
     /**
      * Get pets by owner ID
-     * GET /api/pets/owner/{ownerId}
+     * GET /pets/owner/{ownerId}
      */
     @GetMapping(&quot;/owner/{ownerId}&quot;)
     public ResponseEntity&lt;List&lt;Pet&gt;&gt; getPetsByOwnerId(@PathVariable Long ownerId) {
@@ -132,7 +132,7 @@ import java.util.Optional;
 
     /**
      * Search pets by name (case-insensitive)
-     * GET /api/pets/search/by-name?name={name}
+     * GET /pets/search/by-name?name={name}
      */
     @GetMapping(&quot;/search/by-name&quot;)
     public ResponseEntity&lt;List&lt;Pet&gt;&gt; searchByName(@RequestParam String name) {
@@ -146,7 +146,7 @@ import java.util.Optional;
 
     /**
      * Search pets by species (case-insensitive)
-     * GET /api/pets/search/by-species?species={species}
+     * GET /pets/search/by-species?species={species}
      */
     @GetMapping(&quot;/search/by-species&quot;)
     public ResponseEntity&lt;List&lt;Pet&gt;&gt; searchBySpecies(@RequestParam String species) {
@@ -160,7 +160,7 @@ import java.util.Optional;
 
     /**
      * Search pets by breed (case-insensitive)
-     * GET /api/pets/search/by-breed?breed={breed}
+     * GET /pets/search/by-breed?breed={breed}
      */
     @GetMapping(&quot;/search/by-breed&quot;)
     public ResponseEntity&lt;List&lt;Pet&gt;&gt; searchByBreed(@RequestParam String breed) {
@@ -174,7 +174,7 @@ import java.util.Optional;
 
     /**
      * Get pets by age range
-     * GET /api/pets/search/by-age-range?minAge={minAge}&amp;maxAge={maxAge}
+     * GET /pets/search/by-age-range?minAge={minAge}&amp;maxAge={maxAge}
      */
     @GetMapping(&quot;/search/by-age-range&quot;)
     public ResponseEntity&lt;List&lt;Pet&gt;&gt; searchByAgeRange(@RequestParam int minAge, @RequestParam int maxAge) {
@@ -190,7 +190,7 @@ import java.util.Optional;
 
     /**
      * Get senior pets (older than specified age)
-     * GET /api/pets/senior?age={age}
+     * GET /pets/senior?age={age}
      */
     @GetMapping(&quot;/senior&quot;)
     public ResponseEntity&lt;List&lt;Pet&gt;&gt; getSeniorPets(@RequestParam(defaultValue = &quot;7&quot;) int age) {
@@ -205,7 +205,7 @@ import java.util.Optional;
 
     /**
      * Get pets with medical history containing specific text
-     * GET /api/pets/search/by-medical-history?text={text}
+     * GET /pets/search/by-medical-history?text={text}
      */
     @GetMapping(&quot;/search/by-medical-history&quot;)
     public ResponseEntity&lt;List&lt;Pet&gt;&gt; searchByMedicalHistory(@RequestParam String text) {
@@ -219,7 +219,7 @@ import java.util.Optional;
 
     /**
      * Get pet statistics
-     * GET /api/pets/statistics
+     * GET /pets/statistics
      */
     @GetMapping(&quot;/statistics&quot;)
     public ResponseEntity&lt;Object[]&gt; getPetStatistics() {
@@ -233,7 +233,7 @@ import java.util.Optional;
 
     /**
      * Get pets by species count
-     * GET /api/pets/species-count
+     * GET /pets/species-count
      */
     @GetMapping(&quot;/species-count&quot;)
     public ResponseEntity&lt;List&lt;Object[]&gt;&gt; getPetsBySpeciesCount() {

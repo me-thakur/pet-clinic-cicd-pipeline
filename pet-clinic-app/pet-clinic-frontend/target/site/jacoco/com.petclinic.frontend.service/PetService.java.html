@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PetService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Pet Clinic Frontend</a> &gt; <a href="index.source.html" class="el_package">com.petclinic.frontend.service</a> &gt; <span class="el_source">PetService.java</span></div><h1>PetService.java</h1><pre class="source lang-java linenums">package com.petclinic.frontend.service;
+
+import com.petclinic.frontend.model.Pet;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * Pet Service
+ * 
+ * Service class for managing pet operations through the backend REST API.
+ * Provides methods for CRUD operations and search functionality for pets.
+ * 
+ * Validates: Requirements 8.1, 8.2, 8.4
+ */
+@Service
+public class PetService {
+
+    private final WebClient webClient;
+
+    @Autowired
+<span class="nc" id="L32">    public PetService(WebClient webClient) {</span>
+<span class="nc" id="L33">        this.webClient = webClient;</span>
+<span class="nc" id="L34">    }</span>
+
+    /**
+     * Get all pets with pagination
+     */
+    public Mono&lt;Page&lt;Pet&gt;&gt; getAllPets(Pageable pageable) {
+<span class="nc" id="L40">        return webClient.get()</span>
+<span class="nc" id="L41">                .uri(uriBuilder -&gt; uriBuilder</span>
+<span class="nc" id="L42">                        .path(&quot;/pets&quot;)</span>
+<span class="nc" id="L43">                        .queryParam(&quot;page&quot;, pageable.getPageNumber())</span>
+<span class="nc" id="L44">                        .queryParam(&quot;size&quot;, pageable.getPageSize())</span>
+<span class="nc" id="L45">                        .build())</span>
+<span class="nc" id="L46">                .retrieve()</span>
+<span class="nc" id="L47">                .bodyToMono(new ParameterizedTypeReference&lt;Map&lt;String, Object&gt;&gt;() {})</span>
+<span class="nc" id="L48">                .map(this::convertToPetPage);</span>
+    }
+
+    /**
+     * Get pet by ID
+     */
+    public Mono&lt;Pet&gt; getPetById(Long id) {
+<span class="nc" id="L55">        return webClient.get()</span>
+<span class="nc" id="L56">                .uri(&quot;/pets/{id}&quot;, id)</span>
+<span class="nc" id="L57">                .retrieve()</span>
+<span class="nc" id="L58">                .bodyToMono(Pet.class);</span>
+    }
+
+    /**
+     * Create new pet
+     */
+    public Mono&lt;Pet&gt; createPet(Pet pet) {
+<span class="nc" id="L65">        return webClient.post()</span>
+<span class="nc" id="L66">                .uri(&quot;/pets&quot;)</span>
+<span class="nc" id="L67">                .bodyValue(pet)</span>
+<span class="nc" id="L68">                .retrieve()</span>
+<span class="nc" id="L69">                .bodyToMono(Pet.class);</span>
+    }
+
+    /**
+     * Update existing pet
+     */
+    public Mono&lt;Pet&gt; updatePet(Long id, Pet pet) {
+<span class="nc" id="L76">        return webClient.put()</span>
+<span class="nc" id="L77">                .uri(&quot;/pets/{id}&quot;, id)</span>
+<span class="nc" id="L78">                .bodyValue(pet)</span>
+<span class="nc" id="L79">                .retrieve()</span>
+<span class="nc" id="L80">                .bodyToMono(Pet.class);</span>
+    }
+
+    /**
+     * Delete pet
+     */
+    public Mono&lt;Void&gt; deletePet(Long id) {
+<span class="nc" id="L87">        return webClient.delete()</span>
+<span class="nc" id="L88">                .uri(&quot;/pets/{id}&quot;, id)</span>
+<span class="nc" id="L89">                .retrieve()</span>
+<span class="nc" id="L90">                .bodyToMono(Void.class);</span>
+    }
+
+    /**
+     * Get pets by owner ID
+     */
+    public Mono&lt;List&lt;Pet&gt;&gt; getPetsByOwnerId(Long ownerId) {
+<span class="nc" id="L97">        return webClient.get()</span>
+<span class="nc" id="L98">                .uri(&quot;/pets/owner/{ownerId}&quot;, ownerId)</span>
+<span class="nc" id="L99">                .retrieve()</span>
+<span class="nc" id="L100">                .bodyToFlux(Pet.class)</span>
+<span class="nc" id="L101">                .collectList();</span>
+    }
+
+    /**
+     * Search pets by name
+     */
+    public Mono&lt;List&lt;Pet&gt;&gt; searchByName(String name) {
+<span class="nc" id="L108">        return webClient.get()</span>
+<span class="nc" id="L109">                .uri(uriBuilder -&gt; uriBuilder</span>
+<span class="nc" id="L110">                        .path(&quot;/pets/search/by-name&quot;)</span>
+<span class="nc" id="L111">                        .queryParam(&quot;name&quot;, name)</span>
+<span class="nc" id="L112">                        .build())</span>
+<span class="nc" id="L113">                .retrieve()</span>
+<span class="nc" id="L114">                .bodyToFlux(Pet.class)</span>
+<span class="nc" id="L115">                .collectList();</span>
+    }
+
+    /**
+     * Search pets by species
+     */
+    public Mono&lt;List&lt;Pet&gt;&gt; searchBySpecies(String species) {
+<span class="nc" id="L122">        return webClient.get()</span>
+<span class="nc" id="L123">                .uri(uriBuilder -&gt; uriBuilder</span>
+<span class="nc" id="L124">                        .path(&quot;/pets/search/by-species&quot;)</span>
+<span class="nc" id="L125">                        .queryParam(&quot;species&quot;, species)</span>
+<span class="nc" id="L126">                        .build())</span>
+<span class="nc" id="L127">                .retrieve()</span>
+<span class="nc" id="L128">                .bodyToFlux(Pet.class)</span>
+<span class="nc" id="L129">                .collectList();</span>
+    }
+
+    /**
+     * Search pets by breed
+     */
+    public Mono&lt;List&lt;Pet&gt;&gt; searchByBreed(String breed) {
+<span class="nc" id="L136">        return webClient.get()</span>
+<span class="nc" id="L137">                .uri(uriBuilder -&gt; uriBuilder</span>
+<span class="nc" id="L138">                        .path(&quot;/pets/search/by-breed&quot;)</span>
+<span class="nc" id="L139">                        .queryParam(&quot;breed&quot;, breed)</span>
+<span class="nc" id="L140">                        .build())</span>
+<span class="nc" id="L141">                .retrieve()</span>
+<span class="nc" id="L142">                .bodyToFlux(Pet.class)</span>
+<span class="nc" id="L143">                .collectList();</span>
+    }
+
+    /**
+     * Search pets by age range
+     */
+    public Mono&lt;List&lt;Pet&gt;&gt; searchByAgeRange(int minAge, int maxAge) {
+<span class="nc" id="L150">        return webClient.get()</span>
+<span class="nc" id="L151">                .uri(uriBuilder -&gt; uriBuilder</span>
+<span class="nc" id="L152">                        .path(&quot;/pets/search/by-age-range&quot;)</span>
+<span class="nc" id="L153">                        .queryParam(&quot;minAge&quot;, minAge)</span>
+<span class="nc" id="L154">                        .queryParam(&quot;maxAge&quot;, maxAge)</span>
+<span class="nc" id="L155">                        .build())</span>
+<span class="nc" id="L156">                .retrieve()</span>
+<span class="nc" id="L157">                .bodyToFlux(Pet.class)</span>
+<span class="nc" id="L158">                .collectList();</span>
+    }
+
+    /**
+     * Get senior pets
+     */
+    public Mono&lt;List&lt;Pet&gt;&gt; getSeniorPets(int age) {
+<span class="nc" id="L165">        return webClient.get()</span>
+<span class="nc" id="L166">                .uri(uriBuilder -&gt; uriBuilder</span>
+<span class="nc" id="L167">                        .path(&quot;/pets/senior&quot;)</span>
+<span class="nc" id="L168">                        .queryParam(&quot;age&quot;, age)</span>
+<span class="nc" id="L169">                        .build())</span>
+<span class="nc" id="L170">                .retrieve()</span>
+<span class="nc" id="L171">                .bodyToFlux(Pet.class)</span>
+<span class="nc" id="L172">                .collectList();</span>
+    }
+
+    /**
+     * Search pets by medical history
+     */
+    public Mono&lt;List&lt;Pet&gt;&gt; searchByMedicalHistory(String text) {
+<span class="nc" id="L179">        return webClient.get()</span>
+<span class="nc" id="L180">                .uri(uriBuilder -&gt; uriBuilder</span>
+<span class="nc" id="L181">                        .path(&quot;/pets/search/by-medical-history&quot;)</span>
+<span class="nc" id="L182">                        .queryParam(&quot;text&quot;, text)</span>
+<span class="nc" id="L183">                        .build())</span>
+<span class="nc" id="L184">                .retrieve()</span>
+<span class="nc" id="L185">                .bodyToFlux(Pet.class)</span>
+<span class="nc" id="L186">                .collectList();</span>
+    }
+
+    /**
+     * Get pet statistics
+     */
+    public Mono&lt;Object[]&gt; getPetStatistics() {
+<span class="nc" id="L193">        return webClient.get()</span>
+<span class="nc" id="L194">                .uri(&quot;/pets/statistics&quot;)</span>
+<span class="nc" id="L195">                .retrieve()</span>
+<span class="nc" id="L196">                .bodyToMono(Object[].class);</span>
+    }
+
+    /**
+     * Get pets by species count
+     */
+    public Mono&lt;List&lt;Object[]&gt;&gt; getPetsBySpeciesCount() {
+<span class="nc" id="L203">        return webClient.get()</span>
+<span class="nc" id="L204">                .uri(&quot;/pets/species-count&quot;)</span>
+<span class="nc" id="L205">                .retrieve()</span>
+<span class="nc" id="L206">                .bodyToFlux(Object[].class)</span>
+<span class="nc" id="L207">                .collectList();</span>
+    }
+
+    /**
+     * Convert backend page response to Spring Data Page
+     */
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private Page&lt;Pet&gt; convertToPetPage(Map&lt;String, Object&gt; pageResponse) {
+<span class="nc" id="L215">        List&lt;Map&lt;String, Object&gt;&gt; content = (List&lt;Map&lt;String, Object&gt;&gt;) pageResponse.get(&quot;content&quot;);</span>
+<span class="nc" id="L216">        List&lt;Pet&gt; pets = content.stream()</span>
+<span class="nc" id="L217">                .map(this::mapToPet)</span>
+<span class="nc" id="L218">                .collect(Collectors.toList());</span>
+
+<span class="nc" id="L220">        Map&lt;String, Object&gt; pageable = (Map&lt;String, Object&gt;) pageResponse.get(&quot;pageable&quot;);</span>
+<span class="nc" id="L221">        int pageNumber = (Integer) pageable.get(&quot;pageNumber&quot;);</span>
+<span class="nc" id="L222">        int pageSize = (Integer) pageable.get(&quot;pageSize&quot;);</span>
+<span class="nc" id="L223">        long totalElements = ((Number) pageResponse.get(&quot;totalElements&quot;)).longValue();</span>
+
+<span class="nc" id="L225">        return new PageImpl&lt;&gt;(pets, </span>
+<span class="nc" id="L226">                org.springframework.data.domain.PageRequest.of(pageNumber, pageSize), </span>
+                totalElements);
+    }
+
+    /**
+     * Map backend pet response to Pet model
+     */
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private Pet mapToPet(Map&lt;String, Object&gt; petMap) {
+<span class="nc" id="L235">        Pet pet = new Pet();</span>
+<span class="nc" id="L236">        pet.setId(((Number) petMap.get(&quot;id&quot;)).longValue());</span>
+<span class="nc" id="L237">        pet.setName((String) petMap.get(&quot;name&quot;));</span>
+<span class="nc" id="L238">        pet.setSpecies((String) petMap.get(&quot;species&quot;));</span>
+<span class="nc" id="L239">        pet.setBreed((String) petMap.get(&quot;breed&quot;));</span>
+<span class="nc" id="L240">        pet.setMedicalHistory((String) petMap.get(&quot;medicalHistory&quot;));</span>
+        
+        // Handle date fields
+<span class="nc bnc" id="L243" title="All 2 branches missed.">        if (petMap.get(&quot;birthDate&quot;) != null) {</span>
+<span class="nc" id="L244">            pet.setBirthDate(LocalDate.parse((String) petMap.get(&quot;birthDate&quot;)));</span>
+        }
+<span class="nc bnc" id="L246" title="All 2 branches missed.">        if (petMap.get(&quot;createdAt&quot;) != null) {</span>
+<span class="nc" id="L247">            pet.setCreatedAt(LocalDate.parse((String) petMap.get(&quot;createdAt&quot;)));</span>
+        }
+<span class="nc bnc" id="L249" title="All 2 branches missed.">        if (petMap.get(&quot;updatedAt&quot;) != null) {</span>
+<span class="nc" id="L250">            pet.setUpdatedAt(LocalDate.parse((String) petMap.get(&quot;updatedAt&quot;)));</span>
+        }
+        
+<span class="nc" id="L253">        return pet;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

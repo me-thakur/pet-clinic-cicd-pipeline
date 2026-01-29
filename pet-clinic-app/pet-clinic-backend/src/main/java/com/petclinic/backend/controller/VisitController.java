@@ -22,7 +22,7 @@ import java.util.Optional;
  * Validates: Requirements 8.1, 8.2, 8.3, 8.4
  */
 @RestController
-@RequestMapping("/api/visits")
+@RequestMapping("/visits")
 @CrossOrigin(origins = "*")
 public class VisitController {
 
@@ -31,7 +31,7 @@ public class VisitController {
 
     /**
      * Get all visits with pagination
-     * GET /api/visits
+     * GET /visits
      */
     @GetMapping
     public ResponseEntity<Page<Visit>> getAllVisits(Pageable pageable) {
@@ -45,7 +45,7 @@ public class VisitController {
 
     /**
      * Get visit by ID
-     * GET /api/visits/{id}
+     * GET /visits/{id}
      */
     @GetMapping("/{id}")
     public ResponseEntity<Visit> getVisitById(@PathVariable Long id) {
@@ -60,7 +60,7 @@ public class VisitController {
 
     /**
      * Create new visit
-     * POST /api/visits
+     * POST /visits
      */
     @PostMapping
     public ResponseEntity<Visit> createVisit(@Valid @RequestBody Visit visit) {
@@ -76,7 +76,7 @@ public class VisitController {
 
     /**
      * Update existing visit
-     * PUT /api/visits/{id}
+     * PUT /visits/{id}
      */
     @PutMapping("/{id}")
     public ResponseEntity<Visit> updateVisit(@PathVariable Long id, @Valid @RequestBody Visit visitDetails) {
@@ -103,7 +103,7 @@ public class VisitController {
 
     /**
      * Delete visit
-     * DELETE /api/visits/{id}
+     * DELETE /visits/{id}
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteVisit(@PathVariable Long id) {
@@ -120,7 +120,7 @@ public class VisitController {
 
     /**
      * Get visits by pet ID
-     * GET /api/visits/pet/{petId}
+     * GET /visits/pet/{petId}
      */
     @GetMapping("/pet/{petId}")
     public ResponseEntity<List<Visit>> getVisitsByPetId(@PathVariable Long petId) {
@@ -134,7 +134,7 @@ public class VisitController {
 
     /**
      * Get visits by veterinarian ID
-     * GET /api/visits/veterinarian/{veterinarianId}
+     * GET /visits/veterinarian/{veterinarianId}
      */
     @GetMapping("/veterinarian/{veterinarianId}")
     public ResponseEntity<List<Visit>> getVisitsByVeterinarianId(@PathVariable Long veterinarianId) {
@@ -148,7 +148,7 @@ public class VisitController {
 
     /**
      * Get visits by owner ID
-     * GET /api/visits/owner/{ownerId}
+     * GET /visits/owner/{ownerId}
      */
     @GetMapping("/owner/{ownerId}")
     public ResponseEntity<List<Visit>> getVisitsByOwnerId(@PathVariable Long ownerId) {
@@ -162,7 +162,7 @@ public class VisitController {
 
     /**
      * Get visits within date range
-     * GET /api/visits/date-range?start={start}&end={end}
+     * GET /visits/date-range?start={start}&end={end}
      */
     @GetMapping("/date-range")
     public ResponseEntity<List<Visit>> getVisitsByDateRange(
@@ -178,7 +178,7 @@ public class VisitController {
 
     /**
      * Search visits by description
-     * GET /api/visits/search/by-description?text={text}
+     * GET /visits/search/by-description?text={text}
      */
     @GetMapping("/search/by-description")
     public ResponseEntity<List<Visit>> searchByDescription(@RequestParam String text) {
@@ -192,7 +192,7 @@ public class VisitController {
 
     /**
      * Search visits by diagnosis
-     * GET /api/visits/search/by-diagnosis?text={text}
+     * GET /visits/search/by-diagnosis?text={text}
      */
     @GetMapping("/search/by-diagnosis")
     public ResponseEntity<List<Visit>> searchByDiagnosis(@RequestParam String text) {
@@ -206,7 +206,7 @@ public class VisitController {
 
     /**
      * Search visits by treatment
-     * GET /api/visits/search/by-treatment?text={text}
+     * GET /visits/search/by-treatment?text={text}
      */
     @GetMapping("/search/by-treatment")
     public ResponseEntity<List<Visit>> searchByTreatment(@RequestParam String text) {
@@ -220,7 +220,7 @@ public class VisitController {
 
     /**
      * Get visits by cost range
-     * GET /api/visits/cost-range?min={min}&max={max}
+     * GET /visits/cost-range?min={min}&max={max}
      */
     @GetMapping("/cost-range")
     public ResponseEntity<List<Visit>> getVisitsByCostRange(
@@ -235,7 +235,7 @@ public class VisitController {
 
     /**
      * Get emergency visits
-     * GET /api/visits/emergency
+     * GET /visits/emergency
      */
     @GetMapping("/emergency")
     public ResponseEntity<List<Visit>> getEmergencyVisits() {
@@ -249,7 +249,7 @@ public class VisitController {
 
     /**
      * Get completed visits
-     * GET /api/visits/completed
+     * GET /visits/completed
      */
     @GetMapping("/completed")
     public ResponseEntity<List<Visit>> getCompletedVisits() {
@@ -263,7 +263,7 @@ public class VisitController {
 
     /**
      * Get incomplete visits
-     * GET /api/visits/incomplete
+     * GET /visits/incomplete
      */
     @GetMapping("/incomplete")
     public ResponseEntity<List<Visit>> getIncompleteVisits() {
@@ -277,7 +277,7 @@ public class VisitController {
 
     /**
      * Get visits without cost
-     * GET /api/visits/without-cost
+     * GET /visits/without-cost
      */
     @GetMapping("/without-cost")
     public ResponseEntity<List<Visit>> getVisitsWithoutCost() {
@@ -291,7 +291,7 @@ public class VisitController {
 
     /**
      * Get today's visits
-     * GET /api/visits/today
+     * GET /visits/today
      */
     @GetMapping("/today")
     public ResponseEntity<List<Visit>> getTodaysVisits() {
@@ -305,7 +305,7 @@ public class VisitController {
 
     /**
      * Get upcoming visits
-     * GET /api/visits/upcoming
+     * GET /visits/upcoming
      */
     @GetMapping("/upcoming")
     public ResponseEntity<List<Visit>> getUpcomingVisits() {
@@ -319,7 +319,7 @@ public class VisitController {
 
     /**
      * Get visit statistics
-     * GET /api/visits/statistics
+     * GET /visits/statistics
      */
     @GetMapping("/statistics")
     public ResponseEntity<Object[]> getVisitStatistics() {
@@ -333,7 +333,7 @@ public class VisitController {
 
     /**
      * Calculate revenue by date range
-     * GET /api/visits/revenue?start={start}&end={end}
+     * GET /visits/revenue?start={start}&end={end}
      */
     @GetMapping("/revenue")
     public ResponseEntity<BigDecimal> calculateRevenue(
@@ -349,7 +349,7 @@ public class VisitController {
 
     /**
      * Get most common diagnoses
-     * GET /api/visits/common-diagnoses?limit={limit}
+     * GET /visits/common-diagnoses?limit={limit}
      */
     @GetMapping("/common-diagnoses")
     public ResponseEntity<List<Object[]>> getMostCommonDiagnoses(@RequestParam(defaultValue = "10") int limit) {
@@ -364,7 +364,7 @@ public class VisitController {
 
     /**
      * Advanced search with multiple criteria
-     * GET /api/visits/search
+     * GET /visits/search
      */
     @GetMapping("/search")
     public ResponseEntity<Page<Visit>> searchVisits(

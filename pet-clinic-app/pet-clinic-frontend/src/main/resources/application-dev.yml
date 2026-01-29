@@ -1,0 +1,32 @@
+spring:
+  thymeleaf:
+    cache: false
+    mode: HTML
+    encoding: UTF-8
+    prefix: classpath:/templates/
+    suffix: .html
+  
+  web:
+    resources:
+      cache:
+        period: 0
+
+server:
+  port: 8080
+
+# Backend service URL
+pet-clinic:
+  backend:
+    url: http://localhost:8081
+    api-path: /api
+
+logging:
+  level:
+    com.petclinic: DEBUG
+    org.springframework.web: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

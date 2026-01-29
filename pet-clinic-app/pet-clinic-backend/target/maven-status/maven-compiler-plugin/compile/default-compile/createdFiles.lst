@@ -4,6 +4,7 @@ com/petclinic/backend/model/Owner.class
 com/petclinic/backend/repository/VeterinarianRepository.class
 com/petclinic/backend/model/Pet.class
 com/petclinic/backend/model/Visit.class
+com/petclinic/backend/config/SecurityConfig.class
 com/petclinic/backend/controller/PetController.class
 com/petclinic/backend/controller/OwnerController.class
 com/petclinic/backend/model/Veterinarian.class

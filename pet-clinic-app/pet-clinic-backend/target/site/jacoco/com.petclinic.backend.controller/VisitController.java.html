@@ -22,16 +22,16 @@ import java.util.Optional;
  * Validates: Requirements 8.1, 8.2, 8.3, 8.4
  */
 @RestController
-@RequestMapping(&quot;/api/visits&quot;)
+@RequestMapping(&quot;/visits&quot;)
 @CrossOrigin(origins = &quot;*&quot;)
-<span class="nc" id="L27">public class VisitController {</span>
+<span class="fc" id="L27">public class VisitController {</span>
 
     @Autowired
     private VisitRepository visitRepository;
 
     /**
      * Get all visits with pagination
-     * GET /api/visits
+     * GET /visits
      */
     @GetMapping
     public ResponseEntity&lt;Page&lt;Visit&gt;&gt; getAllVisits(Pageable pageable) {
@@ -45,7 +45,7 @@ import java.util.Optional;
 
     /**
      * Get visit by ID
-     * GET /api/visits/{id}
+     * GET /visits/{id}
      */
     @GetMapping(&quot;/{id}&quot;)
     public ResponseEntity&lt;Visit&gt; getVisitById(@PathVariable Long id) {
@@ -60,7 +60,7 @@ import java.util.Optional;
 
     /**
      * Create new visit
-     * POST /api/visits
+     * POST /visits
      */
     @PostMapping
     public ResponseEntity&lt;Visit&gt; createVisit(@Valid @RequestBody Visit visit) {
@@ -76,7 +76,7 @@ import java.util.Optional;
 
     /**
      * Update existing visit
-     * PUT /api/visits/{id}
+     * PUT /visits/{id}
      */
     @PutMapping(&quot;/{id}&quot;)
     public ResponseEntity&lt;Visit&gt; updateVisit(@PathVariable Long id, @Valid @RequestBody Visit visitDetails) {
@@ -103,7 +103,7 @@ import java.util.Optional;
 
     /**
      * Delete visit
-     * DELETE /api/visits/{id}
+     * DELETE /visits/{id}
      */
     @DeleteMapping(&quot;/{id}&quot;)
     public ResponseEntity&lt;Void&gt; deleteVisit(@PathVariable Long id) {
@@ -120,7 +120,7 @@ import java.util.Optional;
 
     /**
      * Get visits by pet ID
-     * GET /api/visits/pet/{petId}
+     * GET /visits/pet/{petId}
      */
     @GetMapping(&quot;/pet/{petId}&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; getVisitsByPetId(@PathVariable Long petId) {
@@ -134,7 +134,7 @@ import java.util.Optional;
 
     /**
      * Get visits by veterinarian ID
-     * GET /api/visits/veterinarian/{veterinarianId}
+     * GET /visits/veterinarian/{veterinarianId}
      */
     @GetMapping(&quot;/veterinarian/{veterinarianId}&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; getVisitsByVeterinarianId(@PathVariable Long veterinarianId) {
@@ -148,7 +148,7 @@ import java.util.Optional;
 
     /**
      * Get visits by owner ID
-     * GET /api/visits/owner/{ownerId}
+     * GET /visits/owner/{ownerId}
      */
     @GetMapping(&quot;/owner/{ownerId}&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; getVisitsByOwnerId(@PathVariable Long ownerId) {
@@ -162,7 +162,7 @@ import java.util.Optional;
 
     /**
      * Get visits within date range
-     * GET /api/visits/date-range?start={start}&amp;end={end}
+     * GET /visits/date-range?start={start}&amp;end={end}
      */
     @GetMapping(&quot;/date-range&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; getVisitsByDateRange(
@@ -178,7 +178,7 @@ import java.util.Optional;
 
     /**
      * Search visits by description
-     * GET /api/visits/search/by-description?text={text}
+     * GET /visits/search/by-description?text={text}
      */
     @GetMapping(&quot;/search/by-description&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; searchByDescription(@RequestParam String text) {
@@ -192,7 +192,7 @@ import java.util.Optional;
 
     /**
      * Search visits by diagnosis
-     * GET /api/visits/search/by-diagnosis?text={text}
+     * GET /visits/search/by-diagnosis?text={text}
      */
     @GetMapping(&quot;/search/by-diagnosis&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; searchByDiagnosis(@RequestParam String text) {
@@ -206,7 +206,7 @@ import java.util.Optional;
 
     /**
      * Search visits by treatment
-     * GET /api/visits/search/by-treatment?text={text}
+     * GET /visits/search/by-treatment?text={text}
      */
     @GetMapping(&quot;/search/by-treatment&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; searchByTreatment(@RequestParam String text) {
@@ -220,7 +220,7 @@ import java.util.Optional;
 
     /**
      * Get visits by cost range
-     * GET /api/visits/cost-range?min={min}&amp;max={max}
+     * GET /visits/cost-range?min={min}&amp;max={max}
      */
     @GetMapping(&quot;/cost-range&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; getVisitsByCostRange(
@@ -235,7 +235,7 @@ import java.util.Optional;
 
     /**
      * Get emergency visits
-     * GET /api/visits/emergency
+     * GET /visits/emergency
      */
     @GetMapping(&quot;/emergency&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; getEmergencyVisits() {
@@ -249,7 +249,7 @@ import java.util.Optional;
 
     /**
      * Get completed visits
-     * GET /api/visits/completed
+     * GET /visits/completed
      */
     @GetMapping(&quot;/completed&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; getCompletedVisits() {
@@ -263,7 +263,7 @@ import java.util.Optional;
 
     /**
      * Get incomplete visits
-     * GET /api/visits/incomplete
+     * GET /visits/incomplete
      */
     @GetMapping(&quot;/incomplete&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; getIncompleteVisits() {
@@ -277,7 +277,7 @@ import java.util.Optional;
 
     /**
      * Get visits without cost
-     * GET /api/visits/without-cost
+     * GET /visits/without-cost
      */
     @GetMapping(&quot;/without-cost&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; getVisitsWithoutCost() {
@@ -291,7 +291,7 @@ import java.util.Optional;
 
     /**
      * Get today's visits
-     * GET /api/visits/today
+     * GET /visits/today
      */
     @GetMapping(&quot;/today&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; getTodaysVisits() {
@@ -305,7 +305,7 @@ import java.util.Optional;
 
     /**
      * Get upcoming visits
-     * GET /api/visits/upcoming
+     * GET /visits/upcoming
      */
     @GetMapping(&quot;/upcoming&quot;)
     public ResponseEntity&lt;List&lt;Visit&gt;&gt; getUpcomingVisits() {
@@ -319,7 +319,7 @@ import java.util.Optional;
 
     /**
      * Get visit statistics
-     * GET /api/visits/statistics
+     * GET /visits/statistics
      */
     @GetMapping(&quot;/statistics&quot;)
     public ResponseEntity&lt;Object[]&gt; getVisitStatistics() {
@@ -333,7 +333,7 @@ import java.util.Optional;
 
     /**
      * Calculate revenue by date range
-     * GET /api/visits/revenue?start={start}&amp;end={end}
+     * GET /visits/revenue?start={start}&amp;end={end}
      */
     @GetMapping(&quot;/revenue&quot;)
     public ResponseEntity&lt;BigDecimal&gt; calculateRevenue(
@@ -349,7 +349,7 @@ import java.util.Optional;
 
     /**
      * Get most common diagnoses
-     * GET /api/visits/common-diagnoses?limit={limit}
+     * GET /visits/common-diagnoses?limit={limit}
      */
     @GetMapping(&quot;/common-diagnoses&quot;)
     public ResponseEntity&lt;List&lt;Object[]&gt;&gt; getMostCommonDiagnoses(@RequestParam(defaultValue = &quot;10&quot;) int limit) {
@@ -364,7 +364,7 @@ import java.util.Optional;
 
     /**
      * Advanced search with multiple criteria
-     * GET /api/visits/search
+     * GET /visits/search
      */
     @GetMapping(&quot;/search&quot;)
     public ResponseEntity&lt;Page&lt;Visit&gt;&gt; searchVisits(
