@@ -44,10 +44,18 @@
                     <i class="fas fa-arrow-left"></i> Back to Reports
                 </a>
                 <div class="btn-group ms-2" role="group">
-                    <button type="button" class="btn btn-outline-primary" onclick="exportReport('pdf')">
+                    <button type="button" 
+                            class="btn btn-outline-primary" 
+                            data-export-async="true"
+                            data-report-type="revenue" 
+                            data-format="pdf">
                         <i class="fas fa-file-pdf"></i> Export PDF
                     </button>
-                    <button type="button" class="btn btn-outline-success" onclick="exportReport('csv')">
+                    <button type="button" 
+                            class="btn btn-outline-success" 
+                            data-export-async="true"
+                            data-report-type="revenue" 
+                            data-format="csv">
                         <i class="fas fa-file-csv"></i> Export CSV
                     </button>
                 </div>
@@ -141,13 +149,22 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
+                            <table class="table table-striped table-sortable enhanced-table" id="revenueByVetTable">
+                                <thead class="table-light">
                                     <tr>
-                                        <th>Veterinarian</th>
-                                        <th>Revenue</th>
-                                        <th>Percentage</th>
-                                        <th>Visual</th>
+                                        <th class="sortable-header" data-column="veterinarian" data-sort-type="text" title="Click to sort by veterinarian name">
+                                            Veterinarian
+                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                        </th>
+                                        <th class="sortable-header" data-column="revenue" data-sort-type="number" title="Click to sort by revenue">
+                                            Revenue
+                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                        </th>
+                                        <th class="sortable-header" data-column="percentage" data-sort-type="number" title="Click to sort by percentage">
+                                            Percentage
+                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                        </th>
+                                        <th class="no-sort">Visual</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -247,12 +264,18 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive" style="max-height: 300px;">
-                            <table class="table table-sm">
+                            <table class="table table-sm table-sortable enhanced-table" id="dailyRevenueTable">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Revenue</th>
-                                        <th>Visual</th>
+                                        <th class="sortable-header" data-column="date" data-sort-type="datetime" title="Click to sort by date">
+                                            Date
+                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                        </th>
+                                        <th class="sortable-header" data-column="revenue" data-sort-type="number" title="Click to sort by revenue">
+                                            Revenue
+                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                        </th>
+                                        <th class="no-sort">Visual</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -338,23 +361,77 @@
     </div>
 
     <script>
-        function exportReport(format) {
-            const startDate = /*[[${startDate}]]*/ '';
-            const endDate = /*[[${endDate}]]*/ '';
-            const veterinarianId = /*[[${veterinarianId}]]*/ '';
-            const includeTrends = /*[[${includeTrends}]]*/ false;
+        // Page-specific data for export functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up page data for exports
+            window.revenueReportPageData = {
+                startDate: /*[[${startDate}]]*/ '',
+                endDate: /*[[${endDate}]]*/ '',
+                veterinarianId: /*[[${veterinarianId}]]*/ '',
+                includeTrends: /*[[${includeTrends}]]*/ false
+            };
             
-            let url = `/dashboard/export/revenue?startDate=${startDate}&endDate=${endDate}&format=${format}&includeTrends=${includeTrends}`;
-            if (veterinarianId) url += `&veterinarianId=${veterinarianId}`;
+            console.log('Revenue report page data:', window.revenueReportPageData);
             
-            // Create a temporary link to trigger download
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `revenue-report-${startDate}-to-${endDate}.${format}`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+            // Ensure exportReport function is available
+            if (typeof window.exportReport !== 'function') {
+                console.warn('Global exportReport not available, defining local version');
+                window.exportReport = function(format) {
+                    console.log('LOCAL: Revenue report exportReport called with format:', format);
+                    
+                    const startDate = /*[[${startDate}]]*/ '';
+                    const endDate = /*[[${endDate}]]*/ '';
+                    const veterinarianId = /*[[${veterinarianId}]]*/ '';
+                    const includeTrends = /*[[${includeTrends}]]*/ false;
+                    
+                    if (!startDate || !endDate) {
+                        alert('Missing date parameters for export.');
+                        return;
+                    }
+                    
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '/dashboard/export/revenue';
+                    form.style.display = 'none';
+                    
+                    const csrfToken = document.querySelector('meta[name="_csrf"]');
+                    const params = {
+                        startDate: startDate,
+                        endDate: endDate,
+                        format: format,
+                        includeTrends: includeTrends
+                    };
+                    
+                    if (veterinarianId) params.veterinarianId = veterinarianId;
+                    if (csrfToken && csrfToken.getAttribute('content')) {
+                        params['_csrf'] = csrfToken.getAttribute('content');
+                    }
+                    
+                    for (const [key, value] of Object.entries(params)) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        form.appendChild(input);
+                    }
+                    
+                    document.body.appendChild(form);
+                    console.log('LOCAL: Submitting revenue export form:', form.action, params);
+                    form.submit();
+                    
+                    setTimeout(() => {
+                        if (document.body.contains(form)) {
+                            document.body.removeChild(form);
+                        }
+                    }, 1000);
+                };
+            }
+            
+            console.log('Revenue report page JavaScript loaded - exportReport available:', typeof window.exportReport);
+        });
     </script>
+
+    <!-- Enhanced Report Export Script -->
+    <script th:src="@{/js/enhanced-report-export.js}"></script>
 </body>
 </html>

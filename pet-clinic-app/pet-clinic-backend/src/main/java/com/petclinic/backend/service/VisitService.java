@@ -1,6 +1,8 @@
 package com.petclinic.backend.service;
 
 import com.petclinic.backend.model.Visit;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -96,6 +98,13 @@ public interface VisitService extends BaseService<Visit, Long> {
      * @return Visit statistics
      */
     VisitStatistics getVisitStatistics(LocalDate startDate, LocalDate endDate);
+    
+    /**
+     * Find visits with pagination and sorting support
+     * @param pageable Pagination and sorting parameters
+     * @return Paginated visits
+     */
+    Page<Visit> findAllWithPagination(Pageable pageable);
     
     /**
      * Inner class for visit statistics

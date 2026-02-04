@@ -92,11 +92,11 @@ public class GlobalSearchServiceImpl implements GlobalSearchService {
         trackSearchQuery(sanitizedQuery);
         
         try {
-            // Search across all entity types
-            List<SearchResult> petResults = searchPets(sanitizedQuery);
-            List<SearchResult> visitResults = searchVisits(sanitizedQuery);
-            List<SearchResult> veterinarianResults = searchVeterinarians(sanitizedQuery);
-            List<SearchResult> ownerResults = searchOwners(sanitizedQuery);
+            // Search across all entity types with error handling
+            List<SearchResult> petResults = searchPetsWithFallback(sanitizedQuery);
+            List<SearchResult> visitResults = searchVisitsWithFallback(sanitizedQuery);
+            List<SearchResult> veterinarianResults = searchVeterinariansWithFallback(sanitizedQuery);
+            List<SearchResult> ownerResults = searchOwnersWithFallback(sanitizedQuery);
             
             // Combine all results
             List<SearchResult> allResults = new ArrayList<>();
@@ -140,6 +140,43 @@ public class GlobalSearchServiceImpl implements GlobalSearchService {
         } catch (Exception e) {
             logger.error("Error performing global search for query: '{}'", sanitizedQuery, e);
             return createEmptySearchResult(sanitizedQuery, page, size, sortBy, sortDirection);
+        }
+    }
+    
+    // Enhanced search methods with fallback handling
+    private List<SearchResult> searchPetsWithFallback(String query) {
+        try {
+            return searchPets(query);
+        } catch (Exception e) {
+            logger.warn("Pet search failed for query '{}', returning empty results", query, e);
+            return new ArrayList<>();
+        }
+    }
+    
+    private List<SearchResult> searchVisitsWithFallback(String query) {
+        try {
+            return searchVisits(query);
+        } catch (Exception e) {
+            logger.warn("Visit search failed for query '{}', returning empty results", query, e);
+            return new ArrayList<>();
+        }
+    }
+    
+    private List<SearchResult> searchVeterinariansWithFallback(String query) {
+        try {
+            return searchVeterinarians(query);
+        } catch (Exception e) {
+            logger.warn("Veterinarian search failed for query '{}', returning empty results", query, e);
+            return new ArrayList<>();
+        }
+    }
+    
+    private List<SearchResult> searchOwnersWithFallback(String query) {
+        try {
+            return searchOwners(query);
+        } catch (Exception e) {
+            logger.warn("Owner search failed for query '{}', returning empty results", query, e);
+            return new ArrayList<>();
         }
     }
     
@@ -444,31 +481,55 @@ public class GlobalSearchServiceImpl implements GlobalSearchService {
         logger.debug("Getting search suggestions for partial query: '{}'", partialQuery);
         
         if (partialQuery == null || partialQuery.trim().isEmpty()) {
-            return new ArrayList<>();
+            return getPopularSearchTerms(maxSuggestions);
         }
         
         String sanitizedQuery = sanitizeQuery(partialQuery.trim().toLowerCase());
-        Set<String> suggestions = new HashSet<>();
+        Set<String> suggestions = new LinkedHashSet<>();
         
         try {
             // Get suggestions from pet names
             List<Pet> pets = petRepository.findByNameContainingIgnoreCase(sanitizedQuery);
-            pets.stream().limit(maxSuggestions / 4).forEach(pet -> suggestions.add(pet.getName()));
+            pets.stream()
+                .limit(maxSuggestions / 4)
+                .map(Pet::getName)
+                .filter(name -> name != null && !name.trim().isEmpty())
+                .forEach(suggestions::add);
             
             // Get suggestions from species
             List<Pet> petsBySpecies = petRepository.findBySpeciesIgnoreCase(sanitizedQuery);
-            petsBySpecies.stream().limit(maxSuggestions / 4).forEach(pet -> suggestions.add(pet.getSpecies()));
+            petsBySpecies.stream()
+                .limit(maxSuggestions / 4)
+                .map(Pet::getSpecies)
+                .filter(species -> species != null && !species.trim().isEmpty())
+                .forEach(suggestions::add);
             
             // Get suggestions from veterinarian names
             List<Veterinarian> vets = veterinarianRepository.findByFirstNameContainingIgnoreCase(sanitizedQuery);
-            vets.stream().limit(maxSuggestions / 4).forEach(vet -> suggestions.add(vet.getFullName()));
+            vets.stream()
+                .limit(maxSuggestions / 4)
+                .map(Veterinarian::getFullName)
+                .filter(name -> name != null && !name.trim().isEmpty())
+                .forEach(suggestions::add);
             
             // Get suggestions from owner names
             List<Owner> owners = ownerRepository.findByFirstNameContainingIgnoreCase(sanitizedQuery);
-            owners.stream().limit(maxSuggestions / 4).forEach(owner -> suggestions.add(owner.getFullName()));
+            owners.stream()
+                .limit(maxSuggestions / 4)
+                .map(Owner::getFullName)
+                .filter(name -> name != null && !name.trim().isEmpty())
+                .forEach(suggestions::add);
+            
+            // If we don't have enough suggestions, add some popular terms
+            if (suggestions.size() < maxSuggestions) {
+                List<String> popularTerms = getPopularSearchTerms(maxSuggestions - suggestions.size());
+                suggestions.addAll(popularTerms);
+            }
             
         } catch (Exception e) {
             logger.error("Error getting search suggestions for query: '{}'", sanitizedQuery, e);
+            // Fallback to popular terms
+            return getPopularSearchTerms(maxSuggestions);
         }
         
         return suggestions.stream()
@@ -662,6 +723,86 @@ public class GlobalSearchServiceImpl implements GlobalSearchService {
         return analytics;
     }
     
+    @Override
+    public List<String> getNoResultsSuggestions(String originalQuery, int maxSuggestions) {
+        logger.debug("Getting no-results suggestions for query: '{}'", originalQuery);
+        
+        List<String> suggestions = new ArrayList<>();
+        
+        if (originalQuery == null || originalQuery.trim().isEmpty()) {
+            return getPopularSearchTerms(maxSuggestions);
+        }
+        
+        String sanitizedQuery = sanitizeQuery(originalQuery.trim().toLowerCase());
+        
+        try {
+            // Suggest removing common words
+            String[] words = sanitizedQuery.split("\\s+");
+            if (words.length > 1) {
+                suggestions.add("Try searching for just: " + words[0]);
+                if (words.length > 2) {
+                    suggestions.add("Try searching for: " + words[0] + " " + words[1]);
+                }
+            }
+            
+            // Suggest similar terms from existing data
+            List<String> similarTerms = findSimilarTerms(sanitizedQuery, maxSuggestions / 2);
+            suggestions.addAll(similarTerms);
+            
+            // Add popular search terms as fallback
+            if (suggestions.size() < maxSuggestions) {
+                List<String> popularTerms = getPopularSearchTerms(maxSuggestions - suggestions.size());
+                for (String term : popularTerms) {
+                    if (!suggestions.contains(term)) {
+                        suggestions.add(term);
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error getting no-results suggestions for query: '{}'", sanitizedQuery, e);
+            return getPopularSearchTerms(maxSuggestions);
+        }
+        
+        return suggestions.stream()
+                .limit(maxSuggestions)
+                .collect(Collectors.toList());
+    }
+    
+    private List<String> findSimilarTerms(String query, int maxResults) {
+        Set<String> similarTerms = new HashSet<>();
+        
+        try {
+            // Find terms that contain parts of the query
+            String[] queryParts = query.split("\\s+");
+            for (String part : queryParts) {
+                if (part.length() >= 3) {
+                    // Search for pet names containing this part
+                    List<Pet> pets = petRepository.findByNameContainingIgnoreCase(part);
+                    pets.stream()
+                        .limit(2)
+                        .map(Pet::getName)
+                        .filter(name -> name != null && !name.equalsIgnoreCase(query))
+                        .forEach(similarTerms::add);
+                    
+                    // Search for owner names containing this part
+                    List<Owner> owners = ownerRepository.findByFirstNameContainingIgnoreCase(part);
+                    owners.stream()
+                        .limit(2)
+                        .map(Owner::getFirstName)
+                        .filter(name -> name != null && !name.equalsIgnoreCase(query))
+                        .forEach(similarTerms::add);
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Error finding similar terms for query: '{}'", query, e);
+        }
+        
+        return similarTerms.stream()
+                .limit(maxResults)
+                .collect(Collectors.toList());
+    }
+    
     // Helper methods
     
     private SearchResult createPetSearchResult(Pet pet, String query) {
@@ -669,11 +810,11 @@ public class GlobalSearchServiceImpl implements GlobalSearchService {
         String description = String.format("%s, %s - Owner: %s", 
                 pet.getBreed() != null ? pet.getBreed() : "Mixed breed",
                 pet.getAge() + " years old",
-                pet.getOwner().getFullName());
+                pet.getOwner() != null ? pet.getOwner().getFullName() : "No owner assigned");
         
         SearchResult result = new SearchResult("Pet", pet.getId(), title, description);
         result.setMatchedFields(new ArrayList<>());
-        result.setLastModified(pet.getUpdatedAt().atStartOfDay());
+        result.setLastModified(pet.getUpdatedAt() != null ? pet.getUpdatedAt().atStartOfDay() : LocalDateTime.now());
         result.setUrl("/pets/" + pet.getId());
         
         // Apply highlighting
@@ -687,7 +828,10 @@ public class GlobalSearchServiceImpl implements GlobalSearchService {
     }
     
     private SearchResult createVisitSearchResult(Visit visit, String query) {
-        String title = "Visit - " + visit.getPet().getName();
+        String title = "Visit";
+        if (visit.getPet() != null) {
+            title += " - " + visit.getPet().getName();
+        }
         if (visit.getVeterinarian() != null) {
             title += " with " + visit.getVeterinarian().getFullName();
         }
@@ -717,15 +861,15 @@ public class GlobalSearchServiceImpl implements GlobalSearchService {
     
     private SearchResult createVeterinarianSearchResult(Veterinarian vet, String query) {
         String title = vet.getFullName();
-        String description = "License: " + vet.getLicenseNumber();
-        if (vet.isSpecialist()) {
+        String description = "License: " + (vet.getLicenseNumber() != null ? vet.getLicenseNumber() : "N/A");
+        if (vet.isSpecialist() && vet.getSpecialtyList() != null && !vet.getSpecialtyList().isEmpty()) {
             description += " - Specialties: " + String.join(", ", vet.getSpecialtyList());
         }
         description += " - " + vet.getVisitCount() + " visits";
         
         SearchResult result = new SearchResult("Veterinarian", vet.getId(), title, description);
         result.setMatchedFields(new ArrayList<>());
-        result.setLastModified(vet.getUpdatedAt().atStartOfDay());
+        result.setLastModified(vet.getUpdatedAt() != null ? vet.getUpdatedAt().atStartOfDay() : LocalDateTime.now());
         result.setUrl("/veterinarians/" + vet.getId());
         
         // Apply highlighting
@@ -751,7 +895,7 @@ public class GlobalSearchServiceImpl implements GlobalSearchService {
         
         SearchResult result = new SearchResult("Owner", owner.getId(), title, description);
         result.setMatchedFields(new ArrayList<>());
-        result.setLastModified(owner.getUpdatedAt().atStartOfDay());
+        result.setLastModified(owner.getUpdatedAt() != null ? owner.getUpdatedAt().atStartOfDay() : LocalDateTime.now());
         result.setUrl("/owners/" + owner.getId());
         
         // Apply highlighting

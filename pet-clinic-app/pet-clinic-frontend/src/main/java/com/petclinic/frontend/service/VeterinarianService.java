@@ -232,10 +232,10 @@ public class VeterinarianService {
                 .map(this::mapToVeterinarian)
                 .collect(Collectors.toList());
 
-        Map<String, Object> pageable = (Map<String, Object>) pageResponse.get("pageable");
-        int pageNumber = (Integer) pageable.get("pageNumber");
-        int pageSize = (Integer) pageable.get("pageSize");
-        long totalElements = ((Number) pageResponse.get("totalElements")).longValue();
+        Map<String, Object> pageInfo = (Map<String, Object>) pageResponse.get("page");
+        int pageNumber = (Integer) pageInfo.get("number");
+        int pageSize = (Integer) pageInfo.get("size");
+        long totalElements = ((Number) pageInfo.get("totalElements")).longValue();
 
         return new PageImpl<>(veterinarians, 
                 org.springframework.data.domain.PageRequest.of(pageNumber, pageSize), 
@@ -253,6 +253,11 @@ public class VeterinarianService {
         veterinarian.setLastName((String) vetMap.get("lastName"));
         veterinarian.setSpecialties((String) vetMap.get("specialties"));
         veterinarian.setLicenseNumber((String) vetMap.get("licenseNumber"));
+        
+        // Map contact information
+        veterinarian.setTelephone((String) vetMap.get("telephone"));
+        veterinarian.setEmail((String) vetMap.get("email"));
+        veterinarian.setAddress((String) vetMap.get("address"));
         
         // Handle date fields if present
         if (vetMap.get("createdAt") != null) {

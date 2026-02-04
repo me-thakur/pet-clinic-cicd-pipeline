@@ -137,4 +137,12 @@ public interface GlobalSearchService {
      * @return Map containing search analytics data
      */
     Map<String, Object> getSearchAnalytics();
+    
+    /**
+     * Get search suggestions when no results are found
+     * @param originalQuery The original query that returned no results
+     * @param maxSuggestions Maximum number of suggestions to return
+     * @return List of alternative search suggestions
+     */
+    List<String> getNoResultsSuggestions(String originalQuery, int maxSuggestions);
 }

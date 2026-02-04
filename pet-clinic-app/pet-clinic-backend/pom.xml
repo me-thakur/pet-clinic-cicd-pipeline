@@ -46,8 +46,8 @@
 
         <!-- Database -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
         
@@ -110,12 +110,27 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Property-Based Testing -->
+        <!-- Property-Based Testing with jqwik -->
+        <dependency>
+            <groupId>net.jqwik</groupId>
+            <artifactId>jqwik</artifactId>
+            <version>1.8.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Legacy Property-Based Testing (for existing tests) -->
         <dependency>
             <groupId>net.java.quickcheck</groupId>
             <artifactId>quickcheck</artifactId>
             <version>0.6</version>
             <scope>test</scope>
+        </dependency>
+
+        <!-- Google libphonenumber for mobile number validation -->
+        <dependency>
+            <groupId>com.googlecode.libphonenumber</groupId>
+            <artifactId>libphonenumber</artifactId>
+            <version>8.13.27</version>
         </dependency>
 
         <!-- Database Migration -->
@@ -170,6 +185,17 @@
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-security</artifactId>
             <version>1.7.0</version>
+        </dependency>
+
+        <!-- Metrics and Monitoring -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
         </dependency>
 
         <!-- Development Tools -->

@@ -35,6 +35,12 @@ public class Owner {
     @Size(max = 50, message = "City must not exceed 50 characters")
     private String city;
     
+    @Size(max = 50, message = "State must not exceed 50 characters")
+    private String state;
+    
+    @Size(max = 10, message = "ZIP code must not exceed 10 characters")
+    private String zipCode;
+    
     @Size(max = 15, message = "Telephone must not exceed 15 characters")
     private String telephone;
     
@@ -95,6 +101,22 @@ public class Owner {
 
     public void setCity(String city) {
         this.city = city;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
     }
 
     public String getTelephone() {

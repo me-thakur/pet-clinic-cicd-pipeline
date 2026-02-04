@@ -11,6 +11,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Interceptor to handle API versioning validation
@@ -51,13 +52,15 @@ public class ApiVersionInterceptor implements HandlerInterceptor {
      */
     private void handleUnsupportedVersion(HttpServletRequest request, HttpServletResponse response, String requestedVersion) throws IOException {
         ErrorResponse errorResponse = ErrorResponse.builder()
-            .status(HttpStatus.BAD_REQUEST.value())
-            .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+            .errorCode("UNSUPPORTED_API_VERSION")
             .message(String.format("API version '%s' is not supported. Current version: %s", 
                 requestedVersion, ApiVersionConfig.CURRENT_API_VERSION))
+            .suggestions(List.of(
+                "Please use a supported API version",
+                "Check the API documentation for supported versions",
+                "Update your client to use version " + ApiVersionConfig.CURRENT_API_VERSION
+            ))
             .path(request.getRequestURI())
-            .errorCode("UNSUPPORTED_API_VERSION")
-            .apiVersion(ApiVersionConfig.CURRENT_API_VERSION)
             .build();
         
         response.setStatus(HttpStatus.BAD_REQUEST.value());

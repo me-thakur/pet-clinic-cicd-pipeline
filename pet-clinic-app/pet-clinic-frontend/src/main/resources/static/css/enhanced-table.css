@@ -1,0 +1,567 @@
+/**
+ * Enhanced Table Styles
+ * Provides visual styling for enhanced table functionality
+ * Supports sorting indicators, loading states, and bulk operations
+ */
+
+/* Enhanced Table Base Styles */
+.enhanced-table {
+    position: relative;
+}
+
+.enhanced-table.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.loading-overlay .spinner-border {
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Sort Indicators - Enhanced visibility */
+.sort-indicator {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.875rem;
+    font-weight: bold;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.sort-indicator::before {
+    content: "⇅";
+    color: #6c757d;
+}
+
+.sort-indicator.asc::before {
+    content: "↑";
+    color: #198754;
+}
+
+.sort-indicator.desc::before {
+    content: "↓";
+    color: #dc3545;
+}
+
+.sort-indicator.active {
+    opacity: 1;
+    color: #0d6efd;
+    font-size: 1rem;
+}
+
+.sortable-header:hover .sort-indicator {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.sort-indicator.global::after {
+    content: "🌐";
+    font-size: 0.7rem;
+    margin-left: 0.2rem;
+    opacity: 0.8;
+}
+
+/* Multi-column sort indicators */
+.sort-indicator.multi-column {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-radius: 0.25rem;
+    padding: 0.1rem 0.3rem;
+    margin-left: 0.3rem;
+}
+
+.sort-precedence {
+    position: absolute;
+    top: -0.3rem;
+    right: -0.3rem;
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    width: 1rem;
+    height: 1rem;
+    font-size: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* Multi-column sort display */
+.multi-column-sort-display {
+    margin-bottom: 1rem;
+    border-left: 4px solid #0d6efd;
+}
+
+.multi-column-sort-display .fas {
+    color: #0d6efd;
+}
+
+.multi-column-sort-display strong {
+    color: #0d6efd;
+}
+
+/* Sortable Headers - Enhanced with visibility fixes */
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    transition: all 0.2s ease;
+    padding-right: 2rem;
+    
+    /* Enhanced visibility */
+    background-color: inherit;
+    color: inherit;
+    border-radius: 0.25rem;
+}
+
+.sortable-header:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+    color: #495057;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sortable-header:focus,
+.sortable-header:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+    background-color: rgba(13, 110, 253, 0.1);
+    z-index: 1;
+}
+
+.sortable-header.sorted {
+    background-color: rgba(13, 110, 253, 0.15);
+    color: #0d6efd;
+    font-weight: 700;
+    border-left: 3px solid #0d6efd;
+}
+
+/* Selection Column */
+.select-column {
+    width: 40px;
+    text-align: center;
+    padding: 0.5rem 0.25rem;
+}
+
+.select-column input[type="checkbox"] {
+    margin: 0;
+}
+
+/* Bulk Actions */
+.bulk-actions {
+    display: none;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+    gap: 1rem;
+}
+
+.bulk-actions.show {
+    display: flex;
+}
+
+.bulk-actions .selected-info {
+    flex: 1;
+    font-weight: 500;
+    color: #495057;
+}
+
+.bulk-actions .selected-count {
+    font-weight: 700;
+    color: #0d6efd;
+}
+
+.bulk-actions .bulk-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Progress Modal Styles */
+.progress-container {
+    padding: 1rem 0;
+}
+
+.progress-container .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+.progress-message {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.progress-details {
+    opacity: 0.8;
+}
+
+.stage-indicator {
+    font-style: italic;
+}
+
+/* Enhanced Confirmation Dialog */
+.delete-summary {
+    background: #f8f9fa;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+.delete-summary .card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.delete-summary .h4 {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.form-check {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+}
+
+.form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+/* Progress Bar Enhancements */
+.progress {
+    background-color: #e9ecef;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.3s ease;
+}
+
+.progress-bar.bg-success {
+    background-color: #198754 !important;
+}
+
+.progress-bar.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+/* Filter UI */
+.active-filters {
+    margin-bottom: 1rem;
+    min-height: 1.5rem;
+}
+
+.active-filters .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.active-filters .btn-close {
+    font-size: 0.7rem;
+    padding: 0;
+    margin: 0;
+    width: 0.8rem;
+    height: 0.8rem;
+}
+
+/* Filter Dropdown */
+.filter-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.filter-dropdown .dropdown-menu {
+    min-width: 250px;
+    padding: 1rem;
+}
+
+.filter-dropdown .form-group {
+    margin-bottom: 0.75rem;
+}
+
+.filter-dropdown .form-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Status Filter Specific */
+.status-filter-dropdown {
+    min-width: 200px;
+}
+
+.status-filter-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+}
+
+.status-filter-dropdown .status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* Message Styles */
+.table-messages {
+    margin-bottom: 1rem;
+}
+
+.table-messages .alert {
+    margin-bottom: 0.5rem;
+}
+
+.table-messages .alert:last-child {
+    margin-bottom: 0;
+}
+
+/* Responsive Enhancements */
+@media (max-width: 768px) {
+    .sort-indicator {
+        font-size: 0.7rem;
+        margin-left: 0.25rem;
+    }
+    
+    .sort-precedence {
+        width: 0.8rem;
+        height: 0.8rem;
+        font-size: 0.5rem;
+        top: -0.2rem;
+        right: -0.2rem;
+    }
+    
+    .multi-column-sort-display {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+    
+    .multi-column-sort-display .d-flex {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .select-column {
+        width: 35px;
+        padding: 0.25rem;
+    }
+    
+    .bulk-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .bulk-actions .bulk-action-buttons {
+        justify-content: center;
+    }
+    
+    .active-filters .badge {
+        margin-bottom: 0.25rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Accessibility Enhancements */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .sort-indicator.asc::before,
+    .sort-indicator.desc::before {
+        color: #000;
+        font-weight: bold;
+    }
+    
+    .sortable-header.sorted {
+        background-color: #000;
+        color: #fff;
+    }
+    
+    .loading-overlay {
+        background: rgba(255, 255, 255, 0.95);
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .sort-indicator,
+    .sortable-header,
+    .enhanced-table.loading {
+        transition: none;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .sort-indicator,
+    .select-column,
+    .bulk-actions,
+    .active-filters,
+    .loading-overlay,
+    .table-messages {
+        display: none !important;
+    }
+    
+    .sortable-header {
+        cursor: default;
+    }
+}
+
+/* Dark Mode Support - Enhanced */
+@media (prefers-color-scheme: dark) {
+    .loading-overlay {
+        background: rgba(33, 37, 41, 0.8);
+    }
+    
+    .sort-indicator::before {
+        color: #adb5bd;
+    }
+    
+    .sort-indicator.asc::before {
+        color: #198754;
+    }
+    
+    .sort-indicator.desc::before {
+        color: #dc3545;
+    }
+    
+    .sort-indicator.active {
+        color: #66b3ff;
+    }
+    
+    .sortable-header:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+    }
+    
+    .sortable-header.sorted {
+        background-color: rgba(13, 110, 253, 0.3);
+        color: #66b3ff;
+        border-left-color: #66b3ff;
+    }
+    
+    .bulk-actions {
+        background: #343a40;
+        border-color: #495057;
+        color: #fff;
+    }
+}
+
+/* Animation for smooth transitions */
+.enhanced-table tbody tr {
+    transition: opacity 0.2s ease;
+}
+
+.enhanced-table tbody tr[style*="display: none"] {
+    opacity: 0;
+}
+
+/* Focus indicators for keyboard navigation */
+.sortable-header:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+}
+
+.select-column input[type="checkbox"]:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+}
+
+/* Loading state for individual rows */
+.enhanced-table tbody tr.loading {
+    opacity: 0.5;
+    background: repeating-linear-gradient(
+        90deg,
+        transparent,
+        transparent 10px,
+        rgba(0, 0, 0, 0.03) 10px,
+        rgba(0, 0, 0, 0.03) 20px
+    );
+}
+
+/* Hover effects for better UX */
+.enhanced-table tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.enhanced-table tbody tr:hover .select-column input[type="checkbox"] {
+    opacity: 1;
+}
+
+.select-column input[type="checkbox"] {
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+/* Status-specific styling */
+.status-badge.bg-success {
+    background-color: #198754 !important;
+}
+
+.status-badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+.status-badge.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.status-badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+/* Confirmation dialog enhancements */
+.modal-content .modal-header {
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-content .modal-footer {
+    border-top: 1px solid #dee2e6;
+}
+
+/* Error state styling */
+.enhanced-table.error {
+    border: 2px solid #dc3545;
+    border-radius: 0.375rem;
+}
+
+.enhanced-table.error .table-messages {
+    margin-top: 0.5rem;
+}

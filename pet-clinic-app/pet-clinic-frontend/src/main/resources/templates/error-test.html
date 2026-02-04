@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::main})}">
+<head>
+    <title>Error Handling Test - Pet Clinic</title>
+</head>
+<body>
+    <main>
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <h1>Error Handling Test Page</h1>
+                    <p class="lead">Test the enhanced error handling components</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Network Errors</h5>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-danger mb-2" onclick="testNetworkError()">
+                                        Test Network Error
+                                    </button>
+                                    <button class="btn btn-warning mb-2" onclick="testTimeoutError()">
+                                        Test Timeout Error
+                                    </button>
+                                    <button class="btn btn-info mb-2" onclick="testServiceUnavailable()">
+                                        Test Service Unavailable
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Validation Errors</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="test-form">
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="email" name="email" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="phone" class="form-label">Phone</label>
+                                            <input type="tel" class="form-control" id="phone" name="phone">
+                                        </div>
+                                        <button type="button" class="btn btn-primary" onclick="testValidationError()">
+                                            Test Validation Error
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="testFieldError()">
+                                            Test Field Error
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Authentication/Authorization</h5>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-warning mb-2" onclick="testAuthenticationError()">
+                                        Test Authentication Error
+                                    </button>
+                                    <button class="btn btn-danger mb-2" onclick="testAuthorizationError()">
+                                        Test Authorization Error
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Server Errors</h5>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-danger mb-2" onclick="testServerError()">
+                                        Test Server Error
+                                    </button>
+                                    <button class="btn btn-warning mb-2" onclick="testNotFoundError()">
+                                        Test Not Found Error
+                                    </button>
+                                    <button class="btn btn-info mb-2" onclick="testConflictError()">
+                                        Test Conflict Error
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Error Recovery</h5>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-success mb-2" onclick="testRetryMechanism()">
+                                        Test Retry Mechanism
+                                    </button>
+                                    <button class="btn btn-info mb-2" onclick="testFallbackMode()">
+                                        Test Fallback Mode
+                                    </button>
+                                    <button class="btn btn-secondary mb-2" onclick="clearAllErrors()">
+                                        Clear All Errors
+                                    </button>
+                                    <button class="btn btn-outline-info mb-2" onclick="showErrorStats()">
+                                        Show Error Statistics
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script>
+            // Wait for error handling components to be ready
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('Error test page loaded');
+                
+                // Check if error handling components are available
+                setTimeout(function() {
+                    const components = ['errorHandler', 'errorRecovery', 'errorCategorization', 'errorDisplay', 'errorIntegration'];
+                    const missing = components.filter(comp => !window[comp]);
+                    
+                    if (missing.length > 0) {
+                        console.warn('Missing error handling components:', missing);
+                        alert('Some error handling components are not loaded: ' + missing.join(', '));
+                    } else {
+                        console.log('All error handling components are loaded');
+                    }
+                }, 1000);
+            });
+            
+            // Test functions
+            function testNetworkError() {
+                const error = new Error('Network connection failed');
+                error.name = 'TypeError';
+                error.isNetworkError = true;
+                
+                if (window.errorHandler) {
+                    window.errorHandler.handleError(error, { source: 'test', type: 'network' });
+                } else {
+                    console.error('Error handler not available');
+                }
+            }
+            
+            function testTimeoutError() {
+                const error = new Error('Request timed out');
+                error.status = 408;
+                error.errorCode = 'REQUEST_TIMEOUT';
+                error.suggestions = [
+                    'Try again with a smaller dataset',
+                    'Check your internet connection',
+                    'Contact support if the problem persists'
+                ];
+                
+                if (window.errorHandler) {
+                    window.errorHandler.handleError(error, { source: 'test', type: 'timeout' });
+                } else {
+                    console.error('Error handler not available');
+                }
+            }
+            
+            function testServiceUnavailable() {
+                const error = new Error('Service temporarily unavailable');
+                error.status = 503;
+                error.errorCode = 'SERVICE_UNAVAILABLE';
+                error.retryAfter = '30 seconds';
+                error.fallbackOptions = ['Use offline mode', 'Try again later'];
+                error.suggestions = [
+                    'Service is temporarily unavailable',
+                    'Please try again in a few minutes',
+                    'Use offline mode if available'
+                ];
+                
+                if (window.errorHandler) {
+                    window.errorHandler.handleError(error, { source: 'test', type: 'service' });
+                } else {
+                    console.error('Error handler not available');
+                }
+            }
+            
+            function testValidationError() {
+                const error = new Error('Validation failed');
+                error.status = 400;
+                error.errorCode = 'VALIDATION_FAILED';
+                error.fieldErrors = [
+                    {
+                        field: 'email',
+                        message: 'Invalid email format',
+                        suggestions: ['Use format: user@domain.com', 'Check for typos'],
+                        correctionGuidance: 'Please enter a valid email address',
+                        formatExample: 'example@domain.com'
+                    },
+                    {
+                        field: 'phone',
+                        message: 'Phone number is required',
+                        suggestions: ['Enter a valid phone number', 'Include area code'],
+                        correctionGuidance: 'Please provide a phone number',
+                        formatExample: '(555) 123-4567'
+                    }
+                ];
+                error.suggestions = [
+                    'Please correct the highlighted fields',
+                    'All required fields must be completed'
+                ];
+                
+                if (window.errorHandler) {
+                    window.errorHandler.handleError(error, { source: 'test', type: 'validation' });
+                } else {
+                    console.error('Error handler not available');
+                }
+            }
+            
+            function testFieldError() {
+                const emailField = document.getElementById('email');
+                const fieldError = {
+                    field: 'email',
+                    message: 'Email address is already registered',
+                    suggestions: ['Try using a different email address', 'If this is your email, try logging in instead'],
+                    correctionGuidance: 'Please use a unique email address',
+                    errorCode: 'EMAIL_DUPLICATE'
+                };
+                
+                if (window.errorDisplay) {
+                    window.errorDisplay.displayFieldError(emailField, fieldError);
+                } else {
+                    console.error('Error display not available');
+                }
+            }
+            
+            function testAuthenticationError() {
+                const error = new Error('Authentication failed - session expired');
+                error.status = 401;
+                error.errorCode = 'AUTHENTICATION_EXPIRED';
+                error.suggestions = [
+                    'Your session has expired',
+                    'Please log in again to continue',
+                    'You will be redirected to the login page'
+                ];
+                
+                if (window.errorHandler) {
+                    window.errorHandler.handleError(error, { source: 'test', type: 'auth' });
+                } else {
+                    console.error('Error handler not available');
+                }
+            }
+            
+            function testAuthorizationError() {
+                const error = new Error('Access denied - insufficient privileges');
+                error.status = 403;
+                error.errorCode = 'ACCESS_DENIED';
+                error.suggestions = [
+                    'You don\'t have permission to perform this action',
+                    'Contact your administrator for access',
+                    'Make sure you\'re logged in with the correct account'
+                ];
+                
+                if (window.errorHandler) {
+                    window.errorHandler.handleError(error, { source: 'test', type: 'authorization' });
+                } else {
+                    console.error('Error handler not available');
+                }
+            }
+            
+            function testServerError() {
+                const error = new Error('Internal server error occurred');
+                error.status = 500;
+                error.errorCode = 'INTERNAL_ERROR';
+                error.suggestions = [
+                    'An unexpected server error occurred',
+                    'Please try again in a few moments',
+                    'Contact support if the problem persists'
+                ];
+                
+                if (window.errorHandler) {
+                    window.errorHandler.handleError(error, { source: 'test', type: 'server' });
+                } else {
+                    console.error('Error handler not available');
+                }
+            }
+            
+            function testNotFoundError() {
+                const error = new Error('The requested resource was not found');
+                error.status = 404;
+                error.errorCode = 'NOT_FOUND';
+                error.suggestions = [
+                    'The requested resource was not found',
+                    'Check the URL and try again',
+                    'The resource may have been moved or deleted'
+                ];
+                
+                if (window.errorHandler) {
+                    window.errorHandler.handleError(error, { source: 'test', type: 'not_found' });
+                } else {
+                    console.error('Error handler not available');
+                }
+            }
+            
+            function testConflictError() {
+                const error = new Error('Data conflict - resource was modified by another user');
+                error.status = 409;
+                error.errorCode = 'DATA_CONFLICT';
+                error.suggestions = [
+                    'The resource was modified by another user',
+                    'Please refresh and try again',
+                    'Review the changes before resubmitting'
+                ];
+                
+                if (window.errorHandler) {
+                    window.errorHandler.handleError(error, { source: 'test', type: 'conflict' });
+                } else {
+                    console.error('Error handler not available');
+                }
+            }
+            
+            function testRetryMechanism() {
+                const error = new Error('Temporary network issue');
+                error.isNetworkError = true;
+                error.suggestions = ['Retrying automatically...'];
+                
+                const context = {
+                    retryFunction: async function() {
+                        console.log('Retry function called');
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        console.log('Retry successful');
+                        return { success: true };
+                    }
+                };
+                
+                if (window.errorRecovery) {
+                    window.errorRecovery.attemptRecovery(error, context);
+                } else {
+                    console.error('Error recovery not available');
+                }
+            }
+            
+            function testFallbackMode() {
+                const error = new Error('Service unavailable - switching to fallback mode');
+                error.status = 503;
+                error.errorCode = 'SERVICE_UNAVAILABLE';
+                error.fallbackOptions = ['Use offline mode', 'Limited functionality available'];
+                
+                if (window.errorRecovery) {
+                    window.errorRecovery.attemptRecovery(error, { source: 'test' });
+                } else {
+                    console.error('Error recovery not available');
+                }
+            }
+            
+            function clearAllErrors() {
+                if (window.errorDisplay) {
+                    window.errorDisplay.clearAllErrors();
+                    console.log('All errors cleared');
+                } else {
+                    console.error('Error display not available');
+                }
+            }
+            
+            function showErrorStats() {
+                if (window.errorDisplay) {
+                    const stats = window.errorDisplay.getAnalytics();
+                    alert('Error Statistics:\n' + 
+                          'Total Errors: ' + stats.totalErrors + '\n' +
+                          'Recovery Attempts: ' + stats.recoveryAttempts + '\n' +
+                          'Successful Recoveries: ' + stats.successfulRecoveries);
+                } else {
+                    console.error('Error display not available');
+                }
+            }
+        </script>
+    </main>
+</body>
+</html>

@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="'Dr. ' + ${veterinarian.firstName} + ' ' + ${veterinarian.lastName}">Veterinarian Details</title>
 </head>
-<body th:replace="~{layout :: layout(~{::main}, 'Veterinarian Details')}">
-    <main>
+<body>
+    <div th:fragment="content">
         <div class="row">
             <div class="col-md-8">
                 <div class="card">
@@ -44,6 +42,29 @@
                                     <tr>
                                         <td><strong>License Number:</strong></td>
                                         <td th:text="${veterinarian.licenseNumber}">VET123456</td>
+                                    </tr>
+                                </table>
+                                
+                                <h5 class="mt-4">Contact Information</h5>
+                                <table class="table table-borderless">
+                                    <tr th:if="${veterinarian.email != null}">
+                                        <td><strong>Email:</strong></td>
+                                        <td>
+                                            <a th:href="'mailto:' + ${veterinarian.email}" th:text="${veterinarian.email}">Email</a>
+                                        </td>
+                                    </tr>
+                                    <tr th:if="${veterinarian.telephone != null}">
+                                        <td><strong>Phone:</strong></td>
+                                        <td th:text="${veterinarian.telephone}">Phone</td>
+                                    </tr>
+                                    <tr th:if="${veterinarian.address != null}">
+                                        <td><strong>Address:</strong></td>
+                                        <td th:text="${veterinarian.address}">Address</td>
+                                    </tr>
+                                    <tr th:if="${veterinarian.email == null and veterinarian.telephone == null and veterinarian.address == null}">
+                                        <td colspan="2" class="text-muted">
+                                            <i class="fas fa-info-circle"></i> No contact information available
+                                        </td>
                                     </tr>
                                 </table>
                             </div>
@@ -130,6 +151,6 @@
                 </nav>
             </div>
         </div>
-    </main>
+    </div>
 </body>
 </html>

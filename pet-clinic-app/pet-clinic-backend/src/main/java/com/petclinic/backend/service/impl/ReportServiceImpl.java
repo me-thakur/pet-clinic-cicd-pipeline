@@ -451,6 +451,10 @@ public class ReportServiceImpl implements ReportService {
                 .collect(Collectors.toList());
         filter.setSpecies(species);
         
+        // Set available veterinarians
+        List<Veterinarian> veterinarians = veterinarianRepository.findAll();
+        filter.setAvailableVeterinarians(veterinarians);
+        
         return filter;
     }
     

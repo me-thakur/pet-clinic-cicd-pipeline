@@ -1,6 +1,7 @@
 package com.petclinic.backend.dto;
 
 import com.petclinic.backend.model.VisitType;
+import com.petclinic.backend.model.Veterinarian;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,6 +18,7 @@ public class ReportFilter {
     private LocalDate endDate;
     private Long veterinarianId;
     private String veterinarianName;
+    private List<Veterinarian> availableVeterinarians; // List of available veterinarians for filtering
     private List<String> species;
     private List<VisitType> visitTypes;
     private List<Long> petIds;
@@ -73,6 +75,14 @@ public class ReportFilter {
     
     public void setVeterinarianName(String veterinarianName) {
         this.veterinarianName = veterinarianName;
+    }
+    
+    public List<Veterinarian> getAvailableVeterinarians() {
+        return availableVeterinarians;
+    }
+    
+    public void setAvailableVeterinarians(List<Veterinarian> availableVeterinarians) {
+        this.availableVeterinarians = availableVeterinarians;
     }
     
     public List<String> getSpecies() {

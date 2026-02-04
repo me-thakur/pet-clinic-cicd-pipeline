@@ -139,12 +139,12 @@ class VisitControllerTest {
             mockMvc.perform(get("/api/visits"))
                     .andExpect(status().isOk())
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                    .andExpect(jsonPath("$").isArray())
-                    .andExpect(jsonPath("$", hasSize(2)))
-                    .andExpect(jsonPath("$[0].id").value(1))
-                    .andExpect(jsonPath("$[0].visitType").value("WELLNESS_EXAM"))
-                    .andExpect(jsonPath("$[1].id").value(2))
-                    .andExpect(jsonPath("$[1].visitType").value("VACCINATION"));
+                    .andExpect(jsonPath("$.content").isArray())
+                    .andExpect(jsonPath("$.content", hasSize(2)))
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.content[0].visitType").value("WELLNESS_EXAM"))
+                    .andExpect(jsonPath("$.content[1].id").value(2))
+                    .andExpect(jsonPath("$.content[1].visitType").value("VACCINATION"));
 
             verify(visitService).findAll();
         }
@@ -166,6 +166,63 @@ class VisitControllerTest {
                     .andExpect(jsonPath("$.cost").value(75.00));
 
             verify(visitService).findById(1L);
+        }
+
+        @Test
+        @WithMockUser
+        @DisplayName("GET /api/visits/{id} - Should include computed completion status in JSON response")
+        void getVisitById_ShouldIncludeCompletionStatusInResponse() throws Exception {
+            // Given - Visit with both diagnosis and treatment (should be completed)
+            Visit completedVisit = new Visit();
+            completedVisit.setId(1L);
+            completedVisit.setPet(testPet);
+            completedVisit.setVeterinarian(testVeterinarian);
+            completedVisit.setVisitDate(LocalDateTime.now().plusDays(7));
+            completedVisit.setVisitType(VisitType.WELLNESS_EXAM);
+            completedVisit.setDiagnosis("Healthy pet");
+            completedVisit.setTreatment("Vaccination administered");
+            completedVisit.setCost(new BigDecimal("75.00"));
+
+            when(visitService.findById(1L)).thenReturn(Optional.of(completedVisit));
+
+            // When & Then
+            mockMvc.perform(get("/api/visits/1"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id").value(1))
+                    .andExpect(jsonPath("$.diagnosis").value("Healthy pet"))
+                    .andExpect(jsonPath("$.treatment").value("Vaccination administered"))
+                    .andExpect(jsonPath("$.completed").value(true)); // Verify completion status is included
+
+            verify(visitService).findById(1L);
+        }
+
+        @Test
+        @WithMockUser
+        @DisplayName("GET /api/visits/{id} - Should return false completion status for incomplete visit")
+        void getVisitById_ShouldReturnFalseForIncompleteVisit() throws Exception {
+            // Given - Visit with only diagnosis (should be incomplete)
+            Visit incompleteVisit = new Visit();
+            incompleteVisit.setId(2L);
+            incompleteVisit.setPet(testPet);
+            incompleteVisit.setVeterinarian(testVeterinarian);
+            incompleteVisit.setVisitDate(LocalDateTime.now().plusDays(7));
+            incompleteVisit.setVisitType(VisitType.WELLNESS_EXAM);
+            incompleteVisit.setDiagnosis("Examination in progress");
+            // No treatment set
+            incompleteVisit.setCost(new BigDecimal("75.00"));
+
+            when(visitService.findById(2L)).thenReturn(Optional.of(incompleteVisit));
+
+            // When & Then
+            mockMvc.perform(get("/api/visits/2"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id").value(2))
+                    .andExpect(jsonPath("$.diagnosis").value("Examination in progress"))
+                    .andExpect(jsonPath("$.completed").value(false)); // Verify completion status is false
+
+            verify(visitService).findById(2L);
         }
 
         @Test
@@ -269,6 +326,39 @@ class VisitControllerTest {
 
         @Test
         @WithMockUser
+        @DisplayName("PUT /api/visits/{id} - Should return updated completion status in response")
+        void updateVisit_ShouldReturnUpdatedCompletionStatus() throws Exception {
+            // Given - Update visit to include both diagnosis and treatment
+            Visit updatedVisit = new Visit();
+            updatedVisit.setId(1L);
+            updatedVisit.setPet(testPet);
+            updatedVisit.setVeterinarian(testVeterinarian);
+            updatedVisit.setVisitDate(testVisit.getVisitDate());
+            updatedVisit.setVisitType(VisitType.WELLNESS_EXAM);
+            updatedVisit.setDiagnosis("Complete wellness check");
+            updatedVisit.setTreatment("Vaccination and deworming completed");
+            updatedVisit.setCost(new BigDecimal("95.00"));
+
+            when(visitService.update(eq(1L), any(Visit.class))).thenReturn(updatedVisit);
+
+            // When & Then
+            mockMvc.perform(put("/api/visits/1")
+                    .with(csrf())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(updatedVisit)))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.id").value(1))
+                    .andExpect(jsonPath("$.diagnosis").value("Complete wellness check"))
+                    .andExpect(jsonPath("$.treatment").value("Vaccination and deworming completed"))
+                    .andExpect(jsonPath("$.completed").value(true)) // Verify completion status is true
+                    .andExpect(jsonPath("$.cost").value(95.00));
+
+            verify(visitService).update(eq(1L), any(Visit.class));
+        }
+
+        @Test
+        @WithMockUser
         @DisplayName("DELETE /api/visits/{id} - Should delete visit successfully")
         void deleteVisit_WhenVisitExists_ShouldReturn204() throws Exception {
             // Given
@@ -296,6 +386,48 @@ class VisitControllerTest {
                     .andExpect(jsonPath("$.count").value(5));
 
             verify(visitService).count();
+        }
+
+        @Test
+        @WithMockUser
+        @DisplayName("GET /api/visits - Should include completion status for all visits in list")
+        void getAllVisits_ShouldIncludeCompletionStatusForAllVisits() throws Exception {
+            // Given - Mix of completed and incomplete visits
+            Visit completedVisit = new Visit();
+            completedVisit.setId(1L);
+            completedVisit.setPet(testPet);
+            completedVisit.setVeterinarian(testVeterinarian);
+            completedVisit.setVisitDate(LocalDateTime.now().plusDays(7));
+            completedVisit.setVisitType(VisitType.WELLNESS_EXAM);
+            completedVisit.setDiagnosis("Healthy pet");
+            completedVisit.setTreatment("Vaccination administered");
+            completedVisit.setCost(new BigDecimal("75.00"));
+
+            Visit incompleteVisit = new Visit();
+            incompleteVisit.setId(2L);
+            incompleteVisit.setPet(testPet);
+            incompleteVisit.setVeterinarian(testVeterinarian);
+            incompleteVisit.setVisitDate(LocalDateTime.now().plusDays(14));
+            incompleteVisit.setVisitType(VisitType.VACCINATION);
+            incompleteVisit.setDiagnosis("Examination in progress");
+            // No treatment set - should be incomplete
+            incompleteVisit.setCost(new BigDecimal("45.00"));
+
+            List<Visit> visits = Arrays.asList(completedVisit, incompleteVisit);
+            when(visitService.findAll()).thenReturn(visits);
+
+            // When & Then
+            mockMvc.perform(get("/api/visits"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.content").isArray())
+                    .andExpect(jsonPath("$.content", hasSize(2)))
+                    .andExpect(jsonPath("$.content[0].id").value(1))
+                    .andExpect(jsonPath("$.content[0].completed").value(true))  // Completed visit
+                    .andExpect(jsonPath("$.content[1].id").value(2))
+                    .andExpect(jsonPath("$.content[1].completed").value(false)); // Incomplete visit
+
+            verify(visitService).findAll();
         }
     }
 
@@ -454,6 +586,121 @@ class VisitControllerTest {
 
             verify(visitService).findCompletedVisits();
         }
+
+        @Test
+        @WithMockUser
+        @DisplayName("GET /api/visits/completed - Should include completion status for completed visits")
+        void getCompletedVisits_ShouldIncludeCompletionStatusForCompletedVisits() throws Exception {
+            // Given - Completed visits should all have completion status true
+            Visit completedVisit1 = new Visit();
+            completedVisit1.setId(1L);
+            completedVisit1.setPet(testPet);
+            completedVisit1.setVeterinarian(testVeterinarian);
+            completedVisit1.setVisitDate(LocalDateTime.now().minusDays(1));
+            completedVisit1.setVisitType(VisitType.WELLNESS_EXAM);
+            completedVisit1.setDiagnosis("Healthy pet");
+            completedVisit1.setTreatment("Vaccination administered");
+
+            Visit completedVisit2 = new Visit();
+            completedVisit2.setId(2L);
+            completedVisit2.setPet(testPet);
+            completedVisit2.setVeterinarian(testVeterinarian);
+            completedVisit2.setVisitDate(LocalDateTime.now().minusDays(7));
+            completedVisit2.setVisitType(VisitType.SURGERY);
+            completedVisit2.setDiagnosis("Successful surgery");
+            completedVisit2.setTreatment("Post-operative care completed");
+
+            List<Visit> completedVisits = Arrays.asList(completedVisit1, completedVisit2);
+            when(visitService.findCompletedVisits()).thenReturn(completedVisits);
+
+            // When & Then
+            mockMvc.perform(get("/api/visits/completed"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$", hasSize(2)))
+                    .andExpect(jsonPath("$[0].completed").value(true))  // All completed visits should be true
+                    .andExpect(jsonPath("$[1].completed").value(true));
+
+            verify(visitService).findCompletedVisits();
+        }
+
+        @Test
+        @WithMockUser
+        @DisplayName("GET /api/visits/incomplete - Should include completion status for incomplete visits")
+        void getIncompleteVisits_ShouldIncludeCompletionStatusForIncompleteVisits() throws Exception {
+            // Given - Mock the service to return all visits, then filter in controller
+            Visit incompleteVisit1 = new Visit();
+            incompleteVisit1.setId(1L);
+            incompleteVisit1.setPet(testPet);
+            incompleteVisit1.setVeterinarian(testVeterinarian);
+            incompleteVisit1.setVisitDate(LocalDateTime.now().plusDays(1));
+            incompleteVisit1.setVisitType(VisitType.WELLNESS_EXAM);
+            incompleteVisit1.setDiagnosis("Examination in progress");
+            // No treatment set - should be incomplete
+
+            Visit incompleteVisit2 = new Visit();
+            incompleteVisit2.setId(2L);
+            incompleteVisit2.setPet(testPet);
+            incompleteVisit2.setVeterinarian(testVeterinarian);
+            incompleteVisit2.setVisitDate(LocalDateTime.now().plusDays(7));
+            incompleteVisit2.setVisitType(VisitType.VACCINATION);
+            // No diagnosis or treatment set - should be incomplete
+
+            List<Visit> allVisits = Arrays.asList(incompleteVisit1, incompleteVisit2);
+            when(visitService.findAll()).thenReturn(allVisits);
+
+            // When & Then
+            mockMvc.perform(get("/api/visits/incomplete"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$", hasSize(2)))
+                    .andExpect(jsonPath("$[0].completed").value(false))  // All incomplete visits should be false
+                    .andExpect(jsonPath("$[1].completed").value(false));
+
+            verify(visitService).findAll();
+        }
+
+        @Test
+        @WithMockUser
+        @DisplayName("GET /api/visits/upcoming - Should include completion status for upcoming visits")
+        void getUpcomingVisits_ShouldIncludeCompletionStatusForUpcomingVisits() throws Exception {
+            // Given - Upcoming visits with different completion statuses
+            Visit completedUpcomingVisit = new Visit();
+            completedUpcomingVisit.setId(1L);
+            completedUpcomingVisit.setPet(testPet);
+            completedUpcomingVisit.setVeterinarian(testVeterinarian);
+            completedUpcomingVisit.setVisitDate(LocalDateTime.now().plusDays(1));
+            completedUpcomingVisit.setVisitType(VisitType.WELLNESS_EXAM);
+            completedUpcomingVisit.setDiagnosis("Pre-scheduled examination completed");
+            completedUpcomingVisit.setTreatment("Vaccination administered");
+
+            Visit incompleteUpcomingVisit = new Visit();
+            incompleteUpcomingVisit.setId(2L);
+            incompleteUpcomingVisit.setPet(testPet);
+            incompleteUpcomingVisit.setVeterinarian(testVeterinarian);
+            incompleteUpcomingVisit.setVisitDate(LocalDateTime.now().plusDays(7));
+            incompleteUpcomingVisit.setVisitType(VisitType.VACCINATION);
+            incompleteUpcomingVisit.setDiagnosis("Scheduled for vaccination");
+            // No treatment set - should be incomplete
+
+            List<Visit> upcomingVisits = Arrays.asList(completedUpcomingVisit, incompleteUpcomingVisit);
+            when(visitService.getUpcomingVisits(1L, 7)).thenReturn(upcomingVisits);
+
+            // When & Then
+            mockMvc.perform(get("/api/visits/upcoming")
+                    .param("days", "7")
+                    .param("vetId", "1"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$", hasSize(2)))
+                    .andExpect(jsonPath("$[0].completed").value(true))  // Completed upcoming visit
+                    .andExpect(jsonPath("$[1].completed").value(false)); // Incomplete upcoming visit
+
+            verify(visitService).getUpcomingVisits(1L, 7);
+        }
     }
 
     @Nested
@@ -481,6 +728,47 @@ class VisitControllerTest {
 
         @Test
         @WithMockUser
+        @DisplayName("GET /api/visits/search - Should include completion status in search results")
+        void searchVisits_ShouldIncludeCompletionStatusInResults() throws Exception {
+            // Given - Mix of completed and incomplete visits
+            Visit completedVisit = new Visit();
+            completedVisit.setId(1L);
+            completedVisit.setPet(testPet);
+            completedVisit.setVeterinarian(testVeterinarian);
+            completedVisit.setVisitDate(LocalDateTime.now().plusDays(7));
+            completedVisit.setVisitType(VisitType.WELLNESS_EXAM);
+            completedVisit.setDiagnosis("Healthy pet");
+            completedVisit.setTreatment("Vaccination administered");
+            completedVisit.setCost(new BigDecimal("75.00"));
+
+            Visit incompleteVisit = new Visit();
+            incompleteVisit.setId(2L);
+            incompleteVisit.setPet(testPet);
+            incompleteVisit.setVeterinarian(testVeterinarian);
+            incompleteVisit.setVisitDate(LocalDateTime.now().plusDays(14));
+            incompleteVisit.setVisitType(VisitType.VACCINATION);
+            incompleteVisit.setDiagnosis("Examination in progress");
+            // No treatment set - should be incomplete
+            incompleteVisit.setCost(new BigDecimal("45.00"));
+
+            List<Visit> searchResults = Arrays.asList(completedVisit, incompleteVisit);
+            when(visitService.findAll()).thenReturn(searchResults);
+
+            // When & Then
+            mockMvc.perform(get("/api/visits/search")
+                    .param("petId", "1"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$", hasSize(2)))
+                    .andExpect(jsonPath("$[0].completed").value(true))  // Completed visit
+                    .andExpect(jsonPath("$[1].completed").value(false)); // Incomplete visit
+
+            verify(visitService).findAll();
+        }
+
+        @Test
+        @WithMockUser
         @DisplayName("GET /api/visits/pet/{petId} - Should return visits for specific pet")
         void getVisitsByPet_ShouldReturnPetVisits() throws Exception {
             // Given
@@ -493,6 +781,46 @@ class VisitControllerTest {
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$").isArray())
                     .andExpect(jsonPath("$", hasSize(2)));
+
+            verify(visitService).findByPet(1L);
+        }
+
+        @Test
+        @WithMockUser
+        @DisplayName("GET /api/visits/pet/{petId} - Should include completion status for pet visits")
+        void getVisitsByPet_ShouldIncludeCompletionStatusForPetVisits() throws Exception {
+            // Given - Pet visits with different completion statuses
+            Visit completedVisit = new Visit();
+            completedVisit.setId(1L);
+            completedVisit.setPet(testPet);
+            completedVisit.setVeterinarian(testVeterinarian);
+            completedVisit.setVisitDate(LocalDateTime.now().minusDays(7));
+            completedVisit.setVisitType(VisitType.WELLNESS_EXAM);
+            completedVisit.setDiagnosis("Healthy pet");
+            completedVisit.setTreatment("Vaccination administered");
+            completedVisit.setCost(new BigDecimal("75.00"));
+
+            Visit incompleteVisit = new Visit();
+            incompleteVisit.setId(2L);
+            incompleteVisit.setPet(testPet);
+            incompleteVisit.setVeterinarian(testVeterinarian);
+            incompleteVisit.setVisitDate(LocalDateTime.now().plusDays(7));
+            incompleteVisit.setVisitType(VisitType.VACCINATION);
+            incompleteVisit.setDiagnosis("Scheduled for vaccination");
+            // No treatment set - should be incomplete
+            incompleteVisit.setCost(new BigDecimal("45.00"));
+
+            List<Visit> petVisits = Arrays.asList(completedVisit, incompleteVisit);
+            when(visitService.findByPet(1L)).thenReturn(petVisits);
+
+            // When & Then
+            mockMvc.perform(get("/api/visits/pet/1"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$", hasSize(2)))
+                    .andExpect(jsonPath("$[0].completed").value(true))  // Completed visit
+                    .andExpect(jsonPath("$[1].completed").value(false)); // Incomplete visit
 
             verify(visitService).findByPet(1L);
         }
@@ -517,6 +845,35 @@ class VisitControllerTest {
 
         @Test
         @WithMockUser
+        @DisplayName("GET /api/visits/veterinarian/{vetId} - Should include completion status for veterinarian visits")
+        void getVisitsByVeterinarian_ShouldIncludeCompletionStatusForVetVisits() throws Exception {
+            // Given - Veterinarian visits with different completion statuses
+            Visit completedVisit = new Visit();
+            completedVisit.setId(1L);
+            completedVisit.setPet(testPet);
+            completedVisit.setVeterinarian(testVeterinarian);
+            completedVisit.setVisitDate(LocalDateTime.now().minusDays(7));
+            completedVisit.setVisitType(VisitType.WELLNESS_EXAM);
+            completedVisit.setDiagnosis("Healthy pet");
+            completedVisit.setTreatment("Vaccination administered");
+            completedVisit.setCost(new BigDecimal("75.00"));
+
+            List<Visit> vetVisits = Arrays.asList(completedVisit);
+            when(visitService.findByVeterinarian(1L)).thenReturn(vetVisits);
+
+            // When & Then
+            mockMvc.perform(get("/api/visits/veterinarian/1"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$", hasSize(1)))
+                    .andExpect(jsonPath("$[0].completed").value(true)); // Completed visit
+
+            verify(visitService).findByVeterinarian(1L);
+        }
+
+        @Test
+        @WithMockUser
         @DisplayName("GET /api/visits/date-range - Should return visits within date range")
         void getVisitsByDateRange_ShouldReturnDateRangeVisits() throws Exception {
             // Given
@@ -533,6 +890,50 @@ class VisitControllerTest {
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$").isArray())
                     .andExpect(jsonPath("$", hasSize(2)));
+
+            verify(visitService).findByDateRange(startDate, endDate);
+        }
+
+        @Test
+        @WithMockUser
+        @DisplayName("GET /api/visits/date-range - Should include completion status for date range visits")
+        void getVisitsByDateRange_ShouldIncludeCompletionStatusForDateRangeVisits() throws Exception {
+            // Given - Date range visits with different completion statuses
+            Visit completedVisit = new Visit();
+            completedVisit.setId(1L);
+            completedVisit.setPet(testPet);
+            completedVisit.setVeterinarian(testVeterinarian);
+            completedVisit.setVisitDate(LocalDateTime.now().plusDays(7));
+            completedVisit.setVisitType(VisitType.WELLNESS_EXAM);
+            completedVisit.setDiagnosis("Healthy pet");
+            completedVisit.setTreatment("Vaccination administered");
+            completedVisit.setCost(new BigDecimal("75.00"));
+
+            Visit incompleteVisit = new Visit();
+            incompleteVisit.setId(2L);
+            incompleteVisit.setPet(testPet);
+            incompleteVisit.setVeterinarian(testVeterinarian);
+            incompleteVisit.setVisitDate(LocalDateTime.now().plusDays(14));
+            incompleteVisit.setVisitType(VisitType.VACCINATION);
+            incompleteVisit.setDiagnosis("Scheduled for vaccination");
+            // No treatment set - should be incomplete
+            incompleteVisit.setCost(new BigDecimal("45.00"));
+
+            LocalDate startDate = LocalDate.now();
+            LocalDate endDate = LocalDate.now().plusDays(30);
+            List<Visit> dateRangeVisits = Arrays.asList(completedVisit, incompleteVisit);
+            when(visitService.findByDateRange(startDate, endDate)).thenReturn(dateRangeVisits);
+
+            // When & Then
+            mockMvc.perform(get("/api/visits/date-range")
+                    .param("startDate", startDate.toString())
+                    .param("endDate", endDate.toString()))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$", hasSize(2)))
+                    .andExpect(jsonPath("$[0].completed").value(true))  // Completed visit
+                    .andExpect(jsonPath("$[1].completed").value(false)); // Incomplete visit
 
             verify(visitService).findByDateRange(startDate, endDate);
         }
@@ -563,6 +964,47 @@ class VisitControllerTest {
 
         @Test
         @WithMockUser
+        @DisplayName("GET /api/visits/schedule/daily - Should include completion status in daily schedule")
+        void getDailySchedule_ShouldIncludeCompletionStatusInDailySchedule() throws Exception {
+            // Given - Daily visits with different completion statuses
+            Visit completedVisit = new Visit();
+            completedVisit.setId(1L);
+            completedVisit.setPet(testPet);
+            completedVisit.setVeterinarian(testVeterinarian);
+            completedVisit.setVisitDate(LocalDateTime.now().withHour(10).withMinute(0));
+            completedVisit.setVisitType(VisitType.WELLNESS_EXAM);
+            completedVisit.setDiagnosis("Healthy pet");
+            completedVisit.setTreatment("Vaccination administered");
+            completedVisit.setCost(new BigDecimal("75.00"));
+
+            Visit incompleteVisit = new Visit();
+            incompleteVisit.setId(2L);
+            incompleteVisit.setPet(testPet);
+            incompleteVisit.setVeterinarian(testVeterinarian);
+            incompleteVisit.setVisitDate(LocalDateTime.now().withHour(14).withMinute(0));
+            incompleteVisit.setVisitType(VisitType.VACCINATION);
+            incompleteVisit.setDiagnosis("Scheduled for vaccination");
+            // No treatment set - should be incomplete
+            incompleteVisit.setCost(new BigDecimal("45.00"));
+
+            LocalDate today = LocalDate.now();
+            List<Visit> dailyVisits = Arrays.asList(completedVisit, incompleteVisit);
+            when(visitService.findByDate(today)).thenReturn(dailyVisits);
+
+            // When & Then
+            mockMvc.perform(get("/api/visits/schedule/daily"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$", hasSize(2)))
+                    .andExpect(jsonPath("$[0].completed").value(true))  // Completed visit
+                    .andExpect(jsonPath("$[1].completed").value(false)); // Incomplete visit
+
+            verify(visitService).findByDate(today);
+        }
+
+        @Test
+        @WithMockUser
         @DisplayName("GET /api/visits/schedule/weekly - Should return weekly schedule")
         void getWeeklySchedule_ShouldReturnWeeklyVisits() throws Exception {
             // Given
@@ -578,6 +1020,49 @@ class VisitControllerTest {
                     .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                     .andExpect(jsonPath("$").isArray())
                     .andExpect(jsonPath("$", hasSize(2)));
+
+            verify(visitService).findByDateRange(weekStart, weekEnd);
+        }
+
+        @Test
+        @WithMockUser
+        @DisplayName("GET /api/visits/schedule/weekly - Should include completion status in weekly schedule")
+        void getWeeklySchedule_ShouldIncludeCompletionStatusInWeeklySchedule() throws Exception {
+            // Given - Weekly visits with different completion statuses
+            Visit completedVisit = new Visit();
+            completedVisit.setId(1L);
+            completedVisit.setPet(testPet);
+            completedVisit.setVeterinarian(testVeterinarian);
+            completedVisit.setVisitDate(LocalDateTime.now().minusDays(2));
+            completedVisit.setVisitType(VisitType.WELLNESS_EXAM);
+            completedVisit.setDiagnosis("Healthy pet");
+            completedVisit.setTreatment("Vaccination administered");
+            completedVisit.setCost(new BigDecimal("75.00"));
+
+            Visit incompleteVisit = new Visit();
+            incompleteVisit.setId(2L);
+            incompleteVisit.setPet(testPet);
+            incompleteVisit.setVeterinarian(testVeterinarian);
+            incompleteVisit.setVisitDate(LocalDateTime.now().plusDays(2));
+            incompleteVisit.setVisitType(VisitType.VACCINATION);
+            incompleteVisit.setDiagnosis("Scheduled for vaccination");
+            // No treatment set - should be incomplete
+            incompleteVisit.setCost(new BigDecimal("45.00"));
+
+            LocalDate today = LocalDate.now();
+            LocalDate weekStart = today.minusDays(today.getDayOfWeek().getValue() - 1);
+            LocalDate weekEnd = weekStart.plusDays(6);
+            List<Visit> weeklyVisits = Arrays.asList(completedVisit, incompleteVisit);
+            when(visitService.findByDateRange(weekStart, weekEnd)).thenReturn(weeklyVisits);
+
+            // When & Then
+            mockMvc.perform(get("/api/visits/schedule/weekly"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$").isArray())
+                    .andExpect(jsonPath("$", hasSize(2)))
+                    .andExpect(jsonPath("$[0].completed").value(true))  // Completed visit
+                    .andExpect(jsonPath("$[1].completed").value(false)); // Incomplete visit
 
             verify(visitService).findByDateRange(weekStart, weekEnd);
         }

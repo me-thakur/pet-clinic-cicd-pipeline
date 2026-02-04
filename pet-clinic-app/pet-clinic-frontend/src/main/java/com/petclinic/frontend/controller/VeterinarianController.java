@@ -283,6 +283,34 @@ public class VeterinarianController {
             model.addAttribute("statistics", statistics);
             model.addAttribute("commonSpecialties", commonSpecialties);
             
+            return "veterinarians/general-statistics";
+        } catch (Exception e) {
+            model.addAttribute("error", "Error loading veterinarian statistics: " + e.getMessage());
+            return "veterinarians/general-statistics";
+        }
+    }
+
+    /**
+     * Show statistics for a specific veterinarian
+     */
+    @GetMapping("/{id}/statistics")
+    public String veterinarianStatisticsById(@PathVariable Long id, Model model) {
+        try {
+            // Get the veterinarian details
+            Veterinarian veterinarian = veterinarianService.getVeterinarianById(id).block();
+            if (veterinarian == null) {
+                model.addAttribute("error", "Veterinarian not found");
+                return "error/404";
+            }
+            
+            // For now, we'll use placeholder data since the backend might not have individual vet statistics
+            // In a real implementation, you would call a service method to get individual vet statistics
+            model.addAttribute("veterinarian", veterinarian);
+            model.addAttribute("totalVisits", 0);
+            model.addAttribute("totalRevenue", 0.0);
+            model.addAttribute("averageVisitCost", 0.0);
+            model.addAttribute("mostCommonSpecies", "N/A");
+            
             return "veterinarians/statistics";
         } catch (Exception e) {
             model.addAttribute("error", "Error loading veterinarian statistics: " + e.getMessage());

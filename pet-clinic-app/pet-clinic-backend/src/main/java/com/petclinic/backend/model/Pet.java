@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.time.LocalDate;
@@ -48,13 +49,13 @@ public class Pet {
     private String medicalHistory;
     
     @NotNull(message = "Owner is required")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "owner_id", nullable = false)
     @JsonBackReference("owner-pets")
     private Owner owner;
     
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference("pet-visits")
+    @JsonIgnoreProperties({"pet"})
     private List<Visit> visits = new ArrayList<>();
     
     @Column(name = "created_at", nullable = false, updatable = false)

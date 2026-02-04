@@ -1,0 +1,473 @@
+/**
+ * Visit Filters CSS
+ * Styles for comprehensive visit filtering functionality
+ * 
+ * Validates: Requirements 13.1, 13.2, 13.3, 13.4, 13.5
+ */
+
+/* Main Filter Dropdown Styles */
+.main-filter-dropdown {
+    min-width: 400px;
+    max-width: 500px;
+}
+
+.main-filter-dropdown .dropdown-header {
+    font-weight: 600;
+    color: var(--bs-primary);
+    font-size: 0.875rem;
+}
+
+.main-filter-dropdown .form-label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    color: var(--bs-gray-700);
+}
+
+.main-filter-dropdown .form-control,
+.main-filter-dropdown .form-select {
+    font-size: 0.875rem;
+}
+
+.main-filter-dropdown .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Status Filter Dropdown Styles */
+.status-filter-dropdown {
+    min-width: 250px;
+}
+
+.status-filter-dropdown .dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.status-filter-dropdown .dropdown-item:hover {
+    background-color: var(--bs-light);
+    transform: translateX(2px);
+}
+
+.status-filter-dropdown .status-badge {
+    margin-right: 0.5rem;
+    min-width: 80px;
+    text-align: center;
+    font-size: 0.75rem;
+}
+
+/* Active Filters Display */
+.active-filters {
+    background-color: var(--bs-light);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    animation: slideDown 0.3s ease;
+}
+
+.active-filters .filter-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    background-color: var(--bs-primary) !important;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease;
+}
+
+.active-filters .filter-badge:hover {
+    background-color: var(--bs-primary-dark) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.active-filters .filter-remove-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 0.75rem;
+    padding: 0;
+    margin-left: 0.5rem;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.active-filters .filter-remove-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.active-filters .clear-all-filters-btn {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.active-filters .clear-all-filters-btn:hover {
+    background-color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Filter Button States */
+.btn[id*="Filter"] {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.btn[id*="Filter"]:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn[id*="Filter"].loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.btn[id*="Filter"].loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Filter Messages */
+.filter-message {
+    margin-bottom: 1rem;
+    border-radius: 0.375rem;
+    animation: slideDown 0.3s ease;
+}
+
+.filter-message.alert-info {
+    background-color: #e3f2fd;
+    border-color: #bbdefb;
+    color: #1976d2;
+}
+
+.filter-message.alert-success {
+    background-color: #e8f5e8;
+    border-color: #c8e6c9;
+    color: #2e7d32;
+}
+
+.filter-message.alert-danger {
+    background-color: #ffebee;
+    border-color: #ffcdd2;
+    color: #c62828;
+}
+
+/* Table Enhancements for Filtered Results */
+.table-responsive {
+    transition: opacity 0.3s ease;
+}
+
+.table-responsive.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background-color: var(--bs-light);
+    transform: translateX(2px);
+}
+
+/* Status Badges in Table */
+.status-badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.2s ease;
+}
+
+.status-badge:hover {
+    transform: scale(1.05);
+}
+
+.status-badge.bg-success {
+    background-color: #28a745 !important;
+    color: white;
+}
+
+.status-badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529;
+}
+
+.status-badge.bg-danger {
+    background-color: #dc3545 !important;
+    color: white;
+}
+
+.status-badge.bg-secondary {
+    background-color: #6c757d !important;
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-filter-dropdown {
+        min-width: 300px;
+        max-width: 350px;
+    }
+    
+    .status-filter-dropdown {
+        min-width: 200px;
+    }
+    
+    .active-filters {
+        padding: 0.5rem;
+    }
+    
+    .active-filters .filter-badge {
+        font-size: 0.75rem;
+        padding: 0.375rem 0.5rem;
+        margin-right: 0.25rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .btn[id*="Filter"] {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-filter-dropdown {
+        min-width: 280px;
+        max-width: 300px;
+    }
+    
+    .main-filter-dropdown .row.g-2 {
+        --bs-gutter-x: 0.5rem;
+    }
+    
+    .status-filter-dropdown {
+        min-width: 180px;
+    }
+    
+    .active-filters .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .active-filters .clear-all-filters-btn {
+        margin-top: 0.5rem;
+    }
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Loading States */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 0.375rem;
+}
+
+.loading-spinner {
+    width: 2rem;
+    height: 2rem;
+    border: 0.25em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+}
+
+/* Filter Dropdown Improvements */
+.dropdown-menu {
+    border: 1px solid var(--bs-border-color);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    border-radius: 0.375rem;
+}
+
+.dropdown-item {
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: var(--bs-primary);
+    color: white;
+    transform: translateX(2px);
+}
+
+.dropdown-divider {
+    margin: 0.5rem 0;
+    opacity: 0.3;
+}
+
+/* Form Control Enhancements */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.form-control-sm,
+.form-select-sm {
+    border-radius: 0.25rem;
+}
+
+/* Button Group Enhancements */
+.btn-group .btn {
+    border-radius: 0.375rem;
+    margin-right: 0.25rem;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+/* Accessibility Improvements */
+.filter-badge:focus,
+.filter-remove-btn:focus {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+.dropdown-item:focus {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: -2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .active-filters {
+        border-width: 2px;
+    }
+    
+    .filter-badge {
+        border: 2px solid var(--bs-primary);
+    }
+    
+    .status-badge {
+        border: 1px solid currentColor;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .active-filters,
+    .filter-message,
+    .btn[id*="Filter"],
+    .table tbody tr,
+    .dropdown-item,
+    .filter-badge {
+        animation: none;
+        transition: none;
+    }
+    
+    .btn[id*="Filter"]:hover,
+    .table tbody tr:hover,
+    .dropdown-item:hover,
+    .filter-badge:hover {
+        transform: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .active-filters {
+        background-color: var(--bs-dark);
+        border-color: var(--bs-gray-600);
+        color: var(--bs-light);
+    }
+    
+    .filter-message.alert-info {
+        background-color: #1a237e;
+        border-color: #3949ab;
+        color: #e3f2fd;
+    }
+    
+    .filter-message.alert-success {
+        background-color: #1b5e20;
+        border-color: #4caf50;
+        color: #e8f5e8;
+    }
+    
+    .filter-message.alert-danger {
+        background-color: #b71c1c;
+        border-color: #f44336;
+        color: #ffebee;
+    }
+    
+    .loading-overlay {
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .btn[id*="Filter"],
+    .active-filters .filter-remove-btn,
+    .active-filters .clear-all-filters-btn,
+    .filter-message {
+        display: none !important;
+    }
+    
+    .active-filters {
+        background: none;
+        border: 1px solid #000;
+        padding: 0.5rem;
+    }
+    
+    .filter-badge {
+        background: none !important;
+        color: #000 !important;
+        border: 1px solid #000;
+    }
+}

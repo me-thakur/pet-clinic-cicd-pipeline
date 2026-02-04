@@ -18,10 +18,18 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true  # Let Hibernate create schema first
   
   sql:
     init:
-      mode: never  # Disable SQL script initialization for H2
+      mode: never  # Disable SQL script initialization - use JPA entities only
+      data-locations: []  # Disable data.sql loading
+  
+  http:
+    encoding:
+      force: false
+      force-request: false
+      force-response: false
   
   logging:
     level:
@@ -32,8 +40,6 @@ spring:
 
 server:
   port: 9090
-  servlet:
-    context-path: /api
 
 management:
   endpoints:

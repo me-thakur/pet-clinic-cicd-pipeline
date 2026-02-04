@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Size;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.petclinic.backend.config.EncryptionConverter;
 
 import java.math.BigDecimal;
@@ -51,14 +53,14 @@ public class Visit extends BaseEntity {
     private BigDecimal cost;
     
     @NotNull(message = "Pet is required")
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "pet_id", nullable = false)
-    @JsonBackReference("pet-visits")
+    @JsonIgnoreProperties({"visits", "owner"})
     private Pet pet;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "veterinarian_id")
-    @JsonBackReference("veterinarian-visits")
+    @JsonIgnoreProperties({"visits", "specialties"})
     private Veterinarian veterinarian;
     
     // Constructors
@@ -189,9 +191,35 @@ public class Visit extends BaseEntity {
         return visitType != null && visitType.isEmergency();
     }
     
+    @JsonProperty("completed")
     public boolean isCompleted() {
-        return diagnosis != null && !diagnosis.trim().isEmpty() &&
-               treatment != null && !treatment.trim().isEmpty();
+        try {
+            // Handle null/missing diagnosis and treatment fields gracefully
+            // Ensure default "Pending" status for corrupted data
+            // Requirements: 6.1, 6.3
+            
+            if (diagnosis == null || treatment == null) {
+                return false; // Default to "Pending" for null fields
+            }
+            
+            // Trim and check for empty/whitespace-only content
+            String trimmedDiagnosis = diagnosis.trim();
+            String trimmedTreatment = treatment.trim();
+            
+            if (trimmedDiagnosis.isEmpty() || trimmedTreatment.isEmpty()) {
+                return false; // Default to "Pending" for empty fields
+            }
+            
+            // Both fields have non-empty, non-whitespace content
+            return true;
+            
+        } catch (Exception e) {
+            // Log the error and default to "Pending" status for any unexpected issues
+            // This ensures the system remains stable even with corrupted data
+            System.err.println("Error calculating visit completion status for visit ID " + 
+                             (getId() != null ? getId() : "unknown") + ": " + e.getMessage());
+            return false; // Default to "Pending" on any error
+        }
     }
     
     public boolean hasCost() {

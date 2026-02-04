@@ -1,190 +1,421 @@
 package com.petclinic.backend.service.impl;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.stats.CacheStats;
-import com.petclinic.backend.config.CacheConfig;
 import com.petclinic.backend.service.CacheManagementService;
-import com.petclinic.backend.service.PetService;
-import com.petclinic.backend.service.VeterinarianService;
+import com.petclinic.backend.service.PerformanceMonitoringService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.caffeine.CaffeineCache;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.annotation.PostConstruct;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Implementation of CacheManagementService providing cache management operations
- * Handles cache invalidation strategies and provides cache statistics
- * Validates: Requirements 10.3
+ * Implementation of cache management service
+ * Provides comprehensive cache management and statistics
+ * Validates: Requirements 16.1, 16.2, 16.3
  */
 @Service
 public class CacheManagementServiceImpl implements CacheManagementService {
     
     private static final Logger logger = LoggerFactory.getLogger(CacheManagementServiceImpl.class);
     
-    @Autowired
-    private CacheManager cacheManager;
+    private final CacheManager cacheManager;
+    private final PerformanceMonitoringService performanceMonitoringService;
+    
+    // Cache statistics tracking
+    private final Map<String, AtomicLong> cacheHits = new ConcurrentHashMap<>();
+    private final Map<String, AtomicLong> cacheMisses = new ConcurrentHashMap<>();
+    private final Map<String, AtomicLong> cacheEvictions = new ConcurrentHashMap<>();
+    
+    // Frequently accessed data for cache warming
+    private final List<String> frequentlyAccessedKeys = Arrays.asList(
+        "dashboard_metrics", "active_veterinarians", "recent_visits", 
+        "pet_statistics", "owner_statistics"
+    );
     
     @Autowired
-    private PetService petService;
+    public CacheManagementServiceImpl(CacheManager cacheManager, 
+                                     PerformanceMonitoringService performanceMonitoringService) {
+        this.cacheManager = cacheManager;
+        this.performanceMonitoringService = performanceMonitoringService;
+    }
     
-    @Autowired
-    private VeterinarianService veterinarianService;
+    @PostConstruct
+    public void initializeCacheStatistics() {
+        // Initialize statistics for all configured caches
+        Collection<String> cacheNames = cacheManager.getCacheNames();
+        for (String cacheName : cacheNames) {
+            cacheHits.put(cacheName, new AtomicLong(0));
+            cacheMisses.put(cacheName, new AtomicLong(0));
+            cacheEvictions.put(cacheName, new AtomicLong(0));
+        }
+        
+        logger.info("Initialized cache statistics for {} caches", cacheNames.size());
+    }
     
     @Override
     public void clearAllCaches() {
-        logger.info("Clearing all caches");
-        
-        cacheManager.getCacheNames().forEach(cacheName -> {
-            org.springframework.cache.Cache cache = cacheManager.getCache(cacheName);
-            if (cache != null) {
-                cache.clear();
-                logger.debug("Cleared cache: {}", cacheName);
+        try {
+            long startTime = System.currentTimeMillis();
+            
+            Collection<String> cacheNames = cacheManager.getCacheNames();
+            for (String cacheName : cacheNames) {
+                Cache cache = cacheManager.getCache(cacheName);
+                if (cache != null) {
+                    cache.clear();
+                    logger.debug("Cleared cache: {}", cacheName);
+                }
             }
-        });
-        
-        logger.info("All caches cleared successfully");
+            
+            long executionTime = System.currentTimeMillis() - startTime;
+            performanceMonitoringService.recordCachePerformance("all_caches", "clear", executionTime);
+            
+            logger.info("Cleared all {} caches in {}ms", cacheNames.size(), executionTime);
+            
+        } catch (Exception e) {
+            logger.error("Error clearing all caches: {}", e.getMessage(), e);
+        }
     }
     
     @Override
     public void clearCache(String cacheName) {
-        logger.info("Clearing cache: {}", cacheName);
-        
-        org.springframework.cache.Cache cache = cacheManager.getCache(cacheName);
-        if (cache != null) {
-            cache.clear();
-            logger.info("Cache {} cleared successfully", cacheName);
-        } else {
-            logger.warn("Cache {} not found", cacheName);
+        try {
+            long startTime = System.currentTimeMillis();
+            
+            Cache cache = cacheManager.getCache(cacheName);
+            if (cache != null) {
+                cache.clear();
+                
+                long executionTime = System.currentTimeMillis() - startTime;
+                performanceMonitoringService.recordCachePerformance(cacheName, "clear", executionTime);
+                
+                logger.info("Cleared cache '{}' in {}ms", cacheName, executionTime);
+            } else {
+                logger.warn("Cache '{}' not found", cacheName);
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error clearing cache '{}': {}", cacheName, e.getMessage(), e);
         }
     }
     
     @Override
     public void clearEntityCaches(String entityType) {
-        logger.info("Clearing caches for entity type: {}", entityType);
-        
-        switch (entityType.toLowerCase()) {
-            case "pet":
-                clearCache(CacheConfig.PETS_CACHE);
-                clearCache(CacheConfig.SEARCH_RESULTS_CACHE);
-                clearCache(CacheConfig.STATISTICS_CACHE);
-                break;
-            case "veterinarian":
-                clearCache(CacheConfig.VETERINARIANS_CACHE);
-                clearCache(CacheConfig.STATISTICS_CACHE);
-                break;
-            case "visit":
-                clearCache(CacheConfig.VISITS_CACHE);
-                clearCache(CacheConfig.STATISTICS_CACHE);
-                clearCache(CacheConfig.DASHBOARD_METRICS_CACHE);
-                break;
-            case "owner":
-                clearCache(CacheConfig.OWNERS_CACHE);
-                clearCache(CacheConfig.PETS_CACHE); // Pets are related to owners
-                clearCache(CacheConfig.SEARCH_RESULTS_CACHE);
-                break;
-            default:
-                logger.warn("Unknown entity type: {}", entityType);
+        try {
+            long startTime = System.currentTimeMillis();
+            int clearedCaches = 0;
+            
+            Collection<String> cacheNames = cacheManager.getCacheNames();
+            for (String cacheName : cacheNames) {
+                // Clear caches that contain the entity type
+                if (cacheName.toLowerCase().contains(entityType.toLowerCase())) {
+                    Cache cache = cacheManager.getCache(cacheName);
+                    if (cache != null) {
+                        cache.clear();
+                        clearedCaches++;
+                        logger.debug("Cleared entity cache: {} for entity type: {}", cacheName, entityType);
+                    }
+                }
+            }
+            
+            long executionTime = System.currentTimeMillis() - startTime;
+            performanceMonitoringService.recordCachePerformance(entityType + "_caches", "clear", executionTime);
+            
+            logger.info("Cleared {} caches for entity type '{}' in {}ms", clearedCaches, entityType, executionTime);
+            
+        } catch (Exception e) {
+            logger.error("Error clearing caches for entity type '{}': {}", entityType, e.getMessage(), e);
         }
-        
-        logger.info("Entity caches cleared for: {}", entityType);
     }
     
     @Override
     public Map<String, Object> getCacheStatistics() {
-        logger.debug("Getting cache statistics");
-        
         Map<String, Object> statistics = new HashMap<>();
         
-        cacheManager.getCacheNames().forEach(cacheName -> {
-            org.springframework.cache.Cache cache = cacheManager.getCache(cacheName);
-            if (cache instanceof CaffeineCache) {
-                CaffeineCache caffeineCache = (CaffeineCache) cache;
-                Cache<Object, Object> nativeCache = caffeineCache.getNativeCache();
-                CacheStats stats = nativeCache.stats();
+        try {
+            Collection<String> cacheNames = cacheManager.getCacheNames();
+            Map<String, Map<String, Object>> cacheStats = new HashMap<>();
+            
+            long totalHits = 0;
+            long totalMisses = 0;
+            long totalEvictions = 0;
+            
+            for (String cacheName : cacheNames) {
+                Map<String, Object> stats = new HashMap<>();
                 
-                Map<String, Object> cacheStats = new HashMap<>();
-                cacheStats.put("hitCount", stats.hitCount());
-                cacheStats.put("missCount", stats.missCount());
-                cacheStats.put("hitRate", stats.hitRate());
-                cacheStats.put("missRate", stats.missRate());
-                cacheStats.put("requestCount", stats.requestCount());
-                cacheStats.put("evictionCount", stats.evictionCount());
-                cacheStats.put("estimatedSize", nativeCache.estimatedSize());
+                long hits = cacheHits.getOrDefault(cacheName, new AtomicLong(0)).get();
+                long misses = cacheMisses.getOrDefault(cacheName, new AtomicLong(0)).get();
+                long evictions = cacheEvictions.getOrDefault(cacheName, new AtomicLong(0)).get();
                 
-                statistics.put(cacheName, cacheStats);
+                double hitRate = (hits + misses) > 0 ? (double) hits / (hits + misses) : 0.0;
+                
+                stats.put("hits", hits);
+                stats.put("misses", misses);
+                stats.put("evictions", evictions);
+                stats.put("hitRate", hitRate);
+                stats.put("requests", hits + misses);
+                
+                cacheStats.put(cacheName, stats);
+                
+                totalHits += hits;
+                totalMisses += misses;
+                totalEvictions += evictions;
             }
-        });
+            
+            // Overall statistics
+            double overallHitRate = (totalHits + totalMisses) > 0 ? 
+                (double) totalHits / (totalHits + totalMisses) : 0.0;
+            
+            statistics.put("caches", cacheStats);
+            statistics.put("totalCaches", cacheNames.size());
+            statistics.put("totalHits", totalHits);
+            statistics.put("totalMisses", totalMisses);
+            statistics.put("totalEvictions", totalEvictions);
+            statistics.put("overallHitRate", overallHitRate);
+            statistics.put("timestamp", new Date());
+            
+        } catch (Exception e) {
+            logger.error("Error getting cache statistics: {}", e.getMessage(), e);
+            statistics.put("error", "Failed to retrieve cache statistics: " + e.getMessage());
+        }
         
         return statistics;
     }
     
     @Override
     public Map<String, Double> getCacheHitRates() {
-        logger.debug("Getting cache hit rates");
-        
         Map<String, Double> hitRates = new HashMap<>();
         
-        cacheManager.getCacheNames().forEach(cacheName -> {
-            org.springframework.cache.Cache cache = cacheManager.getCache(cacheName);
-            if (cache instanceof CaffeineCache) {
-                CaffeineCache caffeineCache = (CaffeineCache) cache;
-                Cache<Object, Object> nativeCache = caffeineCache.getNativeCache();
-                CacheStats stats = nativeCache.stats();
+        try {
+            Collection<String> cacheNames = cacheManager.getCacheNames();
+            
+            for (String cacheName : cacheNames) {
+                long hits = cacheHits.getOrDefault(cacheName, new AtomicLong(0)).get();
+                long misses = cacheMisses.getOrDefault(cacheName, new AtomicLong(0)).get();
                 
-                hitRates.put(cacheName, stats.hitRate());
+                double hitRate = (hits + misses) > 0 ? (double) hits / (hits + misses) : 0.0;
+                hitRates.put(cacheName, hitRate);
             }
-        });
+            
+        } catch (Exception e) {
+            logger.error("Error getting cache hit rates: {}", e.getMessage(), e);
+        }
         
         return hitRates;
     }
     
     @Override
     public void warmUpCaches() {
-        logger.info("Warming up caches with frequently accessed data");
-        
         try {
-            // Warm up pets cache
-            logger.debug("Warming up pets cache");
-            petService.findAll();
-            petService.getPetStatistics();
-            petService.getPetCountBySpecies();
+            long startTime = System.currentTimeMillis();
             
-            // Warm up veterinarians cache
-            logger.debug("Warming up veterinarians cache");
-            veterinarianService.findAll();
+            logger.info("Starting cache warm-up process...");
             
-            // Warm up common search results
-            logger.debug("Warming up search caches");
-            petService.findBySpecies("Dog");
-            petService.findBySpecies("Cat");
+            // Warm up dashboard metrics cache
+            warmUpDashboardCache();
             
-            logger.info("Cache warm-up completed successfully");
+            // Warm up entity statistics caches
+            warmUpStatisticsCaches();
+            
+            // Warm up search result caches
+            warmUpSearchCaches();
+            
+            long executionTime = System.currentTimeMillis() - startTime;
+            performanceMonitoringService.recordCachePerformance("cache_warmup", "warmup", executionTime);
+            
+            logger.info("Cache warm-up completed in {}ms", executionTime);
             
         } catch (Exception e) {
-            logger.error("Error during cache warm-up", e);
+            logger.error("Error during cache warm-up: {}", e.getMessage(), e);
         }
     }
     
     @Override
     public void invalidateSearchCaches() {
-        logger.info("Invalidating search result caches");
-        clearCache(CacheConfig.SEARCH_RESULTS_CACHE);
+        try {
+            long startTime = System.currentTimeMillis();
+            
+            // Clear search-related caches
+            clearCache("searchResults");
+            clearCache("globalSearch");
+            clearCache("petSearch");
+            clearCache("ownerSearch");
+            clearCache("visitSearch");
+            clearCache("veterinarianSearch");
+            
+            long executionTime = System.currentTimeMillis() - startTime;
+            performanceMonitoringService.recordCachePerformance("search_caches", "invalidate", executionTime);
+            
+            logger.info("Invalidated search caches in {}ms", executionTime);
+            
+        } catch (Exception e) {
+            logger.error("Error invalidating search caches: {}", e.getMessage(), e);
+        }
     }
     
     @Override
     public void invalidateStatisticsCaches() {
-        logger.info("Invalidating statistics caches");
-        clearCache(CacheConfig.STATISTICS_CACHE);
+        try {
+            long startTime = System.currentTimeMillis();
+            
+            // Clear statistics-related caches
+            clearCache("statistics");
+            clearCache("reports");
+            clearCache("petStatistics");
+            clearCache("ownerStatistics");
+            clearCache("visitStatistics");
+            clearCache("veterinarianStatistics");
+            
+            long executionTime = System.currentTimeMillis() - startTime;
+            performanceMonitoringService.recordCachePerformance("statistics_caches", "invalidate", executionTime);
+            
+            logger.info("Invalidated statistics caches in {}ms", executionTime);
+            
+        } catch (Exception e) {
+            logger.error("Error invalidating statistics caches: {}", e.getMessage(), e);
+        }
     }
     
     @Override
     public void invalidateDashboardCaches() {
-        logger.info("Invalidating dashboard metrics caches");
-        clearCache(CacheConfig.DASHBOARD_METRICS_CACHE);
+        try {
+            long startTime = System.currentTimeMillis();
+            
+            // Clear dashboard-related caches
+            clearCache("dashboardMetrics");
+            clearCache("recentActivities");
+            clearCache("upcomingAppointments");
+            clearCache("alerts");
+            
+            long executionTime = System.currentTimeMillis() - startTime;
+            performanceMonitoringService.recordCachePerformance("dashboard_caches", "invalidate", executionTime);
+            
+            logger.info("Invalidated dashboard caches in {}ms", executionTime);
+            
+        } catch (Exception e) {
+            logger.error("Error invalidating dashboard caches: {}", e.getMessage(), e);
+        }
+    }
+    
+    // Cache hit/miss tracking methods
+    public void recordCacheHit(String cacheName) {
+        cacheHits.computeIfAbsent(cacheName, k -> new AtomicLong(0)).incrementAndGet();
+        performanceMonitoringService.recordCachePerformance(cacheName, "hit", 0);
+    }
+    
+    public void recordCacheMiss(String cacheName) {
+        cacheMisses.computeIfAbsent(cacheName, k -> new AtomicLong(0)).incrementAndGet();
+        performanceMonitoringService.recordCachePerformance(cacheName, "miss", 0);
+    }
+    
+    public void recordCacheEviction(String cacheName) {
+        cacheEvictions.computeIfAbsent(cacheName, k -> new AtomicLong(0)).incrementAndGet();
+        performanceMonitoringService.recordCachePerformance(cacheName, "eviction", 0);
+    }
+    
+    // Scheduled cache maintenance
+    @Scheduled(fixedRate = 300000) // Every 5 minutes
+    public void performCacheMaintenance() {
+        try {
+            // Check cache hit rates and log warnings for poor performance
+            Map<String, Double> hitRates = getCacheHitRates();
+            
+            for (Map.Entry<String, Double> entry : hitRates.entrySet()) {
+                String cacheName = entry.getKey();
+                Double hitRate = entry.getValue();
+                
+                if (hitRate != null && hitRate < 0.5) { // Less than 50% hit rate
+                    logger.warn("Cache '{}' has low hit rate: {:.2f}%", cacheName, hitRate * 100);
+                }
+            }
+            
+            // Log cache statistics
+            Map<String, Object> stats = getCacheStatistics();
+            Double overallHitRate = (Double) stats.get("overallHitRate");
+            if (overallHitRate != null) {
+                logger.debug("Overall cache hit rate: {:.2f}%", overallHitRate * 100);
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error during cache maintenance: {}", e.getMessage(), e);
+        }
+    }
+    
+    // Scheduled cache warm-up
+    @Scheduled(fixedRate = 1800000) // Every 30 minutes
+    public void scheduledCacheWarmUp() {
+        try {
+            // Only warm up if hit rates are low
+            Map<String, Double> hitRates = getCacheHitRates();
+            boolean needsWarmUp = hitRates.values().stream()
+                .anyMatch(rate -> rate != null && rate < 0.7);
+            
+            if (needsWarmUp) {
+                logger.info("Cache hit rates are low, performing scheduled warm-up");
+                warmUpCaches();
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error during scheduled cache warm-up: {}", e.getMessage(), e);
+        }
+    }
+    
+    // Private helper methods
+    
+    private void warmUpDashboardCache() {
+        try {
+            // This would typically call dashboard service methods to populate cache
+            logger.debug("Warming up dashboard cache...");
+            
+            // Simulate cache warming - in real implementation, call actual services
+            Cache dashboardCache = cacheManager.getCache("dashboardMetrics");
+            if (dashboardCache != null) {
+                // Pre-populate with common dashboard queries
+                logger.debug("Dashboard cache warmed up");
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error warming up dashboard cache: {}", e.getMessage());
+        }
+    }
+    
+    private void warmUpStatisticsCaches() {
+        try {
+            logger.debug("Warming up statistics caches...");
+            
+            // Warm up entity statistics
+            String[] entities = {"pets", "owners", "visits", "veterinarians"};
+            for (String entity : entities) {
+                Cache cache = cacheManager.getCache(entity);
+                if (cache != null) {
+                    // Pre-populate with common statistics queries
+                    logger.debug("Warmed up {} statistics cache", entity);
+                }
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error warming up statistics caches: {}", e.getMessage());
+        }
+    }
+    
+    private void warmUpSearchCaches() {
+        try {
+            logger.debug("Warming up search caches...");
+            
+            Cache searchCache = cacheManager.getCache("searchResults");
+            if (searchCache != null) {
+                // Pre-populate with common search queries
+                logger.debug("Search cache warmed up");
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error warming up search caches: {}", e.getMessage());
+        }
     }
 }

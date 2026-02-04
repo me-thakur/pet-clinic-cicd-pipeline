@@ -17,7 +17,8 @@
             margin-bottom: 20px;
         }
         .export-buttons {
-            display: none;
+            display: block;
+            margin-top: 15px;
         }
         .report-preview {
             max-height: 400px;
@@ -66,7 +67,11 @@
                         <label for="veterinarianId" class="form-label">Veterinarian (Optional)</label>
                         <select class="form-select" id="veterinarianId" name="veterinarianId">
                             <option value="">All Veterinarians</option>
-                            <!-- Options will be populated via AJAX -->
+                            <option th:each="vet : ${filterOptions?.availableVeterinarians}" 
+                                    th:value="${vet.id}" 
+                                    th:text="${vet.firstName + ' ' + vet.lastName}">
+                                Veterinarian Name
+                            </option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -93,10 +98,16 @@
                         <h5>Visit Statistics</h5>
                         <p class="text-muted">Comprehensive visit statistics including completion rates, visit types, and trends over time.</p>
                         <div class="export-buttons" id="visits-export">
-                            <button class="btn btn-outline-primary btn-sm me-2" onclick="exportReport('visits', 'pdf')">
+                            <button class="btn btn-outline-primary btn-sm me-2" 
+                                    data-export-async="true"
+                                    data-report-type="visits" 
+                                    data-format="pdf">
                                 <i class="fas fa-file-pdf"></i> PDF
                             </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="exportReport('visits', 'csv')">
+                            <button class="btn btn-outline-success btn-sm" 
+                                    data-export-async="true"
+                                    data-report-type="visits" 
+                                    data-format="csv">
                                 <i class="fas fa-file-csv"></i> CSV
                             </button>
                         </div>
@@ -110,10 +121,16 @@
                         <h5>Revenue Report</h5>
                         <p class="text-muted">Revenue analysis with trends, payment rates, and breakdown by veterinarian and species.</p>
                         <div class="export-buttons" id="revenue-export">
-                            <button class="btn btn-outline-primary btn-sm me-2" onclick="exportReport('revenue', 'pdf')">
+                            <button class="btn btn-outline-primary btn-sm me-2" 
+                                    data-export-async="true"
+                                    data-report-type="revenue" 
+                                    data-format="pdf">
                                 <i class="fas fa-file-pdf"></i> PDF
                             </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="exportReport('revenue', 'csv')">
+                            <button class="btn btn-outline-success btn-sm" 
+                                    data-export-async="true"
+                                    data-report-type="revenue" 
+                                    data-format="csv">
                                 <i class="fas fa-file-csv"></i> CSV
                             </button>
                         </div>
@@ -127,10 +144,16 @@
                         <h5>Dashboard Summary</h5>
                         <p class="text-muted">Complete dashboard metrics snapshot including KPIs, utilization, and performance indicators.</p>
                         <div class="export-buttons" id="dashboard-export">
-                            <button class="btn btn-outline-primary btn-sm me-2" onclick="exportReport('dashboard', 'pdf')">
+                            <button class="btn btn-outline-primary btn-sm me-2" 
+                                    data-export-async="true"
+                                    data-report-type="dashboard" 
+                                    data-format="pdf">
                                 <i class="fas fa-file-pdf"></i> PDF
                             </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="exportReport('dashboard', 'csv')">
+                            <button class="btn btn-outline-success btn-sm" 
+                                    data-export-async="true"
+                                    data-report-type="dashboard" 
+                                    data-format="csv">
                                 <i class="fas fa-file-csv"></i> CSV
                             </button>
                         </div>
@@ -145,10 +168,18 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 id="reportTitle">Report Results</h5>
                     <div>
-                        <button class="btn btn-outline-primary btn-sm me-2" id="exportPdfBtn">
+                        <button class="btn btn-outline-primary btn-sm me-2" 
+                                id="exportPdfBtn"
+                                data-export-async="true"
+                                data-report-type="current" 
+                                data-format="pdf">
                             <i class="fas fa-file-pdf"></i> Export PDF
                         </button>
-                        <button class="btn btn-outline-success btn-sm" id="exportCsvBtn">
+                        <button class="btn btn-outline-success btn-sm" 
+                                id="exportCsvBtn"
+                                data-export-async="true"
+                                data-report-type="current" 
+                                data-format="csv">
                             <i class="fas fa-file-csv"></i> Export CSV
                         </button>
                     </div>
@@ -203,102 +234,33 @@
         </div>
     </div>
 
+    <!-- Enhanced Report Export Script -->
+    <script th:src="@{/js/enhanced-report-export.js}"></script>
+    
     <script>
-        let currentReportType = '';
-
-        function generateReport(reportType) {
-            currentReportType = reportType;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const veterinarianId = document.getElementById('veterinarianId').value;
-            const species = document.getElementById('species').value;
-
-            if (!startDate || !endDate) {
-                alert('Please select both start and end dates.');
-                return;
-            }
-
-            showLoading();
-
-            let url = `/dashboard/reports/${reportType}?startDate=${startDate}&endDate=${endDate}`;
-            if (veterinarianId) url += `&veterinarianId=${veterinarianId}`;
-            if (species) url += `&species=${species}`;
-
-            window.location.href = url;
-        }
-
-        function exportReport(reportType, format) {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            
-            if (!startDate || !endDate) {
-                alert('Please select both start and end dates.');
-                return;
-            }
-
-            const includeTrends = reportType === 'revenue' ? 'true' : 'false';
-            let url = `/dashboard/export/${reportType}?startDate=${startDate}&endDate=${endDate}&format=${format}&includeTrends=${includeTrends}`;
-            
-            // Create a temporary link to trigger download
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${reportType}-report-${startDate}-to-${endDate}.${format}`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function generateQuickReport(period) {
-            const today = new Date();
-            let startDate, endDate;
-
-            switch (period) {
-                case 'today':
-                    startDate = endDate = today.toISOString().split('T')[0];
-                    break;
-                case 'week':
-                    const weekStart = new Date(today.setDate(today.getDate() - today.getDay()));
-                    startDate = weekStart.toISOString().split('T')[0];
-                    endDate = new Date().toISOString().split('T')[0];
-                    break;
-                case 'month':
-                    startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-                    endDate = new Date().toISOString().split('T')[0];
-                    break;
-                case 'quarter':
-                    const quarter = Math.floor(today.getMonth() / 3);
-                    startDate = new Date(today.getFullYear(), quarter * 3, 1).toISOString().split('T')[0];
-                    endDate = new Date().toISOString().split('T')[0];
-                    break;
-            }
-
-            document.getElementById('startDate').value = startDate;
-            document.getElementById('endDate').value = endDate;
-            
-            // Generate visit statistics for quick reports
-            generateReport('visits');
-        }
-
-        function showLoading() {
-            document.getElementById('loadingSpinner').style.display = 'block';
-            document.getElementById('reportResults').style.display = 'none';
-        }
-
-        function hideLoading() {
-            document.getElementById('loadingSpinner').style.display = 'none';
-        }
-
-        // Initialize date inputs with default values
+        // Initialize enhanced export functionality when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date();
-            const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+            console.log('Reports page loaded - Enhanced export functionality available');
             
-            if (!document.getElementById('startDate').value) {
-                document.getElementById('startDate').value = thirtyDaysAgo.toISOString().split('T')[0];
-            }
-            if (!document.getElementById('endDate').value) {
-                document.getElementById('endDate').value = today.toISOString().split('T')[0];
-            }
+            // Set up form data collection for current report context
+            window.currentReportContext = {
+                getFormData: function() {
+                    return {
+                        startDate: document.getElementById('startDate')?.value || '',
+                        endDate: document.getElementById('endDate')?.value || '',
+                        veterinarianId: document.getElementById('veterinarianId')?.value || '',
+                        species: document.getElementById('species')?.value || ''
+                    };
+                }
+            };
+            
+            // Update export buttons when filters change
+            const filterInputs = document.querySelectorAll('#reportFilters input, #reportFilters select');
+            filterInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    console.log('Filter changed, export buttons will use updated values');
+                });
+            });
         });
     </script>
 </body>

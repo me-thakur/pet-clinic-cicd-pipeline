@@ -21,7 +21,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/dashboard")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${pet-clinic.cors.allowed-origins}")
 public class DashboardController {
     
     private static final Logger logger = LoggerFactory.getLogger(DashboardController.class);

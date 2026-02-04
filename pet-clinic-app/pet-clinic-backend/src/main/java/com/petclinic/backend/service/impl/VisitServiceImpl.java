@@ -20,6 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -36,6 +39,7 @@ import java.util.Optional;
  * Validates: Requirements 2.2, 2.3, 2.4
  */
 @Service
+@Primary
 @Transactional
 public class VisitServiceImpl implements VisitService {
     
@@ -392,6 +396,12 @@ public class VisitServiceImpl implements VisitService {
             .orElse(0.0);
         
         return new VisitStatistics(totalVisits, completedVisits, scheduledVisits, totalRevenue, averageCost);
+    }
+    
+    @Override
+    public Page<Visit> findAllWithPagination(Pageable pageable) {
+        logger.debug("Finding visits with pagination: {}", pageable);
+        return visitRepository.findAll(pageable);
     }
     
     // Additional helper methods for extended functionality

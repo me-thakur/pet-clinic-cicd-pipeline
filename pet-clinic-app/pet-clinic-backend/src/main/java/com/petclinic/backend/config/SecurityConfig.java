@@ -2,6 +2,7 @@ package com.petclinic.backend.config;
 
 import com.petclinic.backend.security.JwtAuthenticationFilter;
 import com.petclinic.backend.service.UserService;
+import com.petclinic.backend.config.SecurityHeadersConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,9 +18,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.util.Arrays;
 
@@ -52,12 +57,28 @@ public class SecurityConfig {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private SecurityHeadersConfig securityHeadersConfig;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF protection for REST API
-            .csrf(csrf -> csrf.disable())
+            // Configure CSRF protection for state-changing operations
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+                // Disable CSRF for API endpoints that use JWT authentication or are public
+                .ignoringRequestMatchers("/api/auth/**", "/api/test/**", "/api/validation/**")
+                // Enable CSRF for sensitive operations
+                .requireCsrfProtectionMatcher(request -> {
+                    String uri = request.getRequestURI();
+                    String method = request.getMethod();
+                    // Require CSRF for bulk operations and admin functions
+                    return ("POST".equals(method) || "PUT".equals(method) || "DELETE".equals(method)) &&
+                           (uri.contains("/bulk") || uri.contains("/reports") || uri.contains("/admin"));
+                })
+            )
             
             // Enable CORS
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -70,6 +91,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 // Allow public access to authentication endpoints
                 .requestMatchers("/api/auth/**").permitAll()
+                // Allow public access to test endpoint
+                .requestMatchers("/api/test/**").permitAll()
+                // Allow public access to validation endpoints (for frontend AJAX calls)
+                .requestMatchers("/api/validation/**").permitAll()
                 // Allow public access to health check and documentation
                 .requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**").permitAll()
                 // Require authentication for all other API endpoints
@@ -78,12 +103,22 @@ public class SecurityConfig {
                 .anyRequest().permitAll()
             )
             
+            // Add security headers filter
+            .addFilterBefore(securityHeadersConfig.securityHeadersFilter(), UsernamePasswordAuthenticationFilter.class)
+            
             // Add JWT authentication filter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             
-            // Disable frame options for H2 console
+            // Configure security headers
             .headers(headers -> headers
-                .frameOptions().sameOrigin()
+                .frameOptions().deny()
+                .contentTypeOptions().and()
+                .httpStrictTransportSecurity(hstsConfig -> hstsConfig
+                    .maxAgeInSeconds(31536000)
+                    .includeSubDomains(true)
+                    .preload(true)
+                )
+                .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
             );
 
         return http.build();

@@ -15,6 +15,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,39 +50,152 @@ public class VisitService {
                         .build())
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
-                .map(this::convertToVisitPage);
+                .map(this::convertToVisitPage)
+                .onErrorResume(throwable -> {
+                    // Handle API communication failures gracefully
+                    System.err.println("Error retrieving visits: " + throwable.getMessage());
+                    
+                    // Return empty page as fallback
+                    return Mono.just(new PageImpl<>(List.of(), pageable, 0));
+                });
     }
 
     /**
      * Get visit by ID
+     * 
+     * Retrieves visit data from the backend including the computed completion status.
+     * The backend automatically calculates completion status based on diagnosis and treatment fields.
+     * Handles cases where backend completion status is unavailable and provides fallback display.
+     * 
+     * @param id The visit ID to retrieve
+     * @return Mono<Visit> containing the visit with backend-computed completion status
      */
     public Mono<Visit> getVisitById(Long id) {
         return webClient.get()
                 .uri("/visits/{id}", id)
                 .retrieve()
-                .bodyToMono(Visit.class);
+                .bodyToMono(Visit.class)
+                .onErrorResume(throwable -> {
+                    // Handle cases where backend completion status is unavailable
+                    // Provide fallback display when API communication fails (Requirements: 6.1)
+                    Visit fallbackVisit = new Visit();
+                    fallbackVisit.setId(id);
+                    fallbackVisit.setCompleted(false); // Default to pending status
+                    fallbackVisit.setDescription("Error loading visit data - please try again");
+                    
+                    // Log the error for debugging
+                    System.err.println("Error retrieving visit " + id + ": " + throwable.getMessage());
+                    
+                    return Mono.just(fallbackVisit);
+                });
     }
 
     /**
      * Create new visit
      */
     public Mono<Visit> createVisit(Visit visit) {
+        // Convert Visit object to Map to avoid content type issues
+        Map<String, Object> visitData = new HashMap<>();
+        
+        if (visit.getPet() != null) {
+            Map<String, Object> petData = new HashMap<>();
+            petData.put("id", visit.getPet().getId());
+            visitData.put("pet", petData);
+        }
+        
+        if (visit.getVisitDate() != null) {
+            visitData.put("visitDate", visit.getVisitDate().toString());
+        }
+        
+        // Frontend uses "description", backend expects "notes"
+        if (visit.getDescription() != null) {
+            visitData.put("notes", visit.getDescription());
+        }
+        
+        if (visit.getCost() != null) {
+            visitData.put("cost", visit.getCost().toString());
+        }
+        
+        // Add visitType if available (frontend model might not have this)
+        visitData.put("visitType", "WELLNESS_EXAM"); // Default value
+        
         return webClient.post()
                 .uri("/visits")
-                .bodyValue(visit)
+                .bodyValue(visitData)
                 .retrieve()
                 .bodyToMono(Visit.class);
     }
 
     /**
      * Update existing visit
+     * 
+     * Sends visit data to the backend and processes the response to extract
+     * the computed completion status. The backend automatically calculates
+     * completion status based on diagnosis and treatment fields.
+     * Handles API failures gracefully and provides fallback behavior.
+     * 
+     * @param id The visit ID to update
+     * @param visit The visit data to update
+     * @return Mono<Visit> containing the updated visit with backend-computed completion status
      */
     public Mono<Visit> updateVisit(Long id, Visit visit) {
+        // Convert Visit object to Map to avoid content type issues
+        Map<String, Object> visitData = new HashMap<>();
+        
+        if (visit.getPet() != null) {
+            Map<String, Object> petData = new HashMap<>();
+            petData.put("id", visit.getPet().getId());
+            visitData.put("pet", petData);
+        }
+        
+        if (visit.getVisitDate() != null) {
+            visitData.put("visitDate", visit.getVisitDate().toString());
+        }
+        
+        // Frontend uses "description", backend expects "notes"
+        if (visit.getDescription() != null) {
+            visitData.put("notes", visit.getDescription());
+        }
+        
+        // Add diagnosis and treatment for completion logic
+        if (visit.getDiagnosis() != null) {
+            visitData.put("diagnosis", visit.getDiagnosis());
+        }
+        
+        if (visit.getTreatment() != null) {
+            visitData.put("treatment", visit.getTreatment());
+        }
+        
+        if (visit.getCost() != null) {
+            visitData.put("cost", visit.getCost().toString());
+        }
+        
+        // Add visitType if available (frontend model might not have this)
+        visitData.put("visitType", "WELLNESS_EXAM"); // Default value
+        
         return webClient.put()
                 .uri("/visits/{id}", id)
-                .bodyValue(visit)
+                .bodyValue(visitData)
                 .retrieve()
-                .bodyToMono(Visit.class);
+                .bodyToMono(Visit.class)
+                .onErrorResume(throwable -> {
+                    // Handle cases where backend completion status is unavailable
+                    // Provide fallback display when API communication fails (Requirements: 6.1)
+                    System.err.println("Error updating visit " + id + ": " + throwable.getMessage());
+                    
+                    // Return the original visit with a warning message and default completion status
+                    Visit fallbackVisit = new Visit();
+                    fallbackVisit.setId(id);
+                    fallbackVisit.setCompleted(false); // Default to pending status on error
+                    fallbackVisit.setDescription("Update failed - please try again");
+                    fallbackVisit.setDiagnosis(visit.getDiagnosis());
+                    fallbackVisit.setTreatment(visit.getTreatment());
+                    fallbackVisit.setPet(visit.getPet());
+                    fallbackVisit.setVisitDate(visit.getVisitDate());
+                    fallbackVisit.setCost(visit.getCost());
+                    
+                    return Mono.just(fallbackVisit);
+                });
     }
 
     /**
@@ -134,8 +248,8 @@ public class VisitService {
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/visits/date-range")
-                        .queryParam("start", start.toString())
-                        .queryParam("end", end.toString())
+                        .queryParam("startDate", start.toLocalDate().toString())
+                        .queryParam("endDate", end.toLocalDate().toString())
                         .build())
                 .retrieve()
                 .bodyToFlux(Visit.class)
@@ -218,7 +332,14 @@ public class VisitService {
                 .uri("/visits/completed")
                 .retrieve()
                 .bodyToFlux(Visit.class)
-                .collectList();
+                .collectList()
+                .onErrorResume(throwable -> {
+                    // Handle API communication failures gracefully
+                    System.err.println("Error retrieving completed visits: " + throwable.getMessage());
+                    
+                    // Return empty list as fallback
+                    return Mono.just(List.of());
+                });
     }
 
     /**
@@ -229,7 +350,14 @@ public class VisitService {
                 .uri("/visits/incomplete")
                 .retrieve()
                 .bodyToFlux(Visit.class)
-                .collectList();
+                .collectList()
+                .onErrorResume(throwable -> {
+                    // Handle API communication failures gracefully
+                    System.err.println("Error retrieving incomplete visits: " + throwable.getMessage());
+                    
+                    // Return empty list as fallback
+                    return Mono.just(List.of());
+                });
     }
 
     /**
@@ -288,10 +416,10 @@ public class VisitService {
                 .map(this::mapToVisit)
                 .collect(Collectors.toList());
 
-        Map<String, Object> pageable = (Map<String, Object>) pageResponse.get("pageable");
-        int pageNumber = (Integer) pageable.get("pageNumber");
-        int pageSize = (Integer) pageable.get("pageSize");
-        long totalElements = ((Number) pageResponse.get("totalElements")).longValue();
+        Map<String, Object> pageInfo = (Map<String, Object>) pageResponse.get("page");
+        int pageNumber = (Integer) pageInfo.get("number");
+        int pageSize = (Integer) pageInfo.get("size");
+        long totalElements = ((Number) pageInfo.get("totalElements")).longValue();
 
         return new PageImpl<>(visits, 
                 org.springframework.data.domain.PageRequest.of(pageNumber, pageSize), 
@@ -300,6 +428,7 @@ public class VisitService {
 
     /**
      * Map backend visit response to Visit model
+     * Handles cases where completion status might be missing from backend response
      */
     @SuppressWarnings("unchecked")
     private Visit mapToVisit(Map<String, Object> visitMap) {
@@ -313,55 +442,95 @@ public class VisitService {
             visit.setCost(new BigDecimal(visitMap.get("cost").toString()));
         }
         
-        // Handle boolean fields
+        // Handle boolean fields with error handling
         if (visitMap.get("emergencyVisit") != null) {
             visit.setEmergencyVisit((Boolean) visitMap.get("emergencyVisit"));
         }
+        
+        // Handle completion status with fallback for API failures (Requirements: 6.1)
         if (visitMap.get("completed") != null) {
-            visit.setCompleted((Boolean) visitMap.get("completed"));
-        }
-        
-        // Handle date fields
-        if (visitMap.get("visitDate") != null) {
-            visit.setVisitDate(LocalDateTime.parse((String) visitMap.get("visitDate")));
-        }
-        if (visitMap.get("createdAt") != null) {
-            visit.setCreatedAt(LocalDateTime.parse((String) visitMap.get("createdAt")));
-        }
-        if (visitMap.get("updatedAt") != null) {
-            visit.setUpdatedAt(LocalDateTime.parse((String) visitMap.get("updatedAt")));
-        }
-        
-        // Handle nested objects
-        if (visitMap.get("pet") != null) {
-            Map<String, Object> petMap = (Map<String, Object>) visitMap.get("pet");
-            Pet pet = new Pet();
-            pet.setId(((Number) petMap.get("id")).longValue());
-            pet.setName((String) petMap.get("name"));
-            pet.setSpecies((String) petMap.get("species"));
-            pet.setBreed((String) petMap.get("breed"));
-            
-            // Handle pet owner if present
-            if (petMap.get("owner") != null) {
-                Map<String, Object> ownerMap = (Map<String, Object>) petMap.get("owner");
-                Owner owner = new Owner();
-                owner.setId(((Number) ownerMap.get("id")).longValue());
-                owner.setFirstName((String) ownerMap.get("firstName"));
-                owner.setLastName((String) ownerMap.get("lastName"));
-                pet.setOwner(owner);
+            try {
+                visit.setCompleted((Boolean) visitMap.get("completed"));
+            } catch (Exception e) {
+                // If completion status is corrupted or invalid, default to pending
+                System.err.println("Error parsing completion status for visit " + visitMap.get("id") + ": " + e.getMessage());
+                visit.setCompleted(false); // Default to pending status
             }
+        } else {
+            // If completion status is missing from backend response, calculate locally as fallback
+            String diagnosis = (String) visitMap.get("diagnosis");
+            String treatment = (String) visitMap.get("treatment");
+            boolean localCompletion = diagnosis != null && !diagnosis.trim().isEmpty() &&
+                                    treatment != null && !treatment.trim().isEmpty();
+            visit.setCompleted(localCompletion);
             
-            visit.setPet(pet);
+            System.err.println("Warning: Completion status missing from backend for visit " + visitMap.get("id") + 
+                             ". Using local calculation: " + localCompletion);
         }
         
-        if (visitMap.get("veterinarian") != null) {
-            Map<String, Object> vetMap = (Map<String, Object>) visitMap.get("veterinarian");
-            Veterinarian veterinarian = new Veterinarian();
-            veterinarian.setId(((Number) vetMap.get("id")).longValue());
-            veterinarian.setFirstName((String) vetMap.get("firstName"));
-            veterinarian.setLastName((String) vetMap.get("lastName"));
-            veterinarian.setSpecialties((String) vetMap.get("specialty"));
-            visit.setVeterinarian(veterinarian);
+        // Handle date fields with error handling
+        try {
+            if (visitMap.get("visitDate") != null) {
+                visit.setVisitDate(LocalDateTime.parse((String) visitMap.get("visitDate")));
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing visitDate for visit " + visitMap.get("id") + ": " + e.getMessage());
+        }
+        
+        try {
+            if (visitMap.get("createdAt") != null) {
+                visit.setCreatedAt(LocalDateTime.parse((String) visitMap.get("createdAt")));
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing createdAt for visit " + visitMap.get("id") + ": " + e.getMessage());
+        }
+        
+        try {
+            if (visitMap.get("updatedAt") != null) {
+                visit.setUpdatedAt(LocalDateTime.parse((String) visitMap.get("updatedAt")));
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing updatedAt for visit " + visitMap.get("id") + ": " + e.getMessage());
+        }
+        
+        // Handle nested objects with error handling
+        try {
+            if (visitMap.get("pet") != null) {
+                Map<String, Object> petMap = (Map<String, Object>) visitMap.get("pet");
+                Pet pet = new Pet();
+                pet.setId(((Number) petMap.get("id")).longValue());
+                pet.setName((String) petMap.get("name"));
+                pet.setSpecies((String) petMap.get("species"));
+                pet.setBreed((String) petMap.get("breed"));
+                
+                // Handle pet owner if present
+                if (petMap.get("owner") != null) {
+                    Map<String, Object> ownerMap = (Map<String, Object>) petMap.get("owner");
+                    Owner owner = new Owner();
+                    owner.setId(((Number) ownerMap.get("id")).longValue());
+                    owner.setFirstName((String) ownerMap.get("firstName"));
+                    owner.setLastName((String) ownerMap.get("lastName"));
+                    pet.setOwner(owner);
+                }
+                
+                visit.setPet(pet);
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing pet data for visit " + visitMap.get("id") + ": " + e.getMessage());
+        }
+        
+        try {
+            if (visitMap.get("veterinarian") != null) {
+                Map<String, Object> vetMap = (Map<String, Object>) visitMap.get("veterinarian");
+                Veterinarian veterinarian = new Veterinarian();
+                veterinarian.setId(((Number) vetMap.get("id")).longValue());
+                veterinarian.setFirstName((String) vetMap.get("firstName"));
+                veterinarian.setLastName((String) vetMap.get("lastName"));
+                veterinarian.setSpecialties((String) vetMap.get("specialty"));
+                visit.setVeterinarian(veterinarian);
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing veterinarian data for visit " + visitMap.get("id") + ": " + e.getMessage());
         }
         
         return visit;

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visit Search Tests</title>
+    
+    <!-- Jasmine CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jasmine/4.4.0/jasmine.css">
+    
+    <!-- Bootstrap CSS for components -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Visit Search CSS -->
+    <link rel="stylesheet" href="../../main/resources/static/css/visit-search.css">
+    <link rel="stylesheet" href="../../main/resources/static/css/enhanced-table.css">
+    
+    <style>
+        /* Hide Jasmine reporter during component testing */
+        .jasmine_html-reporter {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 100vh;
+            overflow-y: auto;
+            background: white;
+            border-left: 1px solid #ccc;
+            z-index: 9999;
+        }
+        
+        body {
+            margin-right: 400px;
+        }
+        
+        .test-container {
+            padding: 20px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .test-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Visit Search Frontend Tests</h1>
+        
+        <div class="test-info">
+            <h4><i class="fas fa-info-circle me-2"></i>Test Information</h4>
+            <p>This page runs comprehensive tests for the visit search frontend functionality including:</p>
+            <ul>
+                <li>Pet dropdown filter with search functionality</li>
+                <li>Veterinarian dropdown filter with search functionality</li>
+                <li>Status filter with multiple selection options</li>
+                <li>Active filter indicators and removal</li>
+                <li>Result counts per filter and search highlighting</li>
+            </ul>
+            <p><strong>Test Results:</strong> Check the Jasmine reporter on the right side of the screen.</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test Environment</h3>
+            <div id="testEnvironment">
+                <!-- Test components will be created here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Jasmine JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/4.4.0/jasmine.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/4.4.0/jasmine-html.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/4.4.0/boot0.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jasmine/4.4.0/boot1.js"></script>
+    
+    <!-- Mock API Client -->
+    <script>
+        // Mock TableApiClient for testing
+        class MockTableApiClient {
+            constructor() {
+                this.mockData = {
+                    pets: [
+                        { id: 1, name: 'Buddy', species: 'Dog', owner: { firstName: 'John', lastName: 'Smith' } },
+                        { id: 2, name: 'Whiskers', species: 'Cat', owner: { firstName: 'Jane', lastName: 'Doe' } },
+                        { id: 3, name: 'Max', species: 'Dog', owner: { firstName: 'Bob', lastName: 'Johnson' } }
+                    ],
+                    veterinarians: [
+                        { id: 1, firstName: 'Sarah', lastName: 'Johnson', specialties: ['General Practice'] },
+                        { id: 2, firstName: 'Michael', lastName: 'Brown', specialties: ['Surgery', 'Emergency'] },
+                        { id: 3, firstName: 'Emily', lastName: 'Davis', specialties: ['Cardiology'] }
+                    ],
+                    visits: [
+                        {
+                            id: 1,
+                            visitDate: '2024-01-15T10:00:00',
+                            pet: { id: 1, name: 'Buddy' },
+                            veterinarian: { id: 1, lastName: 'Johnson' },
+                            description: 'Annual checkup',
+                            diagnosis: 'Healthy',
+                            treatment: 'Vaccinations',
+                            cost: 150.00,
+                            emergencyVisit: false
+                        }
+                    ]
+                };
+            }
+            
+            async getEntities(entityType, options = {}) {
+                // Simulate network delay
+                await new Promise(resolve => setTimeout(resolve, 100));
+                
+                let data = this.mockData[entityType] || [];
+                
+                // Apply search filter
+                if (options.search) {
+                    const search = options.search.toLowerCase();
+                    data = data.filter(item => {
+                        if (entityType === 'pets') {
+                            return item.name.toLowerCase().includes(search) ||
+                                   item.species.toLowerCase().includes(search) ||
+                                   (item.owner && `${item.owner.firstName} ${item.owner.lastName}`.toLowerCase().includes(search));
+                        } else if (entityType === 'veterinarians') {
+                            return `${item.firstName} ${item.lastName}`.toLowerCase().includes(search) ||
+                                   item.specialties.some(s => s.toLowerCase().includes(search));
+                        }
+                        return true;
+                    });
+                }
+                
+                // Apply pagination
+                const page = options.page || 0;
+                const size = options.size || 10;
+                const start = page * size;
+                const end = start + size;
+                
+                return {
+                    content: data.slice(start, end),
+                    totalElements: data.length,
+                    page: {
+                        number: page,
+                        size: size,
+                        totalElements: data.length,
+                        totalPages: Math.ceil(data.length / size)
+                    }
+                };
+            }
+        }
+        
+        // Set up global mock
+        window.TableApiClient = MockTableApiClient;
+        window.tableApiClient = new MockTableApiClient();
+    </script>
+    
+    <!-- Enhanced Table Components -->
+    <script src="../../main/resources/static/js/enhanced-table.js"></script>
+    
+    <!-- Visit Search Component -->
+    <script src="../../main/resources/static/js/visit-search.js"></script>
+    
+    <!-- Test Specs -->
+    <script src="../javascript/visit-search.test.js"></script>
+    
+    <!-- Initialize Tests -->
+    <script>
+        // Configure Jasmine
+        jasmine.getEnv().configure({
+            random: false,
+            seed: null
+        });
+        
+        // Add custom matchers
+        beforeEach(function() {
+            jasmine.addMatchers({
+                toBeVisible: function() {
+                    return {
+                        compare: function(actual) {
+                            const result = {
+                                pass: actual && actual.offsetParent !== null
+                            };
+                            
+                            if (result.pass) {
+                                result.message = 'Expected element not to be visible';
+                            } else {
+                                result.message = 'Expected element to be visible';
+                            }
+                            
+                            return result;
+                        }
+                    };
+                },
+                
+                toHaveClass: function() {
+                    return {
+                        compare: function(actual, expected) {
+                            const result = {
+                                pass: actual && actual.classList && actual.classList.contains(expected)
+                            };
+                            
+                            if (result.pass) {
+                                result.message = `Expected element not to have class '${expected}'`;
+                            } else {
+                                result.message = `Expected element to have class '${expected}'`;
+                            }
+                            
+                            return result;
+                        }
+                    };
+                }
+            });
+        });
+        
+        // Run tests when page loads
+        window.addEventListener('load', function() {
+            console.log('Starting Visit Search Frontend Tests...');
+            
+            // Execute tests
+            jasmine.getEnv().execute();
+        });
+    </script>
+</body>
+</html>

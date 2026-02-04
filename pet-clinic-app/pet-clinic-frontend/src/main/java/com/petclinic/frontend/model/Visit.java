@@ -1,5 +1,6 @@
 package com.petclinic.frontend.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -41,7 +42,10 @@ public class Visit {
     private BigDecimal cost;
     
     private Boolean emergencyVisit = false;
-    private Boolean completed = false;
+    
+    // Transient field populated from backend response
+    @JsonProperty("completed")
+    private Boolean completedFromBackend;
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -151,11 +155,11 @@ public class Visit {
     }
 
     public Boolean getCompleted() {
-        return completed;
+        return completedFromBackend != null ? completedFromBackend : false;
     }
 
     public void setCompleted(Boolean completed) {
-        this.completed = completed;
+        this.completedFromBackend = completed;
     }
 
     public Long getPetId() {

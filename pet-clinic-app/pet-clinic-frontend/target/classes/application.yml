@@ -19,6 +19,24 @@ spring:
 
 server:
   port: 8080
+  # Add configuration to handle large responses and chunked encoding
+  tomcat:
+    max-http-response-header-size: 8KB
+    max-http-post-size: 2MB
+    connection-timeout: 20000
+    max-connections: 8192
+    # Disable chunked encoding for better compatibility
+    use-relative-redirects: true
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  # Add response buffering to prevent chunked encoding issues
+  http2:
+    enabled: false
+  compression:
+    enabled: false  # Disable compression in dev to avoid chunked encoding
 
 logging:
   level:
@@ -87,12 +105,12 @@ management:
 
 security:
   session:
-    timeout: 1800 # 30 minutes
+    timeout: ${SESSION_TIMEOUT:1800000} # 30 minutes in milliseconds (consistent with backend)
 
 pet-clinic:
   backend:
     # Default backend configuration (can be overridden by profiles)
-    url: http://localhost:9090
+    url: ${BACKEND_URL:http://localhost:9090}  # Use environment variable
     api-path: /api  # Backend API base path
   ui:
     title: "Pet Clinic Management System"
@@ -100,3 +118,6 @@ pet-clinic:
     pagination:
       default-size: 10
       max-size: 100
+  frontend:
+    session:
+      timeout: ${SESSION_TIMEOUT:1800000}  # 30 minutes in milliseconds (consistent with backend)

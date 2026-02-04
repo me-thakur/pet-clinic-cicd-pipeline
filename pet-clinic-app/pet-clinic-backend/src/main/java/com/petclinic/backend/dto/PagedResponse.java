@@ -8,6 +8,7 @@ import java.util.List;
 /**
  * Generic paginated response wrapper for API endpoints.
  * Provides consistent pagination metadata across all list endpoints.
+ * Enhanced with sort and filter metadata for enhanced table functionality.
  * 
  * @param <T> The type of content being paginated
  */
@@ -18,6 +19,33 @@ public class PagedResponse<T> {
     
     @JsonProperty("page")
     private PageInfo page;
+    
+    @JsonProperty("sortMetadata")
+    private SortMetadata sortMetadata;
+    
+    @JsonProperty("multiColumnSortMetadata")
+    private MultiColumnSortMetadata multiColumnSortMetadata;
+    
+    @JsonProperty("activeFilters")
+    private List<FilterMetadata> activeFilters;
+    
+    @JsonProperty("filterStatistics")
+    private java.util.Map<String, Object> filterStatistics;
+    
+    @JsonProperty("activeFilterSummary")
+    private java.util.Map<String, Object> activeFilterSummary;
+    
+    @JsonProperty("error")
+    private boolean error = false;
+    
+    @JsonProperty("errorMessage")
+    private String errorMessage;
+    
+    @JsonProperty("errorType")
+    private String errorType;
+    
+    @JsonProperty("retryable")
+    private boolean retryable = false;
     
     public PagedResponse() {
     }
@@ -41,6 +69,19 @@ public class PagedResponse<T> {
         this.page = page;
     }
     
+    public PagedResponse(Page<T> page, SortMetadata sortMetadata, List<FilterMetadata> activeFilters) {
+        this(page);
+        this.sortMetadata = sortMetadata;
+        this.activeFilters = activeFilters;
+    }
+    
+    public PagedResponse(List<T> content, PageInfo page, SortMetadata sortMetadata, List<FilterMetadata> activeFilters) {
+        this.content = content;
+        this.page = page;
+        this.sortMetadata = sortMetadata;
+        this.activeFilters = activeFilters;
+    }
+    
     // Getters and Setters
     public List<T> getContent() {
         return content;
@@ -56,6 +97,78 @@ public class PagedResponse<T> {
     
     public void setPage(PageInfo page) {
         this.page = page;
+    }
+    
+    public SortMetadata getSortMetadata() {
+        return sortMetadata;
+    }
+    
+    public void setSortMetadata(SortMetadata sortMetadata) {
+        this.sortMetadata = sortMetadata;
+    }
+    
+    public MultiColumnSortMetadata getMultiColumnSortMetadata() {
+        return multiColumnSortMetadata;
+    }
+    
+    public void setMultiColumnSortMetadata(MultiColumnSortMetadata multiColumnSortMetadata) {
+        this.multiColumnSortMetadata = multiColumnSortMetadata;
+    }
+    
+    public List<FilterMetadata> getActiveFilters() {
+        return activeFilters;
+    }
+    
+    public void setActiveFilters(List<FilterMetadata> activeFilters) {
+        this.activeFilters = activeFilters;
+    }
+    
+    public boolean isError() {
+        return error;
+    }
+    
+    public void setError(boolean error) {
+        this.error = error;
+    }
+    
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+    
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+    
+    public String getErrorType() {
+        return errorType;
+    }
+    
+    public void setErrorType(String errorType) {
+        this.errorType = errorType;
+    }
+    
+    public boolean isRetryable() {
+        return retryable;
+    }
+    
+    public void setRetryable(boolean retryable) {
+        this.retryable = retryable;
+    }
+    
+    public java.util.Map<String, Object> getFilterStatistics() {
+        return filterStatistics;
+    }
+    
+    public void setFilterStatistics(java.util.Map<String, Object> filterStatistics) {
+        this.filterStatistics = filterStatistics;
+    }
+    
+    public java.util.Map<String, Object> getActiveFilterSummary() {
+        return activeFilterSummary;
+    }
+    
+    public void setActiveFilterSummary(java.util.Map<String, Object> activeFilterSummary) {
+        this.activeFilterSummary = activeFilterSummary;
     }
     
     /**

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Senior Pets</title>
+    <link th:href="@{/css/senior-pets.css}" rel="stylesheet">
+    <link th:href="@{/css/table-header-visibility.css}" rel="stylesheet">
+</head>
+<body>
+    <div th:fragment="content">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="senior-pets-title">
+                <i class="fas fa-birthday-cake text-warning"></i> 
+                Senior Pets
+                <span class="badge bg-info ms-2" id="senior-count">Loading...</span>
+            </h1>
+            <div class="header-actions">
+                <a th:href="@{/pets}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> All Pets
+                </a>
+                <a th:href="@{/pets/new}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Pet
+                </a>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4" id="statistics-section">
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card stat-card stat-card-primary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-paw fa-2x mb-2"></i>
+                        <h4 class="mb-1" id="total-senior-pets">-</h4>
+                        <p class="mb-0">Senior Pets</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card stat-card stat-card-success">
+                    <div class="card-body text-center">
+                        <i class="fas fa-percentage fa-2x mb-2"></i>
+                        <h4 class="mb-1" id="senior-percentage">-</h4>
+                        <p class="mb-0">of All Pets</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card stat-card stat-card-info">
+                    <div class="card-body text-center">
+                        <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                        <h4 class="mb-1" id="average-age">-</h4>
+                        <p class="mb-0">Average Age</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card stat-card stat-card-warning">
+                    <div class="card-body text-center">
+                        <i class="fas fa-heart fa-2x mb-2"></i>
+                        <h4 class="mb-1" id="special-care-count">-</h4>
+                        <p class="mb-0">Need Special Care</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Form -->
+        <div class="card search-card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-search"></i> Search Senior Pets
+                    <button class="btn btn-sm btn-outline-secondary float-end" type="button" id="toggle-advanced-search">
+                        <i class="fas fa-cog"></i> Advanced
+                    </button>
+                </h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/pets/senior}" method="get" id="senior-search-form">
+                    <!-- Basic Search Row -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label for="searchTerm" class="form-label">Search Term</label>
+                            <input type="text" class="form-control" id="searchTerm" name="searchTerm" 
+                                   th:value="${searchTerm}" placeholder="Pet name, owner name...">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="species" class="form-label">Species</label>
+                            <select class="form-select" id="species" name="species">
+                                <option value="">All Species</option>
+                                <option value="Dog" th:selected="${searchSpecies == 'Dog'}">Dog</option>
+                                <option value="Cat" th:selected="${searchSpecies == 'Cat'}">Cat</option>
+                                <option value="Bird" th:selected="${searchSpecies == 'Bird'}">Bird</option>
+                                <option value="Rabbit" th:selected="${searchSpecies == 'Rabbit'}">Rabbit</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="healthCondition" class="form-label">Health Condition</label>
+                            <select class="form-select" id="healthCondition" name="healthCondition">
+                                <option value="">Any Condition</option>
+                                <option value="Arthritis" th:selected="${searchHealthCondition == 'Arthritis'}">Arthritis</option>
+                                <option value="Diabetes" th:selected="${searchHealthCondition == 'Diabetes'}">Diabetes</option>
+                                <option value="Heart Disease" th:selected="${searchHealthCondition == 'Heart Disease'}">Heart Disease</option>
+                                <option value="Kidney Disease" th:selected="${searchHealthCondition == 'Kidney Disease'}">Kidney Disease</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Search Row (Initially Hidden) -->
+                    <div class="row g-3 advanced-search" style="display: none;">
+                        <div class="col-md-2">
+                            <label for="minAge" class="form-label">Min Age</label>
+                            <input type="number" class="form-control" id="minAge" name="minAge" 
+                                   th:value="${searchMinAge}" min="0" max="30">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="maxAge" class="form-label">Max Age</label>
+                            <input type="number" class="form-control" id="maxAge" name="maxAge" 
+                                   th:value="${searchMaxAge}" min="0" max="30">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="breed" class="form-label">Breed</label>
+                            <input type="text" class="form-control" id="breed" name="breed" 
+                                   th:value="${searchBreed}" placeholder="Labrador, Persian...">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="ownerName" class="form-label">Owner Name</label>
+                            <input type="text" class="form-control" id="ownerName" name="ownerName" 
+                                   th:value="${searchOwnerName}" placeholder="Owner's name">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <a th:href="@{/pets/senior}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-times"></i> Clear
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Sort Options -->
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-3">
+                            <label for="sortBy" class="form-label">Sort By</label>
+                            <select class="form-select" id="sortBy" name="sortBy">
+                                <option value="age" th:selected="${sortBy == 'age'}">Age</option>
+                                <option value="name" th:selected="${sortBy == 'name'}">Name</option>
+                                <option value="species" th:selected="${sortBy == 'species'}">Species</option>
+                                <option value="owner" th:selected="${sortBy == 'owner'}">Owner</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sortDirection" class="form-label">Direction</label>
+                            <select class="form-select" id="sortDirection" name="sortDirection">
+                                <option value="desc" th:selected="${sortDirection == 'desc'}">Descending</option>
+                                <option value="asc" th:selected="${sortDirection == 'asc'}">Ascending</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Active Filters Display -->
+        <div class="active-filters mb-3" id="active-filters" style="display: none;">
+            <h6>Active Filters:</h6>
+            <div class="filter-tags" id="filter-tags">
+                <!-- Filter tags will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Results Info -->
+        <div class="row mb-3" th:if="${pets != null}">
+            <div class="col-md-6">
+                <p class="text-muted results-info">
+                    <span th:if="${searchPerformed}">Search Results: </span>
+                    <span th:if="${pageInfo != null}" th:text="${pageInfo.totalElements}">0</span>
+                    <span th:if="${pageInfo == null}" th:text="${#lists.size(pets)}">0</span>
+                    senior pet(s) found
+                </p>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn btn-outline-secondary" id="view-grid">
+                        <i class="fas fa-th"></i> Grid
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="view-list">
+                        <i class="fas fa-list"></i> List
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div th:if="${pets == null or #lists.isEmpty(pets)}" 
+             class="no-results-section">
+            <div class="card text-center py-5">
+                <div class="card-body">
+                    <i class="fas fa-birthday-cake fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Senior Pets Found</h4>
+                    <p class="text-muted mb-4">
+                        <span th:if="${searchPerformed}">
+                            No senior pets match your search criteria. Try adjusting your filters or search terms.
+                        </span>
+                        <span th:unless="${searchPerformed}">
+                            There are currently no senior pets in the system.
+                        </span>
+                    </p>
+                    
+                    <!-- Search Suggestions -->
+                    <div th:if="${searchPerformed}" class="search-suggestions">
+                        <h6>Try these suggestions:</h6>
+                        <div class="suggestion-buttons">
+                            <a th:href="@{/pets/senior}" class="btn btn-outline-primary btn-sm me-2">
+                                <i class="fas fa-times"></i> Clear All Filters
+                            </a>
+                            <a th:href="@{/pets/senior(minAge=5)}" class="btn btn-outline-info btn-sm me-2">
+                                <i class="fas fa-search"></i> Lower Age (5+)
+                            </a>
+                            <a th:href="@{/pets/senior(species='')}" class="btn btn-outline-success btn-sm me-2">
+                                <i class="fas fa-paw"></i> All Species
+                            </a>
+                            <a th:href="@{/pets}" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-list"></i> View All Pets
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div th:unless="${searchPerformed}" class="mt-3">
+                        <a th:href="@{/pets/new}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add First Pet
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Senior Pets Results -->
+        <div th:if="${pets != null and !#lists.isEmpty(pets)}" 
+             class="senior-pets-results">
+            
+            <!-- List View (Default) -->
+            <div class="card list-view" id="list-view">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sortable enhanced-table senior-pets-table" id="seniorPetsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="sortable-header" data-column="petName" data-sort-type="text" title="Click to sort by pet name">
+                                        Pet Info
+                                        <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                    </th>
+                                    <th class="sortable-header" data-column="age" data-sort-type="number" title="Click to sort by age">
+                                        Age & Status
+                                        <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                    </th>
+                                    <th class="sortable-header" data-column="ownerName" data-sort-type="text" title="Click to sort by owner name">
+                                        Owner
+                                        <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                    </th>
+                                    <th class="sortable-header" data-column="healthStatus" data-sort-type="text" title="Click to sort by health status">
+                                        Health Indicators
+                                        <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                    </th>
+                                    <th class="sortable-header" data-column="lastVisit" data-sort-type="datetime" title="Click to sort by last visit date">
+                                        Last Visit
+                                        <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                    </th>
+                                    <th class="no-sort">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pet : ${pets}" 
+                                    class="senior-pet-row">
+                                    <td>
+                                        <div class="pet-info">
+                                            <div class="pet-name">
+                                                <strong th:text="${pet.petName}">Pet Name</strong>
+                                                <span class="species-badge" th:text="${pet.species}">Species</span>
+                                            </div>
+                                            <div class="pet-breed text-muted" th:text="${pet.breed}">Breed</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="age-status">
+                                            <div class="age-display">
+                                                <span class="age-number" th:text="${pet.age}">Age</span>
+                                                <span class="age-unit">years</span>
+                                            </div>
+                                            <div class="status-badges">
+                                                <span class="badge bg-warning senior-badge">
+                                                    <i class="fas fa-birthday-cake"></i> Senior
+                                                </span>
+                                                <span th:if="${pet.age >= 12}" class="badge bg-danger">
+                                                    <i class="fas fa-exclamation-triangle"></i> Very Senior
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="owner-info">
+                                            <div th:if="${pet.ownerId != null}">
+                                                <a th:href="@{/owners/{id}(id=${pet.ownerId})}" 
+                                                   class="owner-link" th:text="${pet.ownerName}">Owner Name</a>
+                                                <div class="owner-contact text-muted small" 
+                                                     th:text="${pet.ownerPhone}">Phone</div>
+                                            </div>
+                                            <div th:unless="${pet.ownerId != null}" class="text-muted">
+                                                <i class="fas fa-user-slash"></i> No Owner
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="health-indicators">
+                                            <div th:if="${pet.healthConditions != null and !#lists.isEmpty(pet.healthConditions)}" 
+                                                 class="health-conditions">
+                                                <span th:each="condition : ${pet.healthConditions}" 
+                                                      class="badge bg-info health-badge me-1" 
+                                                      th:text="${condition}">
+                                                    Condition
+                                                </span>
+                                            </div>
+                                            <div th:unless="${pet.healthConditions != null and !#lists.isEmpty(pet.healthConditions)}" 
+                                                 class="text-muted small">
+                                                <i class="fas fa-check-circle text-success"></i> No known conditions
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="visit-info">
+                                            <div th:if="${pet.lastVisitDate != null}" class="last-visit text-muted small">
+                                                <i class="fas fa-calendar"></i> <span th:text="${#temporals.format(pet.lastVisitDate, 'MMM dd, yyyy')}">Last visit</span>
+                                            </div>
+                                            <div th:if="${pet.upcomingVisitDate != null}" class="next-visit text-success small">
+                                                <i class="fas fa-calendar-plus"></i> <span th:text="${#temporals.format(pet.upcomingVisitDate, 'MMM dd, yyyy')}">Upcoming</span>
+                                            </div>
+                                            <div th:if="${pet.lastVisitDate == null and pet.upcomingVisitDate == null}" class="text-muted small">
+                                                <i class="fas fa-calendar-times"></i> No visits
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a th:href="@{/pets/{id}(id=${pet.petId})}" 
+                                               class="btn btn-outline-info" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a th:href="@{/pets/{id}/edit(id=${pet.petId})}" 
+                                               class="btn btn-outline-primary" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a th:href="@{/visits/new(petId=${pet.petId})}" 
+                                               class="btn btn-outline-success" title="Schedule Visit">
+                                                <i class="fas fa-calendar-plus"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid View (Hidden by default) -->
+            <div class="grid-view" id="grid-view" style="display: none;">
+                <div class="row">
+                    <div th:each="pet : ${pets}" 
+                         class="col-lg-4 col-md-6 mb-4">
+                        <div class="card senior-pet-card h-100">
+                            <div class="card-header bg-warning text-dark">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0" th:text="${pet.petName}">Pet Name</h6>
+                                    <span class="badge bg-dark" th:text="${pet.age + ' years'}">Age</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="pet-details mb-3">
+                                    <p class="mb-1">
+                                        <strong>Species:</strong> <span th:text="${pet.species}">Species</span>
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Breed:</strong> <span th:text="${pet.breed}">Breed</span>
+                                    </p>
+                                    <p class="mb-1" th:if="${pet.ownerId != null}">
+                                        <strong>Owner:</strong> 
+                                        <a th:href="@{/owners/{id}(id=${pet.ownerId})}" 
+                                           th:text="${pet.ownerName}">Owner</a>
+                                    </p>
+                                </div>
+                                
+                                <div class="health-status mb-3" 
+                                     th:if="${pet.healthConditions != null and !#lists.isEmpty(pet.healthConditions)}">
+                                    <h6 class="text-muted">Health Conditions:</h6>
+                                    <div class="health-badges">
+                                        <span th:each="condition : ${pet.healthConditions}" 
+                                              class="badge bg-info me-1" 
+                                              th:text="${condition}">
+                                            Condition
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="btn-group w-100" role="group">
+                                    <a th:href="@{/pets/{id}(id=${pet.petId})}" 
+                                       class="btn btn-outline-info btn-sm">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    <a th:href="@{/pets/{id}/edit(id=${pet.petId})}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a th:href="@{/visits/new(petId=${pet.petId})}" 
+                                       class="btn btn-outline-success btn-sm">
+                                        <i class="fas fa-calendar-plus"></i> Visit
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="row mt-4" th:if="${pageInfo != null and pageInfo.totalPages > 1}">
+            <div class="col-12">
+                <nav aria-label="Senior pets pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a class="page-link" th:href="@{/pets/senior(page=${currentPage - 1}, minAge=${searchMinAge}, maxAge=${searchMaxAge}, species=${searchSpecies}, breed=${searchBreed}, healthCondition=${searchHealthCondition}, ownerName=${searchOwnerName}, searchTerm=${searchTerm}, sortBy=${sortBy}, sortDirection=${sortDirection})}">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </a>
+                        </li>
+                        <li class="page-item" th:each="i : ${#numbers.sequence(0, pageInfo.totalPages - 1)}" 
+                            th:classappend="${i == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/pets/senior(page=${i}, minAge=${searchMinAge}, maxAge=${searchMaxAge}, species=${searchSpecies}, breed=${searchBreed}, healthCondition=${searchHealthCondition}, ownerName=${searchOwnerName}, searchTerm=${searchTerm}, sortBy=${sortBy}, sortDirection=${sortDirection})}" 
+                               th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == pageInfo.totalPages - 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/pets/senior(page=${currentPage + 1}, minAge=${searchMinAge}, maxAge=${searchMaxAge}, species=${searchSpecies}, breed=${searchBreed}, healthCondition=${searchHealthCondition}, ownerName=${searchOwnerName}, searchTerm=${searchTerm}, sortBy=${sortBy}, sortDirection=${sortDirection})}">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script th:src="@{/js/senior-pets.js}"></script>
+</body>
+</html>

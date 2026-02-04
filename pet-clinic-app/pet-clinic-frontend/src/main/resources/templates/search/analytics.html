@@ -28,22 +28,22 @@
                     <div class="card-body">
                         <div class="row text-center">
                             <div class="col-6">
-                                <h3 class="text-primary" th:text="${analytics.totalSearches ?: 0}">0</h3>
+                                <h3 class="text-primary" th:text="${analytics['totalSearches'] ?: 0}">0</h3>
                                 <p class="text-muted mb-0">Total Searches</p>
                             </div>
                             <div class="col-6">
-                                <h3 class="text-success" th:text="${analytics.uniqueQueries ?: 0}">0</h3>
+                                <h3 class="text-success" th:text="${analytics['uniqueQueries'] ?: 0}">0</h3>
                                 <p class="text-muted mb-0">Unique Queries</p>
                             </div>
                         </div>
                         <hr>
                         <div class="row text-center">
                             <div class="col-6">
-                                <h4 class="text-info" th:text="${analytics.avgResultsPerSearch ?: '0.0'}">0.0</h4>
+                                <h4 class="text-info" th:text="${analytics['avgResultsPerSearch'] ?: '0.0'}">0.0</h4>
                                 <p class="text-muted mb-0">Avg Results</p>
                             </div>
                             <div class="col-6">
-                                <h4 class="text-warning" th:text="${analytics.avgResponseTime ?: '0'}">0</h4>
+                                <h4 class="text-warning" th:text="${analytics['avgResponseTime'] ?: '0'}">0</h4>
                                 <p class="text-muted mb-0">Avg Response (ms)</p>
                             </div>
                         </div>
@@ -60,13 +60,13 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div th:if="${analytics.popularTerms != null and !#lists.isEmpty(analytics.popularTerms)}">
-                            <div th:each="term, iterStat : ${analytics.popularTerms}" class="d-flex justify-content-between align-items-center mb-2">
+                        <div th:if="${analytics['popularTerms'] != null and !#lists.isEmpty(analytics['popularTerms'])}">
+                            <div th:each="term, iterStat : ${analytics['popularTerms']}" class="d-flex justify-content-between align-items-center mb-2">
                                 <span th:text="${term.query}">Search term</span>
                                 <span class="badge bg-primary" th:text="${term.count}">0</span>
                             </div>
                         </div>
-                        <div th:if="${analytics.popularTerms == null or #lists.isEmpty(analytics.popularTerms)}" class="text-muted text-center">
+                        <div th:if="${analytics['popularTerms'] == null or #lists.isEmpty(analytics['popularTerms'])}" class="text-muted text-center">
                             <i class="fas fa-search fa-2x mb-2"></i>
                             <p>No search data available yet</p>
                         </div>
@@ -83,8 +83,8 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div th:if="${analytics.searchesByEntityType != null}">
-                            <div th:each="entry : ${analytics.searchesByEntityType}" class="d-flex justify-content-between align-items-center mb-2">
+                        <div th:if="${analytics['searchesByEntityType'] != null}">
+                            <div th:each="entry : ${analytics['searchesByEntityType']}" class="d-flex justify-content-between align-items-center mb-2">
                                 <span>
                                     <i th:class="${entry.key == 'Pet' ? 'fas fa-paw' : 
                                                  entry.key == 'Owner' ? 'fas fa-user' : 
@@ -96,7 +96,7 @@
                                 <span class="badge bg-secondary" th:text="${entry.value}">0</span>
                             </div>
                         </div>
-                        <div th:if="${analytics.searchesByEntityType == null}" class="text-muted text-center">
+                        <div th:if="${analytics['searchesByEntityType'] == null}" class="text-muted text-center">
                             <i class="fas fa-layer-group fa-2x mb-2"></i>
                             <p>No entity type data available</p>
                         </div>
@@ -113,8 +113,8 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div th:if="${analytics.recentSearches != null and !#lists.isEmpty(analytics.recentSearches)}">
-                            <div th:each="search : ${analytics.recentSearches}" class="mb-3">
+                        <div th:if="${analytics['recentSearches'] != null and !#lists.isEmpty(analytics['recentSearches'])}">
+                            <div th:each="search : ${analytics['recentSearches']}" class="mb-3">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <strong th:text="${search.query}">Search query</strong>
@@ -128,7 +128,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div th:if="${analytics.recentSearches == null or #lists.isEmpty(analytics.recentSearches)}" class="text-muted text-center">
+                        <div th:if="${analytics['recentSearches'] == null or #lists.isEmpty(analytics['recentSearches'])}" class="text-muted text-center">
                             <i class="fas fa-clock fa-2x mb-2"></i>
                             <p>No recent search activity</p>
                         </div>
@@ -145,25 +145,25 @@
                         </h5>
                     </div>
                     <div class="card-body">
-                        <div th:if="${analytics.filterUsage != null}" class="row">
+                        <div th:if="${analytics['filterUsage'] != null}" class="row">
                             <div class="col-md-3 text-center">
-                                <h4 class="text-primary" th:text="${analytics.filterUsage.totalFiltersApplied ?: 0}">0</h4>
+                                <h4 class="text-primary" th:text="${analytics['filterUsage']['totalFiltersApplied'] ?: 0}">0</h4>
                                 <p class="text-muted mb-0">Total Filters Applied</p>
                             </div>
                             <div class="col-md-3 text-center">
-                                <h4 class="text-success" th:text="${analytics.filterUsage.mostUsedFilter ?: 'N/A'}">N/A</h4>
+                                <h4 class="text-success" th:text="${analytics['filterUsage']['mostUsedFilter'] ?: 'N/A'}">N/A</h4>
                                 <p class="text-muted mb-0">Most Used Filter</p>
                             </div>
                             <div class="col-md-3 text-center">
-                                <h4 class="text-info" th:text="${analytics.filterUsage.avgFiltersPerSearch ?: '0.0'}">0.0</h4>
+                                <h4 class="text-info" th:text="${analytics['filterUsage']['avgFiltersPerSearch'] ?: '0.0'}">0.0</h4>
                                 <p class="text-muted mb-0">Avg Filters per Search</p>
                             </div>
                             <div class="col-md-3 text-center">
-                                <h4 class="text-warning" th:text="${analytics.filterUsage.savedFilterCombinations ?: 0}">0</h4>
+                                <h4 class="text-warning" th:text="${analytics['filterUsage']['savedFilterCombinations'] ?: 0}">0</h4>
                                 <p class="text-muted mb-0">Saved Combinations</p>
                             </div>
                         </div>
-                        <div th:if="${analytics.filterUsage == null}" class="text-muted text-center">
+                        <div th:if="${analytics['filterUsage'] == null}" class="text-muted text-center">
                             <i class="fas fa-filter fa-2x mb-2"></i>
                             <p>No filter usage data available</p>
                         </div>

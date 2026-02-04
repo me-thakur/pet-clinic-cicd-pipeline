@@ -2,9 +2,18 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
 <head>
     <title>Visits</title>
+    <!-- Enhanced Table Styles and Scripts -->
+    <link rel="stylesheet" th:href="@{/css/enhanced-table.css}">
+    <link rel="stylesheet" th:href="@{/css/visit-search.css}">
+    <link rel="stylesheet" th:href="@{/css/visit-filters.css}">
+    <link rel="stylesheet" th:href="@{/css/table-header-visibility.css}">
+    <script th:src="@{/js/table-api-client.js}" defer></script>
+    <script th:src="@{/js/enhanced-table.js}" defer></script>
+    <script th:src="@{/js/visit-search.js}" defer></script>
+    <script th:src="@{/js/visit-filters.js}" defer></script>
 </head>
 <body>
-    <div th:fragment="content">
+    <div th:fragment="content" class="visits-container" data-page="visits">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>
                 <i class="fas fa-calendar-alt"></i> 
@@ -15,7 +24,7 @@
                 <span th:if="${filterByEmergency}">Emergency Visits</span>
                 <span th:if="${filterByCompleted}">Completed Visits</span>
                 <span th:if="${filterByIncomplete}">Incomplete Visits</span>
-                <span th:unless="${filterByPet or filterByVeterinarian or filterByToday or filterByUpcoming or filterByEmergency or filterByCompleted or filterByIncomplete}">All Visits</span>
+                <span th:unless="${(filterByPet != null and filterByPet) or (filterByVeterinarian != null and filterByVeterinarian) or (filterByToday != null and filterByToday) or (filterByUpcoming != null and filterByUpcoming) or (filterByEmergency != null and filterByEmergency) or (filterByCompleted != null and filterByCompleted) or (filterByIncomplete != null and filterByIncomplete)}">All Visits</span>
             </h1>
             <div>
                 <a th:href="@{/visits/new}" class="btn btn-primary">
@@ -39,11 +48,45 @@
                         <li><a class="dropdown-item" th:href="@{/visits}">All Visits</a></li>
                     </ul>
                 </div>
+                <!-- Enhanced Status Filter Dropdown -->
+                <div class="btn-group ms-2" role="group">
+                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" id="statusFilterDropdown">
+                        <i class="fas fa-tags"></i> Status Filter
+                    </button>
+                    <ul class="dropdown-menu status-filter-dropdown">
+                        <li><h6 class="dropdown-header">Filter by Status</h6></li>
+                        <li>
+                            <a class="dropdown-item status-filter-item" href="#" data-status="">
+                                <span class="status-badge badge bg-light text-dark">All</span>
+                                All Statuses
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item status-filter-item" href="#" data-status="completed">
+                                <span class="status-badge badge bg-success">Completed</span>
+                                Completed Visits
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item status-filter-item" href="#" data-status="pending">
+                                <span class="status-badge badge bg-warning">Pending</span>
+                                Pending Visits
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item status-filter-item" href="#" data-status="unknown">
+                                <span class="status-badge badge bg-secondary">Unknown</span>
+                                Unknown Status
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
 
         <!-- Search Form -->
-        <div class="search-form" th:unless="${filterByPet or filterByVeterinarian or filterByToday or filterByUpcoming or filterByEmergency or filterByCompleted or filterByIncomplete}">
+        <div class="search-form" th:unless="${(filterByPet != null and filterByPet) or (filterByVeterinarian != null and filterByVeterinarian) or (filterByToday != null and filterByToday) or (filterByUpcoming != null and filterByUpcoming) or (filterByEmergency != null and filterByEmergency) or (filterByCompleted != null and filterByCompleted) or (filterByIncomplete != null and filterByIncomplete)}">
             <h5><i class="fas fa-search"></i> Search Visits</h5>
             <form th:action="@{/visits/search}" method="get" class="row g-3">
                 <div class="col-md-3">
@@ -82,12 +125,16 @@
             <div class="col-md-6">
                 <p class="text-muted">
                     <span th:if="${searchPerformed}">Search Results: </span>
-                    <span th:if="${visits.totalElements != null}" th:text="${visits.totalElements}">0</span>
-                    <span th:unless="${visits.totalElements != null}" th:text="${#lists.size(visits)}">0</span>
+                    <!-- Handle Page objects (have totalElements property) -->
+                    <span th:if="${visits != null and visits.class.simpleName == 'PageImpl'}" th:text="${visits.totalElements}">0</span>
+                    <!-- Handle List objects (use size() method) -->
+                    <span th:if="${visits != null and visits.class.simpleName != 'PageImpl'}" th:text="${#lists.size(visits)}">0</span>
+                    <span th:if="${visits == null}">0</span>
                     visit(s) found
                 </p>
             </div>
-            <div class="col-md-6 text-end" th:if="${visits.totalPages != null and visits.totalPages > 1}">
+            <!-- Pagination only for Page objects -->
+            <div class="col-md-6 text-end" th:if="${visits != null and visits.class.simpleName == 'PageImpl' and visits.totalPages > 1}">
                 <nav>
                     <ul class="pagination pagination-sm justify-content-end">
                         <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
@@ -105,10 +152,32 @@
             </div>
         </div>
 
+        <!-- Active Filters Display -->
+        <div class="active-filters" id="activeFilters">
+            <!-- Active filter badges will be dynamically inserted here -->
+        </div>
+
+        <!-- Bulk Operations Controls -->
+        <div class="bulk-actions" id="bulkActions">
+            <div class="selected-info">
+                <i class="fas fa-check-square"></i>
+                <span class="selected-count">0</span> items selected
+            </div>
+            <div class="bulk-action-buttons">
+                <button type="button" class="btn btn-sm btn-outline-danger" id="bulkDeleteBtn">
+                    <i class="fas fa-trash"></i> Delete Selected
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="clearSelectionBtn">
+                    <i class="fas fa-times"></i> Clear Selection
+                </button>
+            </div>
+        </div>
+
         <!-- Visits Table -->
         <div class="card">
             <div class="card-body">
-                <div th:if="${visits == null or #lists.isEmpty(visits) or (visits.content != null and #lists.isEmpty(visits.content))}" 
+                <!-- Show "No visits found" for empty collections -->
+                <div th:if="${visits == null or #lists.isEmpty(visits) or (visits.class.simpleName == 'PageImpl' and #lists.isEmpty(visits.content))}" 
                      class="text-center py-5">
                     <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
                     <h5 class="text-muted">No visits found</h5>
@@ -121,22 +190,50 @@
                     </a>
                 </div>
 
-                <div th:if="${visits != null and (!#lists.isEmpty(visits) or (visits.content != null and !#lists.isEmpty(visits.content)))}" 
+                <!-- Show visits table when there are visits -->
+                <div th:if="${visits != null and (!#lists.isEmpty(visits) or (visits.class.simpleName == 'PageImpl' and !#lists.isEmpty(visits.content)))}" 
                      class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover table-sortable enhanced-table" id="visitsTable">
                         <thead class="table-light">
                             <tr>
-                                <th>Date & Time</th>
-                                <th>Pet</th>
-                                <th>Description</th>
-                                <th>Veterinarian</th>
-                                <th>Status</th>
-                                <th>Cost</th>
-                                <th>Actions</th>
+                                <th class="select-column" title="Select all visits">
+                                    <input type="checkbox" class="form-check-input" title="Select all visits" aria-label="Select all visits">
+                                </th>
+                                <th class="sortable-header" data-column="visitDate" data-sort-type="datetime" title="Click to sort by visit date and time">
+                                    Date & Time
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="petName" data-sort-type="text" title="Click to sort by pet name">
+                                    Pet
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="description" data-sort-type="text" title="Click to sort by visit description">
+                                    Description
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="veterinarianName" data-sort-type="text" title="Click to sort by veterinarian name">
+                                    Veterinarian
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="status" data-sort-type="status" title="Click to sort by visit status">
+                                    Status
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="cost" data-sort-type="number" title="Click to sort by visit cost">
+                                    Cost
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="no-sort">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="visit : ${visits.content != null ? visits.content : visits}">
+                            <!-- Iterate over visits - handle both Page and List objects -->
+                            <tr th:each="visit : ${visits.class.simpleName == 'PageImpl' ? visits.content : visits}" 
+                                th:data-id="${visit.id}">
+                                <td class="select-column">
+                                    <input type="checkbox" class="form-check-input" th:data-id="${visit.id}" 
+                                           th:aria-label="'Select visit for ' + ${visit.pet?.name ?: 'Unknown Pet'}">
+                                </td>
                                 <td>
                                     <div th:text="${#temporals.format(visit.visitDate, 'MMM dd, yyyy')}">Date</div>
                                     <small class="text-muted" th:text="${#temporals.format(visit.visitDate, 'HH:mm')}">Time</small>
@@ -158,10 +255,10 @@
                                 </td>
                                 <td>
                                     <span th:if="${visit.completed != null}">
-                                        <span th:if="${visit.completed}" class="badge bg-success">Completed</span>
-                                        <span th:unless="${visit.completed}" class="badge bg-warning">Pending</span>
+                                        <span th:if="${visit.completed}" class="badge bg-success status-badge" data-status="completed">Completed</span>
+                                        <span th:unless="${visit.completed}" class="badge bg-warning status-badge" data-status="pending">Pending</span>
                                     </span>
-                                    <span th:unless="${visit.completed != null}" class="badge bg-secondary">Unknown</span>
+                                    <span th:unless="${visit.completed != null}" class="badge bg-secondary status-badge" data-status="unknown">Unknown</span>
                                 </td>
                                 <td>
                                     <span th:if="${visit.cost != null}" 
@@ -172,15 +269,15 @@
                                     <div class="btn-group btn-group-sm" role="group">
                                         <a th:href="@{/visits/{id}(id=${visit.id})}" 
                                            class="btn btn-outline-info btn-action" title="View Details">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye"></i> <span class="d-none d-md-inline">View</span>
                                         </a>
                                         <a th:href="@{/visits/{id}/edit(id=${visit.id})}" 
                                            class="btn btn-outline-primary btn-action" title="Edit">
-                                            <i class="fas fa-edit"></i>
+                                            <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Edit</span>
                                         </a>
                                         <form th:action="@{/visits/{id}/delete(id=${visit.id})}" method="post" style="display: inline;">
                                             <button type="submit" class="btn btn-outline-danger btn-action btn-delete" title="Delete">
-                                                <i class="fas fa-trash"></i>
+                                                <i class="fas fa-trash"></i> <span class="d-none d-md-inline">Delete</span>
                                             </button>
                                         </form>
                                     </div>
@@ -206,5 +303,170 @@
             </div>
         </div>
     </div>
+
+    <!-- Enhanced Table Initialization Script -->
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize enhanced table for visits
+            const visitsTable = document.getElementById('visitsTable');
+            if (visitsTable) {
+                try {
+                    // Enhanced table options for visits
+                    const options = {
+                        entityType: 'visits',
+                        enableGlobalSort: true,
+                        enableFiltering: true,
+                        enableBulkOperations: true,
+                        pageSize: 10,
+                        persistState: true
+                    };
+
+                    // Initialize enhanced table
+                    const enhancedTable = new EnhancedTable(visitsTable, options);
+                    
+                    // Store reference for debugging
+                    window.visitsEnhancedTable = enhancedTable;
+                    
+                    // Setup status filter dropdown functionality (legacy support)
+                    setupStatusFilter(enhancedTable);
+                    
+                    // Setup bulk operations
+                    setupBulkOperations(enhancedTable);
+                    
+                    console.log('Enhanced visits table initialized successfully');
+                    
+                } catch (error) {
+                    console.error('Failed to initialize enhanced visits table:', error);
+                    
+                    // Show user-friendly error message
+                    const messageContainer = document.createElement('div');
+                    messageContainer.className = 'alert alert-warning alert-dismissible fade show';
+                    messageContainer.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Enhanced table features are temporarily unavailable. Basic table functionality is still available.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    visitsTable.parentNode.insertBefore(messageContainer, visitsTable);
+                }
+            }
+
+            // Initialize visit filter manager (new comprehensive filtering)
+            const visitsContainer = document.querySelector('.visits-container');
+            if (visitsContainer && window.VisitFilterManager) {
+                try {
+                    const filterManager = new VisitFilterManager(visitsContainer, {
+                        apiBaseUrl: '/api/visits/filter',
+                        enableImmediateApplication: true,
+                        persistFilters: true
+                    });
+                    
+                    // Store reference for debugging and integration
+                    window.visitFilterManager = filterManager;
+                    visitsContainer.visitFilterManager = filterManager;
+                    
+                    console.log('VisitFilterManager initialized successfully');
+                    
+                } catch (error) {
+                    console.error('Failed to initialize VisitFilterManager:', error);
+                }
+            }
+        });
+
+        /**
+         * Setup status filter dropdown functionality
+         */
+        function setupStatusFilter(enhancedTable) {
+            const statusFilterItems = document.querySelectorAll('.status-filter-item');
+            const statusFilterButton = document.getElementById('statusFilterDropdown');
+            
+            statusFilterItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const status = this.getAttribute('data-status');
+                    const statusText = this.textContent.trim();
+                    
+                    // Update button text
+                    const buttonText = status ? `Status: ${statusText}` : 'Status Filter';
+                    statusFilterButton.innerHTML = `<i class="fas fa-tags"></i> ${buttonText}`;
+                    
+                    // Apply filter
+                    if (status) {
+                        const filter = {
+                            column: 'status',
+                            operator: 'equals',
+                            value: status,
+                            displayName: statusText
+                        };
+                        enhancedTable.filterController.applyFilterAsync(filter);
+                    } else {
+                        // Clear status filter
+                        enhancedTable.filterController.clearFilter('status');
+                    }
+                    
+                    // Close dropdown
+                    const dropdown = bootstrap.Dropdown.getInstance(statusFilterButton);
+                    if (dropdown) {
+                        dropdown.hide();
+                    }
+                });
+            });
+        }
+
+        /**
+         * Setup bulk operations functionality
+         */
+        function setupBulkOperations(enhancedTable) {
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+            const bulkActions = document.getElementById('bulkActions');
+            
+            // Bulk delete button
+            if (bulkDeleteBtn) {
+                bulkDeleteBtn.addEventListener('click', async function() {
+                    try {
+                        const result = await enhancedTable.bulkController.bulkDeleteAsync();
+                        if (result && !result.cancelled) {
+                            // Success handled by the bulk controller
+                            console.log('Bulk delete completed:', result);
+                        }
+                    } catch (error) {
+                        console.error('Bulk delete failed:', error);
+                    }
+                });
+            }
+            
+            // Clear selection button
+            if (clearSelectionBtn) {
+                clearSelectionBtn.addEventListener('click', function() {
+                    enhancedTable.bulkController.clearSelection();
+                });
+            }
+            
+            // Listen for selection changes to show/hide bulk actions
+            if (bulkActions) {
+                // Override the bulk controller's updateSelectionUI to show/hide bulk actions
+                const originalUpdateSelectionUI = enhancedTable.bulkController.updateSelectionUI;
+                enhancedTable.bulkController.updateSelectionUI = function() {
+                    originalUpdateSelectionUI.call(this);
+                    
+                    // Show/hide bulk actions based on selection
+                    if (this.selectedItems.size > 0) {
+                        bulkActions.classList.add('show');
+                        bulkActions.style.display = 'flex';
+                    } else {
+                        bulkActions.classList.remove('show');
+                        bulkActions.style.display = 'none';
+                    }
+                    
+                    // Update selected count
+                    const countElement = bulkActions.querySelector('.selected-count');
+                    if (countElement) {
+                        countElement.textContent = this.selectedItems.size;
+                    }
+                };
+            }
+        }
+    </script>
 </body>
 </html>

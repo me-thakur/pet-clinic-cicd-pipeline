@@ -39,7 +39,7 @@ import java.util.Optional;
  */
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "${pet-clinic.cors.allowed-origins}", maxAge = 3600)
 @Tag(name = "Authentication", description = "User authentication and authorization operations")
 public class AuthController {
 

@@ -1,0 +1,534 @@
+/* Senior Pets Page Styles */
+
+/* Header Styles */
+.senior-pets-title {
+    color: #495057;
+    font-weight: 600;
+}
+
+.senior-pets-title .fas {
+    color: #ffc107;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Statistics Cards */
+.stat-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.stat-card-success {
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+    color: white;
+}
+
+.stat-card-info {
+    background: linear-gradient(135deg, #3498db 0%, #85c1e9 100%);
+    color: white;
+}
+
+.stat-card-warning {
+    background: linear-gradient(135deg, #f39c12 0%, #f7dc6f 100%);
+    color: white;
+}
+
+/* Search Card */
+.search-card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.search-card .card-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 10px 10px 0 0;
+}
+
+.advanced-search {
+    border-top: 1px solid #dee2e6;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+/* Active Filters */
+.active-filters {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.filter-tag {
+    background-color: #007bff;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.filter-tag .remove-filter {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 0.25rem;
+}
+
+.filter-tag .remove-filter:hover {
+    color: #ffc107;
+}
+
+/* Results Info */
+.results-info {
+    font-size: 1rem;
+    margin-bottom: 0;
+}
+
+/* No Results Section */
+.no-results-section .card {
+    border: 2px dashed #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.search-suggestions {
+    margin-top: 1.5rem;
+}
+
+.suggestion-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+/* Senior Pets Table */
+.senior-pets-table {
+    margin-bottom: 0;
+}
+
+.senior-pets-table th {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border-top: none;
+    border-bottom: 2px solid #dee2e6 !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.025em !important;
+    padding: 0.75rem 0.5rem !important;
+    position: relative !important;
+    vertical-align: middle !important;
+    min-height: 2.5rem !important;
+    line-height: 1.4 !important;
+}
+    font-weight: 600;
+    color: #495057;
+    padding: 1rem 0.75rem;
+}
+
+.senior-pet-row {
+    transition: background-color 0.2s ease;
+}
+
+.senior-pet-row:hover {
+    background-color: #f8f9fa;
+}
+
+/* Pet Info Column */
+.pet-info .pet-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.pet-info .pet-name strong {
+    color: #495057;
+    font-size: 1.1rem;
+}
+
+.species-badge {
+    background-color: #6c757d;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.pet-breed {
+    font-size: 0.9rem;
+}
+
+/* Age Status Column */
+.age-status {
+    text-align: center;
+}
+
+.age-display {
+    margin-bottom: 0.5rem;
+}
+
+.age-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #495057;
+}
+
+.age-unit {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.status-badges {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.senior-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+}
+
+/* Owner Info Column */
+.owner-info {
+    min-width: 120px;
+}
+
+.owner-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.owner-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.owner-contact {
+    margin-top: 0.25rem;
+}
+
+/* Health Indicators Column */
+.health-indicators {
+    min-width: 150px;
+}
+
+.health-conditions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.health-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 8px;
+}
+
+/* Visit Info Column */
+.visit-info {
+    min-width: 100px;
+}
+
+.last-visit, .next-visit {
+    margin-bottom: 0.25rem;
+}
+
+/* Grid View */
+.grid-view .senior-pet-card {
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.grid-view .senior-pet-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.senior-pet-card .card-header {
+    border-radius: 10px 10px 0 0;
+}
+
+.health-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+/* View Toggle Buttons */
+.btn-group .btn {
+    transition: all 0.2s ease;
+}
+
+.btn-group .btn.active {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-actions {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .header-actions .btn {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .search-card .card-body .row {
+        margin-bottom: 0.5rem;
+    }
+    
+    .search-card .form-label {
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .search-card .form-control,
+    .search-card .form-select {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
+    
+    .suggestion-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .suggestion-buttons .btn {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    /* Mobile Table Adjustments */
+    .senior-pets-table {
+        font-size: 0.875rem;
+    }
+    
+    .senior-pets-table th,
+    .senior-pets-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .pet-info .pet-name {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .species-badge {
+        font-size: 0.7rem;
+        padding: 0.1rem 0.4rem;
+    }
+    
+    .age-display {
+        margin-bottom: 0.25rem;
+    }
+    
+    .age-number {
+        font-size: 1.2rem;
+    }
+    
+    .status-badges {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .health-conditions {
+        justify-content: center;
+    }
+    
+    .health-badge {
+        font-size: 0.65rem;
+        padding: 0.15rem 0.3rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.75rem;
+    }
+    
+    /* Grid View Mobile */
+    .grid-view .col-lg-4,
+    .grid-view .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .senior-pets-title {
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    
+    .header-actions {
+        justify-content: center;
+    }
+    
+    /* Hide some table columns on very small screens */
+    .senior-pets-table .d-none-mobile {
+        display: none !important;
+    }
+    
+    /* Stack form elements vertically */
+    .search-card .row .col-md-4,
+    .search-card .row .col-md-3,
+    .search-card .row .col-md-2 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 0.75rem;
+    }
+    
+    .advanced-search .row .col-md-2,
+    .advanced-search .row .col-md-3 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 0.75rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .header-actions,
+    .search-card,
+    .active-filters,
+    .btn-group,
+    .pagination {
+        display: none !important;
+    }
+    
+    .senior-pets-table {
+        font-size: 0.8rem;
+    }
+    
+    .stat-card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+}
+
+/* Dark Mode Support (if implemented) */
+@media (prefers-color-scheme: dark) {
+    .search-card {
+        background-color: #343a40;
+        border-color: #495057;
+    }
+    
+    .search-card .card-header {
+        background: linear-gradient(135deg, #495057 0%, #6c757d 100%);
+        border-bottom-color: #6c757d;
+    }
+    
+    .senior-pets-table th {
+        background-color: #495057 !important;
+        color: #f8f9fa !important;
+        border-color: #6c757d !important;
+    }
+    }
+    
+    .senior-pet-row:hover {
+        background-color: #495057;
+    }
+    
+    .no-results-section .card {
+        background-color: #343a40;
+        border-color: #495057;
+    }
+}
+
+/* Animation for loading states */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Accessibility improvements */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus styles for better accessibility */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    border-color: #80bdff;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .stat-card {
+        border: 2px solid #000;
+    }
+    
+    .senior-pet-card {
+        border: 2px solid #000;
+    }
+    
+    .badge {
+        border: 1px solid #000;
+    }
+}

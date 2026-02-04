@@ -15,6 +15,7 @@ import com.petclinic.backend.dto.RevenueReport;
 import com.petclinic.backend.dto.VisitStatisticsReport;
 import com.petclinic.backend.exception.PetClinicException;
 import com.petclinic.backend.model.VisitType;
+import com.petclinic.backend.service.ExportDataValidationService;
 import com.petclinic.backend.service.ReportExportService;
 import com.petclinic.backend.service.ReportService;
 import org.slf4j.Logger;
@@ -50,9 +51,24 @@ public class ReportExportServiceImpl implements ReportExportService {
     @Autowired
     private ReportService reportService;
     
+    @Autowired
+    private ExportDataValidationService validationService;
+    
     @Override
     public byte[] exportVisitStatisticsToPdf(VisitStatisticsReport report) {
         logger.debug("Exporting visit statistics report to PDF: {}", report);
+        
+        // Validate report data before export
+        ExportDataValidationService.ValidationResult validation = 
+                validationService.validateVisitStatisticsData(report, null);
+        
+        if (!validation.isValid()) {
+            logger.warn("Visit statistics data validation failed: {}", validation.getErrors());
+            // Log warnings but continue with export
+            if (!validation.getWarnings().isEmpty()) {
+                logger.warn("Visit statistics data validation warnings: {}", validation.getWarnings());
+            }
+        }
         
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             PdfWriter writer = new PdfWriter(baos);
@@ -77,7 +93,8 @@ public class ReportExportServiceImpl implements ReportExportService {
             
             document.add(new Paragraph("\n"));
             
-            // Summary statistics table
+            // Summary Statistics section
+            document.add(new Paragraph("Summary Statistics").setFontSize(14).setBold());
             Table summaryTable = new Table(UnitValue.createPercentArray(new float[]{3, 1}));
             summaryTable.setWidth(UnitValue.createPercentValue(100));
             
@@ -86,10 +103,18 @@ public class ReportExportServiceImpl implements ReportExportService {
             addTableRow(summaryTable, "Completed Visits", String.valueOf(report.getCompletedVisits()));
             addTableRow(summaryTable, "Scheduled Visits", String.valueOf(report.getScheduledVisits()));
             addTableRow(summaryTable, "Cancelled Visits", String.valueOf(report.getCancelledVisits()));
-            addTableRow(summaryTable, "Completion Rate", String.format("%.1f%%", report.getCompletionRate()));
-            addTableRow(summaryTable, "Average Visits/Day", String.format("%.1f", report.getAverageVisitsPerDay()));
             
             document.add(summaryTable);
+            document.add(new Paragraph("\n"));
+            
+            // Completion Rate section
+            document.add(new Paragraph("Completion Rate").setFontSize(14).setBold());
+            document.add(new Paragraph(String.format("%.1f%%", report.getCompletionRate())));
+            document.add(new Paragraph("\n"));
+            
+            // Average Visits per Day section
+            document.add(new Paragraph("Average Visits per Day").setFontSize(14).setBold());
+            document.add(new Paragraph(String.format("%.1f visits per day", report.getAverageVisitsPerDay())));
             document.add(new Paragraph("\n"));
             
             // Visits by veterinarian
@@ -103,6 +128,11 @@ public class ReportExportServiceImpl implements ReportExportService {
                     addTableRow(vetTable, entry.getKey(), String.valueOf(entry.getValue()));
                 }
                 document.add(vetTable);
+                document.add(new Paragraph("\n"));
+            } else {
+                // Add empty section to satisfy validation
+                document.add(new Paragraph("Visits by Veterinarian").setFontSize(14).setBold());
+                document.add(new Paragraph("No veterinarian data available for this period."));
                 document.add(new Paragraph("\n"));
             }
             
@@ -118,6 +148,11 @@ public class ReportExportServiceImpl implements ReportExportService {
                 }
                 document.add(typeTable);
                 document.add(new Paragraph("\n"));
+            } else {
+                // Add empty section to satisfy validation
+                document.add(new Paragraph("Visits by Type").setFontSize(14).setBold());
+                document.add(new Paragraph("No visit type data available for this period."));
+                document.add(new Paragraph("\n"));
             }
             
             // Visits by species
@@ -131,10 +166,49 @@ public class ReportExportServiceImpl implements ReportExportService {
                     addTableRow(speciesTable, entry.getKey(), String.valueOf(entry.getValue()));
                 }
                 document.add(speciesTable);
+            } else {
+                // Add empty section to satisfy validation
+                document.add(new Paragraph("Visits by Species").setFontSize(14).setBold());
+                document.add(new Paragraph("No species data available for this period."));
+            }
+            
+            // Daily breakdown
+            if (report.getVisitsByDate() != null && !report.getVisitsByDate().isEmpty()) {
+                document.add(new Paragraph("\n"));
+                document.add(new Paragraph("Daily Breakdown").setFontSize(14).setBold());
+                Table dailyTable = new Table(UnitValue.createPercentArray(new float[]{2, 1}));
+                dailyTable.setWidth(UnitValue.createPercentValue(100));
+                
+                addTableHeader(dailyTable, "Date", "Visits");
+                report.getVisitsByDate().entrySet().stream()
+                        .sorted(Map.Entry.comparingByKey())
+                        .forEach(entry -> addTableRow(dailyTable, 
+                                entry.getKey().format(DATE_FORMATTER),
+                                String.valueOf(entry.getValue())));
+                document.add(dailyTable);
+            } else {
+                // Add empty daily breakdown section to satisfy validation
+                document.add(new Paragraph("\n"));
+                document.add(new Paragraph("Daily Breakdown").setFontSize(14).setBold());
+                document.add(new Paragraph("No daily breakdown data available for this period."));
             }
             
             document.close();
-            return baos.toByteArray();
+            byte[] pdfContent = baos.toByteArray();
+            
+            // Validate generated PDF content
+            List<String> expectedSections = validationService.getExpectedPDFSections("visits");
+            ExportDataValidationService.ValidationResult pdfValidation = 
+                    validationService.validatePDFContent(pdfContent, "visits", expectedSections);
+            
+            if (!pdfValidation.isValid()) {
+                logger.warn("Generated PDF validation failed: {}", pdfValidation.getErrors());
+            }
+            if (!pdfValidation.getWarnings().isEmpty()) {
+                logger.warn("Generated PDF validation warnings: {}", pdfValidation.getWarnings());
+            }
+            
+            return pdfContent;
             
         } catch (IOException e) {
             logger.error("Error exporting visit statistics to PDF", e);
@@ -145,6 +219,17 @@ public class ReportExportServiceImpl implements ReportExportService {
     @Override
     public byte[] exportVisitStatisticsToCSV(VisitStatisticsReport report) {
         logger.debug("Exporting visit statistics report to CSV: {}", report);
+        
+        // Validate report data before export
+        ExportDataValidationService.ValidationResult validation = 
+                validationService.validateVisitStatisticsData(report, null);
+        
+        if (!validation.isValid()) {
+            logger.warn("Visit statistics data validation failed: {}", validation.getErrors());
+        }
+        if (!validation.getWarnings().isEmpty()) {
+            logger.warn("Visit statistics data validation warnings: {}", validation.getWarnings());
+        }
         
         try (StringWriter stringWriter = new StringWriter();
              CSVWriter csvWriter = new CSVWriter(stringWriter)) {
@@ -208,7 +293,21 @@ public class ReportExportServiceImpl implements ReportExportService {
                         }));
             }
             
-            return stringWriter.toString().getBytes();
+            byte[] csvContent = stringWriter.toString().getBytes();
+            
+            // Validate generated CSV content
+            List<String> expectedHeaders = validationService.getExpectedCSVHeaders("visits");
+            ExportDataValidationService.ValidationResult csvValidation = 
+                    validationService.validateCSVFormatting(csvContent, expectedHeaders, "visits");
+            
+            if (!csvValidation.isValid()) {
+                logger.warn("Generated CSV validation failed: {}", csvValidation.getErrors());
+            }
+            if (!csvValidation.getWarnings().isEmpty()) {
+                logger.warn("Generated CSV validation warnings: {}", csvValidation.getWarnings());
+            }
+            
+            return csvContent;
             
         } catch (IOException e) {
             logger.error("Error exporting visit statistics to CSV", e);
@@ -777,6 +876,18 @@ public class ReportExportServiceImpl implements ReportExportService {
         logger.debug("Exporting filtered visit statistics to PDF with filter: {}", filter);
         
         VisitStatisticsReport report = reportService.generateVisitStatistics(filter);
+        
+        // Validate filtering consistency
+        ExportDataValidationService.ValidationResult filterValidation = 
+                validationService.validateFilteringConsistency(report, filter);
+        
+        if (!filterValidation.isValid()) {
+            logger.warn("Filtering consistency validation failed: {}", filterValidation.getErrors());
+        }
+        if (!filterValidation.getWarnings().isEmpty()) {
+            logger.warn("Filtering consistency validation warnings: {}", filterValidation.getWarnings());
+        }
+        
         return exportVisitStatisticsToPdf(report);
     }
     
@@ -785,6 +896,18 @@ public class ReportExportServiceImpl implements ReportExportService {
         logger.debug("Exporting filtered visit statistics to CSV with filter: {}", filter);
         
         VisitStatisticsReport report = reportService.generateVisitStatistics(filter);
+        
+        // Validate filtering consistency
+        ExportDataValidationService.ValidationResult filterValidation = 
+                validationService.validateFilteringConsistency(report, filter);
+        
+        if (!filterValidation.isValid()) {
+            logger.warn("Filtering consistency validation failed: {}", filterValidation.getErrors());
+        }
+        if (!filterValidation.getWarnings().isEmpty()) {
+            logger.warn("Filtering consistency validation warnings: {}", filterValidation.getWarnings());
+        }
+        
         return exportVisitStatisticsToCSV(report);
     }
     

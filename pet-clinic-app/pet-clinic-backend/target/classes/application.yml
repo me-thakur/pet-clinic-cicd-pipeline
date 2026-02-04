@@ -1,6 +1,8 @@
 spring:
   application:
     name: pet-clinic-backend
+  main:
+    allow-circular-references: true
   
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
@@ -25,7 +27,7 @@ spring:
   
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop  # For H2 in-memory database, recreate schema on startup
     show-sql: true
     properties:
       hibernate:
@@ -33,11 +35,11 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
   
   flyway:
-    enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
-    validate-on-migrate: true
-    clean-disabled: true
+    enabled: false  # Disable for H2 in-memory database in dev
+  
+  sql:
+    init:
+      mode: never
   
   cache:
     type: caffeine
@@ -53,13 +55,27 @@ spring:
       - dashboardMetrics
       - statistics
 
+pet-clinic:
+  cors:
+    allowed-origins: http://localhost:8080
+
 server:
   port: 9090
 
 logging:
   level:
     com.petclinic: DEBUG
+    com.petclinic.backend.service.impl.OwnerValidationServiceImpl: INFO
+    com.petclinic.backend.service.impl.ValidationMetricsServiceImpl: INFO
+    com.petclinic.backend.service.impl.ValidationAuditServiceImpl: DEBUG
+    com.petclinic.backend.controller.ValidationController: INFO
+    VALIDATION_AUDIT: INFO
+    VALIDATION_PERFORMANCE: DEBUG
+    VALIDATION_CONFIG: INFO
+    VALIDATION_ERROR: ERROR
     org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation: DEBUG
 
 ---
 # Staging Profile
@@ -76,7 +92,7 @@ spring:
   
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none  # Let Flyway handle schema creation
     show-sql: false
     properties:
       hibernate:
@@ -86,6 +102,7 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+    baseline-version: 0
 
 server:
   port: 9090
@@ -93,6 +110,14 @@ server:
 logging:
   level:
     com.petclinic: INFO
+    com.petclinic.backend.service.impl.OwnerValidationServiceImpl: INFO
+    com.petclinic.backend.service.impl.ValidationMetricsServiceImpl: INFO
+    com.petclinic.backend.service.impl.ValidationAuditServiceImpl: INFO
+    com.petclinic.backend.controller.ValidationController: INFO
+    VALIDATION_AUDIT: INFO
+    VALIDATION_PERFORMANCE: INFO
+    VALIDATION_CONFIG: INFO
+    VALIDATION_ERROR: ERROR
     org.springframework.security: WARN
 
 ---
@@ -116,7 +141,7 @@ spring:
   
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none  # Let Flyway handle schema creation
     show-sql: false
     properties:
       hibernate:
@@ -130,6 +155,7 @@ spring:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
+    baseline-version: 0
 
 server:
   port: 8443
@@ -147,6 +173,14 @@ server:
 logging:
   level:
     com.petclinic: WARN
+    com.petclinic.backend.service.impl.OwnerValidationServiceImpl: INFO
+    com.petclinic.backend.service.impl.ValidationMetricsServiceImpl: WARN
+    com.petclinic.backend.service.impl.ValidationAuditServiceImpl: INFO
+    com.petclinic.backend.controller.ValidationController: INFO
+    VALIDATION_AUDIT: INFO
+    VALIDATION_PERFORMANCE: WARN
+    VALIDATION_CONFIG: INFO
+    VALIDATION_ERROR: ERROR
     org.springframework.security: WARN
   file:
     name: /var/log/pet-clinic-backend.log
@@ -199,7 +233,7 @@ springdoc:
 
 security:
   jwt:
-    secret: ${JWT_SECRET:mySecretKey}
+    secret: ${JWT_SECRET}  # No default - must be explicitly configured
     expiration: 86400000 # 24 hours
 
 pet-clinic:
@@ -209,7 +243,7 @@ pet-clinic:
     version: v1
     base-path: /api/v1
   data-seeding:
-    enabled: false
+    enabled: true
     skip-if-data-exists: true
     owner-count: 15
     veterinarian-count: 10
@@ -225,7 +259,7 @@ app:
   encryption:
     key: ${ENCRYPTION_KEY:petclinic-encryption-key-32-chars}
   jwt:
-    secret: ${JWT_SECRET:petclinic-secret-key-that-is-at-least-256-bits-long-for-security}
+    secret: ${JWT_SECRET}  # No default - must be explicitly configured
     expiration: ${JWT_EXPIRATION:3600000} # 1 hour in milliseconds
   session:
     timeout: ${SESSION_TIMEOUT:1800000} # 30 minutes in milliseconds
@@ -242,3 +276,29 @@ app:
     auto-backup:
       enabled: ${AUTO_BACKUP_ENABLED:false}
       schedule: ${AUTO_BACKUP_SCHEDULE:0 0 2 * * ?} # Daily at 2 AM
+
+# Owner Data Validation Configuration
+petclinic:
+  validation:
+    mobile-number:
+      required: false
+      enforce-uniqueness: true
+      default-country-code: US
+      allow-international: true
+    email:
+      required: false
+      enforce-uniqueness: true
+      max-length: 100
+    name:
+      max-length: 50
+      allow-special-characters: true
+    general:
+      fail-fast: false
+      enable-audit-logging: true
+    # Circuit breaker configuration for validation service fallback
+    circuit-breaker:
+      failure-threshold: 5
+      recovery-timeout: 30000  # 30 seconds
+    retry:
+      max-attempts: 3
+      delay-ms: 1000  # 1 second

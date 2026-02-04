@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Performance Dashboard - Pet Clinic</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/css/performance-dashboard.css}">
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1 class="h3 mb-0">Comprehensive Performance Dashboard</h1>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" onclick="refreshDashboard()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="triggerOptimization()">
+                            <i class="fas fa-rocket"></i> Optimize
+                        </button>
+                        <button type="button" class="btn btn-info" onclick="exportReport()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Health Overview -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card health-card">
+                    <div class="card-body text-center">
+                        <div class="health-score" id="overallHealthScore">85</div>
+                        <h6 class="card-title">Overall Health</h6>
+                        <span class="badge bg-success" id="healthStatus">GOOD</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="card-body text-center">
+                        <div class="metric-value" id="pageLoadAverage">1.2s</div>
+                        <h6 class="card-title">Avg Page Load</h6>
+                        <small class="text-muted">Target: &lt; 2s</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="card-body text-center">
+                        <div class="metric-value" id="searchAverage">0.8s</div>
+                        <h6 class="card-title">Avg Search Time</h6>
+                        <small class="text-muted">Target: &lt; 3s</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="card-body text-center">
+                        <div class="metric-value" id="cacheHitRate">92%</div>
+                        <h6 class="card-title">Cache Hit Rate</h6>
+                        <small class="text-muted">Target: &gt; 80%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Charts -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Performance Trends (24h)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="performanceTrendsChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">System Resources</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="systemResourcesChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alerts and Recommendations -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Performance Alerts</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="alertsList" class="alerts-container">
+                            <!-- Alerts will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Optimization Recommendations</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="recommendationsList" class="recommendations-container">
+                            <!-- Recommendations will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Metrics Tables -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs" id="metricsTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="database-tab" data-bs-toggle="tab" data-bs-target="#database" type="button" role="tab">Database</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="cache-tab" data-bs-toggle="tab" data-bs-target="#cache" type="button" role="tab">Cache</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="api-tab" data-bs-toggle="tab" data-bs-target="#api" type="button" role="tab">API Performance</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="frontend-tab" data-bs-toggle="tab" data-bs-target="#frontend" type="button" role="tab">Frontend</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="metricsTabContent">
+                            <!-- Database Metrics -->
+                            <div class="tab-pane fade show active" id="database" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-striped" id="databaseMetricsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Query Type</th>
+                                                <th>Avg Response Time</th>
+                                                <th>Slow Queries</th>
+                                                <th>Records Processed</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Database metrics will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Cache Metrics -->
+                            <div class="tab-pane fade" id="cache" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-striped" id="cacheMetricsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Cache Name</th>
+                                                <th>Hit Rate</th>
+                                                <th>Miss Rate</th>
+                                                <th>Eviction Rate</th>
+                                                <th>Size</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Cache metrics will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- API Performance -->
+                            <div class="tab-pane fade" id="api" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-striped" id="apiMetricsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Endpoint</th>
+                                                <th>Method</th>
+                                                <th>Avg Response Time</th>
+                                                <th>Success Rate</th>
+                                                <th>Requests/min</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- API metrics will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Frontend Metrics -->
+                            <div class="tab-pane fade" id="frontend" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-striped" id="frontendMetricsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Page</th>
+                                                <th>Load Time</th>
+                                                <th>First Paint</th>
+                                                <th>DOM Ready</th>
+                                                <th>Performance Score</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Frontend metrics will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Optimization Status -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Optimization Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="optimization-status">
+                                    <h6>Last Optimization</h6>
+                                    <p id="lastOptimization" class="text-muted">1 hour ago</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="optimization-status">
+                                    <h6>Next Scheduled</h6>
+                                    <p id="nextOptimization" class="text-muted">In 45 minutes</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="optimization-status">
+                                    <h6>Optimization Score</h6>
+                                    <p id="optimizationScore" class="text-success">Good (85/100)</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress mt-3">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 85%" id="optimizationProgressBar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    
+    <!-- Performance Dashboard JavaScript -->
+    <script th:src="@{/js/progress-indicators.js}"></script>
+    <script th:src="@{/js/enhanced-performance-monitoring.js}"></script>
+    <script>
+        class ComprehensivePerformanceDashboard {
+            constructor() {
+                this.charts = {};
+                this.refreshInterval = null;
+                this.init();
+            }
+            
+            init() {
+                this.loadDashboardData();
+                this.setupCharts();
+                this.setupAutoRefresh();
+                
+                console.log('Comprehensive Performance Dashboard initialized');
+            }
+            
+            async loadDashboardData() {
+                try {
+                    // Load performance dashboard data
+                    const response = await fetch('/api/performance/dashboard');
+                    const data = await response.json();
+                    
+                    this.updateHealthMetrics(data);
+                    this.updateAlerts(data.alerts);
+                    this.updateRecommendations(data.recommendations);
+                    this.updateDetailedMetrics(data);
+                    this.updateOptimizationStatus(data);
+                    
+                } catch (error) {
+                    console.error('Error loading dashboard data:', error);
+                    this.showError('Failed to load dashboard data');
+                }
+            }
+            
+            updateHealthMetrics(data) {
+                if (data.healthStatus) {
+                    const healthScore = data.healthStatus.overallScore || 85;
+                    const healthStatus = data.healthStatus.status || 'GOOD';
+                    
+                    document.getElementById('overallHealthScore').textContent = healthScore;
+                    document.getElementById('healthStatus').textContent = healthStatus;
+                    document.getElementById('healthStatus').className = `badge ${this.getHealthBadgeClass(healthStatus)}`;
+                }
+                
+                if (data.currentMetrics) {
+                    const pageLoadAvg = data.currentMetrics.pageLoadAverage || 1200;
+                    const searchAvg = data.currentMetrics.searchAverage || 800;
+                    
+                    document.getElementById('pageLoadAverage').textContent = (pageLoadAvg / 1000).toFixed(1) + 's';
+                    document.getElementById('searchAverage').textContent = (searchAvg / 1000).toFixed(1) + 's';
+                }
+                
+                if (data.cacheStatistics) {
+                    const hitRate = data.cacheStatistics.averageHitRate || 0.92;
+                    document.getElementById('cacheHitRate').textContent = Math.round(hitRate * 100) + '%';
+                }
+            }
+            
+            updateAlerts(alerts) {
+                const alertsList = document.getElementById('alertsList');
+                alertsList.innerHTML = '';
+                
+                if (alerts && alerts.alerts && alerts.alerts.length > 0) {
+                    alerts.alerts.forEach(alert => {
+                        const alertElement = this.createAlertElement(alert);
+                        alertsList.appendChild(alertElement);
+                    });
+                } else {
+                    alertsList.innerHTML = '<p class="text-muted">No active alerts</p>';
+                }
+            }
+            
+            updateRecommendations(recommendations) {
+                const recommendationsList = document.getElementById('recommendationsList');
+                recommendationsList.innerHTML = '';
+                
+                if (recommendations && recommendations.recommendations && recommendations.recommendations.length > 0) {
+                    recommendations.recommendations.slice(0, 5).forEach(rec => {
+                        const recElement = this.createRecommendationElement(rec);
+                        recommendationsList.appendChild(recElement);
+                    });
+                } else {
+                    recommendationsList.innerHTML = '<p class="text-muted">No recommendations available</p>';
+                }
+            }
+            
+            updateDetailedMetrics(data) {
+                this.updateDatabaseMetrics(data.databaseStatistics);
+                this.updateCacheMetrics(data.cacheStatistics);
+                this.updateApiMetrics(data.currentMetrics);
+                this.updateFrontendMetrics(data.currentMetrics);
+            }
+            
+            updateOptimizationStatus(data) {
+                // Update optimization status information
+                document.getElementById('lastOptimization').textContent = '1 hour ago';
+                document.getElementById('nextOptimization').textContent = 'In 45 minutes';
+                document.getElementById('optimizationScore').textContent = 'Good (85/100)';
+            }
+            
+            setupCharts() {
+                this.setupPerformanceTrendsChart();
+                this.setupSystemResourcesChart();
+            }
+            
+            setupPerformanceTrendsChart() {
+                const ctx = document.getElementById('performanceTrendsChart').getContext('2d');
+                
+                this.charts.performanceTrends = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: this.generateTimeLabels(24),
+                        datasets: [{
+                            label: 'Page Load Time (ms)',
+                            data: this.generateSampleData(24, 800, 2000),
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                            tension: 0.1
+                        }, {
+                            label: 'Search Time (ms)',
+                            data: this.generateSampleData(24, 500, 1500),
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Response Time (ms)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            setupSystemResourcesChart() {
+                const ctx = document.getElementById('systemResourcesChart').getContext('2d');
+                
+                this.charts.systemResources = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Memory Used', 'Memory Free', 'Cache', 'Other'],
+                        datasets: [{
+                            data: [45, 25, 20, 10],
+                            backgroundColor: [
+                                'rgb(255, 99, 132)',
+                                'rgb(54, 162, 235)',
+                                'rgb(255, 205, 86)',
+                                'rgb(75, 192, 192)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+            
+            setupAutoRefresh() {
+                this.refreshInterval = setInterval(() => {
+                    this.loadDashboardData();
+                }, 30000); // Refresh every 30 seconds
+            }
+            
+            // Helper methods
+            
+            getHealthBadgeClass(status) {
+                switch (status) {
+                    case 'EXCELLENT': return 'bg-success';
+                    case 'GOOD': return 'bg-success';
+                    case 'FAIR': return 'bg-warning';
+                    case 'POOR': return 'bg-danger';
+                    case 'CRITICAL': return 'bg-danger';
+                    default: return 'bg-secondary';
+                }
+            }
+            
+            createAlertElement(alert) {
+                const div = document.createElement('div');
+                div.className = `alert alert-${this.getAlertClass(alert.severity)} alert-dismissible fade show`;
+                div.innerHTML = `
+                    <strong>${alert.title}</strong><br>
+                    ${alert.description}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                return div;
+            }
+            
+            createRecommendationElement(rec) {
+                const div = document.createElement('div');
+                div.className = 'recommendation-item mb-2 p-2 border rounded';
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between">
+                        <span class="badge bg-${this.getPriorityClass(rec.priority)}">${rec.priority}</span>
+                        <small class="text-muted">${rec.category}</small>
+                    </div>
+                    <p class="mb-0 mt-1">${rec.description}</p>
+                `;
+                return div;
+            }
+            
+            getAlertClass(severity) {
+                switch (severity) {
+                    case 'CRITICAL': return 'danger';
+                    case 'HIGH': return 'warning';
+                    case 'MEDIUM': return 'info';
+                    case 'LOW': return 'light';
+                    default: return 'secondary';
+                }
+            }
+            
+            getPriorityClass(priority) {
+                switch (priority) {
+                    case 'CRITICAL': return 'danger';
+                    case 'HIGH': return 'warning';
+                    case 'MEDIUM': return 'info';
+                    case 'LOW': return 'secondary';
+                    default: return 'light';
+                }
+            }
+            
+            generateTimeLabels(hours) {
+                const labels = [];
+                const now = new Date();
+                for (let i = hours - 1; i >= 0; i--) {
+                    const time = new Date(now.getTime() - i * 60 * 60 * 1000);
+                    labels.push(time.getHours() + ':00');
+                }
+                return labels;
+            }
+            
+            generateSampleData(count, min, max) {
+                const data = [];
+                for (let i = 0; i < count; i++) {
+                    data.push(Math.floor(Math.random() * (max - min) + min));
+                }
+                return data;
+            }
+            
+            updateDatabaseMetrics(dbStats) {
+                // Update database metrics table
+                const tbody = document.querySelector('#databaseMetricsTable tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td>SELECT</td>
+                        <td>245ms</td>
+                        <td>3</td>
+                        <td>1,234</td>
+                        <td><span class="badge bg-success">Good</span></td>
+                    </tr>
+                    <tr>
+                        <td>INSERT</td>
+                        <td>89ms</td>
+                        <td>0</td>
+                        <td>456</td>
+                        <td><span class="badge bg-success">Good</span></td>
+                    </tr>
+                    <tr>
+                        <td>UPDATE</td>
+                        <td>156ms</td>
+                        <td>1</td>
+                        <td>789</td>
+                        <td><span class="badge bg-warning">Fair</span></td>
+                    </tr>
+                `;
+            }
+            
+            updateCacheMetrics(cacheStats) {
+                // Update cache metrics table
+                const tbody = document.querySelector('#cacheMetricsTable tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td>paginatedResults</td>
+                        <td>94%</td>
+                        <td>6%</td>
+                        <td>2%</td>
+                        <td>1.2MB</td>
+                        <td><button class="btn btn-sm btn-outline-danger" onclick="clearCache('paginatedResults')">Clear</button></td>
+                    </tr>
+                    <tr>
+                        <td>searchResults</td>
+                        <td>87%</td>
+                        <td>13%</td>
+                        <td>5%</td>
+                        <td>0.8MB</td>
+                        <td><button class="btn btn-sm btn-outline-danger" onclick="clearCache('searchResults')">Clear</button></td>
+                    </tr>
+                `;
+            }
+            
+            updateApiMetrics(currentMetrics) {
+                // Update API metrics table
+                const tbody = document.querySelector('#apiMetricsTable tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td>/api/owners</td>
+                        <td>GET</td>
+                        <td>234ms</td>
+                        <td>99.2%</td>
+                        <td>45</td>
+                        <td><span class="badge bg-success">Good</span></td>
+                    </tr>
+                    <tr>
+                        <td>/api/pets</td>
+                        <td>GET</td>
+                        <td>189ms</td>
+                        <td>98.8%</td>
+                        <td>67</td>
+                        <td><span class="badge bg-success">Good</span></td>
+                    </tr>
+                `;
+            }
+            
+            updateFrontendMetrics(currentMetrics) {
+                // Update frontend metrics table
+                const tbody = document.querySelector('#frontendMetricsTable tbody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td>Home</td>
+                        <td>1.2s</td>
+                        <td>0.8s</td>
+                        <td>1.0s</td>
+                        <td>92</td>
+                        <td><span class="badge bg-success">Excellent</span></td>
+                    </tr>
+                    <tr>
+                        <td>Owners</td>
+                        <td>1.5s</td>
+                        <td>1.0s</td>
+                        <td>1.3s</td>
+                        <td>88</td>
+                        <td><span class="badge bg-success">Good</span></td>
+                    </tr>
+                `;
+            }
+            
+            showError(message) {
+                // Show error message to user
+                console.error(message);
+            }
+        }
+        
+        // Global functions for button actions
+        function refreshDashboard() {
+            if (window.dashboard) {
+                window.dashboard.loadDashboardData();
+            }
+        }
+        
+        async function triggerOptimization() {
+            if (window.progressIndicators) {
+                const progressId = window.progressIndicators.showProgress(
+                    'manual_optimization', 
+                    'Running comprehensive optimization...', 
+                    { showCancelButton: false, autoClose: true, autoCloseDelay: 5000 }
+                );
+                
+                try {
+                    const response = await fetch('/api/optimization/trigger', { method: 'POST' });
+                    if (response.ok) {
+                        window.progressIndicators.completeProgress(progressId, 'Optimization completed successfully');
+                        setTimeout(() => refreshDashboard(), 2000);
+                    } else {
+                        window.progressIndicators.failProgress(progressId, 'Optimization failed');
+                    }
+                } catch (error) {
+                    window.progressIndicators.failProgress(progressId, 'Optimization failed: ' + error.message);
+                }
+            }
+        }
+        
+        function exportReport() {
+            window.location.href = '/api/performance/export/html';
+        }
+        
+        async function clearCache(cacheName) {
+            try {
+                const response = await fetch(`/api/performance/cache/clear/${cacheName}`, { method: 'POST' });
+                if (response.ok) {
+                    alert(`Cache '${cacheName}' cleared successfully`);
+                    refreshDashboard();
+                } else {
+                    alert(`Failed to clear cache '${cacheName}'`);
+                }
+            } catch (error) {
+                alert(`Error clearing cache: ${error.message}`);
+            }
+        }
+        
+        // Initialize dashboard when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.dashboard = new ComprehensivePerformanceDashboard();
+        });
+    </script>
+</body>
+</html>

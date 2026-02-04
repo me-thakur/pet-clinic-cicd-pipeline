@@ -73,6 +73,9 @@
                               th:action="${owner.id != null ? '/owners/' + owner.id + '/edit' : '/owners/new'}" 
                               method="post">
                             
+                            <!-- CSRF Token (if CSRF is enabled) -->
+                            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
@@ -105,6 +108,7 @@
                                        th:field="*{email}" 
                                        th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'" 
                                        id="email">
+                                <div class="form-text">Email must be unique. If you get an error, try adding numbers or your initials.</div>
                                 <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" 
                                      th:errors="*{email}">Email error</div>
                             </div>
@@ -129,14 +133,47 @@
                                      th:errors="*{address}">Address error</div>
                             </div>
                             
-                            <div class="mb-3">
-                                <label for="city" class="form-label">City</label>
-                                <input type="text" class="form-control" 
-                                       th:field="*{city}" 
-                                       th:classappend="${#fields.hasErrors('city')} ? 'is-invalid'" 
-                                       id="city">
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('city')}" 
-                                     th:errors="*{city}">City error</div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="city" class="form-label">City</label>
+                                        <input type="text" class="form-control" 
+                                               th:field="*{city}" 
+                                               th:classappend="${#fields.hasErrors('city')} ? 'is-invalid'" 
+                                               id="city">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('city')}" 
+                                             th:errors="*{city}">City error</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="state" class="form-label">State</label>
+                                        <input type="text" class="form-control" 
+                                               th:field="*{state}" 
+                                               th:classappend="${#fields.hasErrors('state')} ? 'is-invalid'" 
+                                               id="state" maxlength="2" placeholder="CA">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('state')}" 
+                                             th:errors="*{state}">State error</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-3">
+                                    <div class="mb-3">
+                                        <label for="zipCode" class="form-label">ZIP Code</label>
+                                        <input type="text" class="form-control" 
+                                               th:field="*{zipCode}" 
+                                               th:classappend="${#fields.hasErrors('zipCode')} ? 'is-invalid'" 
+                                               id="zipCode" maxlength="10" placeholder="12345, K1A 0A6, SW1A 1AA">
+                                        <div class="form-text">
+                                            <small class="text-muted">
+                                                <i class="fas fa-globe"></i> Supports international formats
+                                            </small>
+                                        </div>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('zipCode')}" 
+                                             th:errors="*{zipCode}">ZIP code error</div>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="d-flex justify-content-between">
@@ -161,5 +198,8 @@
     
     <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+    
+    <!-- Owner Form Validation -->
+    <script th:src="@{/js/owner-form-validation.js}"></script>
 </body>
 </html>

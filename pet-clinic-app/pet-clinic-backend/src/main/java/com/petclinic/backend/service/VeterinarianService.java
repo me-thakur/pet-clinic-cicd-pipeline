@@ -2,6 +2,8 @@ package com.petclinic.backend.service;
 
 import com.petclinic.backend.model.Veterinarian;
 import com.petclinic.backend.model.VisitType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +13,13 @@ import java.util.Map;
  * Extends BaseService with Veterinarian-specific functionality
  */
 public interface VeterinarianService extends BaseService<Veterinarian, Long> {
+    
+    /**
+     * Find all veterinarians with server-side pagination and sorting
+     * @param pageable Pagination and sorting parameters
+     * @return Page of veterinarians with server-side sorting applied
+     */
+    Page<Veterinarian> findAllWithPagination(Pageable pageable);
     
     /**
      * Find veterinarians by specialty
@@ -61,6 +70,13 @@ public interface VeterinarianService extends BaseService<Veterinarian, Long> {
      * @return List of matching veterinarians
      */
     List<Veterinarian> searchByName(String searchTerm);
+    
+    /**
+     * Search veterinarians by first name
+     * @param firstName First name to search for
+     * @return List of matching veterinarians
+     */
+    List<Veterinarian> searchByFirstName(String firstName);
     
     /**
      * Find veterinarians available for a specific visit type

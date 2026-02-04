@@ -1,6 +1,7 @@
 package com.petclinic.frontend.service;
 
 import com.petclinic.frontend.model.ReportFilter;
+import com.petclinic.frontend.model.VeterinarianOption;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -10,7 +11,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Report Service
@@ -90,7 +93,21 @@ public class ReportService {
                         .queryParam("endDate", endDate)
                         .build())
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {});
+                .bodyToMono(new ParameterizedTypeReference<java.util.List<java.util.Map<String, Object>>>() {})
+                .map(list -> {
+                    Map<String, Object> result = new java.util.HashMap<>();
+                    // If we get a list of reports, aggregate the visitsByVeterinarian data
+                    if (!list.isEmpty()) {
+                        // Assuming the first report contains the aggregated data
+                        Map<String, Object> firstReport = list.get(0);
+                        Object visitsByVet = firstReport.get("visitsByVeterinarian");
+                        if (visitsByVet instanceof Map) {
+                            result.putAll((Map<String, Object>) visitsByVet);
+                        }
+                    }
+                    return result;
+                })
+                .onErrorReturn(new java.util.HashMap<>());
     }
 
     /**
@@ -104,7 +121,21 @@ public class ReportService {
                         .queryParam("endDate", endDate)
                         .build())
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {});
+                .bodyToMono(new ParameterizedTypeReference<java.util.List<java.util.Map<String, Object>>>() {})
+                .map(list -> {
+                    Map<String, Object> result = new java.util.HashMap<>();
+                    // If we get a list of reports, aggregate the visitsBySpecies data
+                    if (!list.isEmpty()) {
+                        // Assuming the first report contains the aggregated data
+                        Map<String, Object> firstReport = list.get(0);
+                        Object visitsBySpecies = firstReport.get("visitsBySpecies");
+                        if (visitsBySpecies instanceof Map) {
+                            result.putAll((Map<String, Object>) visitsBySpecies);
+                        }
+                    }
+                    return result;
+                })
+                .onErrorReturn(new java.util.HashMap<>());
     }
 
     /**
@@ -118,7 +149,19 @@ public class ReportService {
                         .queryParam("endDate", endDate)
                         .build())
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {});
+                .bodyToMono(new ParameterizedTypeReference<java.util.List<java.util.Map<String, Object>>>() {})
+                .map(list -> {
+                    Map<String, Object> result = new java.util.HashMap<>();
+                    // Aggregate revenue data from the list of reports
+                    for (Map<String, Object> report : list) {
+                        Object revenueByVet = report.get("revenueByVeterinarian");
+                        if (revenueByVet instanceof Map) {
+                            result.putAll((Map<String, Object>) revenueByVet);
+                        }
+                    }
+                    return result;
+                })
+                .onErrorReturn(new java.util.HashMap<>());
     }
 
     /**
@@ -146,6 +189,14 @@ public class ReportService {
                         .queryParam("format", format)
                         .build())
                 .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                         clientResponse -> {
+                             return clientResponse.bodyToMono(String.class)
+                                 .map(body -> new org.springframework.web.reactive.function.client.WebClientResponseException(
+                                     clientResponse.statusCode().value(), 
+                                     "Export failed: " + clientResponse.statusCode(), 
+                                     null, body.getBytes(), null));
+                         })
                 .toEntity(byte[].class);
     }
 
@@ -162,6 +213,14 @@ public class ReportService {
                         .queryParam("includeTrends", includeTrends)
                         .build())
                 .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                         clientResponse -> {
+                             return clientResponse.bodyToMono(String.class)
+                                 .map(body -> new org.springframework.web.reactive.function.client.WebClientResponseException(
+                                     clientResponse.statusCode().value(), 
+                                     "Export failed: " + clientResponse.statusCode(), 
+                                     null, body.getBytes(), null));
+                         })
                 .toEntity(byte[].class);
     }
 
@@ -180,6 +239,14 @@ public class ReportService {
                     return builder.build();
                 })
                 .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                         clientResponse -> {
+                             return clientResponse.bodyToMono(String.class)
+                                 .map(body -> new org.springframework.web.reactive.function.client.WebClientResponseException(
+                                     clientResponse.statusCode().value(), 
+                                     "Export failed: " + clientResponse.statusCode(), 
+                                     null, body.getBytes(), null));
+                         })
                 .toEntity(byte[].class);
     }
 
@@ -190,7 +257,45 @@ public class ReportService {
         return webClient.get()
                 .uri("/reports/filter-options")
                 .retrieve()
-                .bodyToMono(ReportFilter.class);
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .map(this::convertToFrontendReportFilter);
+    }
+    
+    /**
+     * Convert backend response to frontend ReportFilter model
+     */
+    @SuppressWarnings("unchecked")
+    private ReportFilter convertToFrontendReportFilter(Map<String, Object> backendResponse) {
+        ReportFilter filter = new ReportFilter();
+        
+        // Convert available veterinarians
+        List<Map<String, Object>> backendVets = (List<Map<String, Object>>) backendResponse.get("availableVeterinarians");
+        if (backendVets != null) {
+            List<VeterinarianOption> frontendVets = backendVets.stream()
+                    .map(vetMap -> {
+                        VeterinarianOption vet = new VeterinarianOption();
+                        vet.setId(((Number) vetMap.get("id")).longValue());
+                        vet.setFirstName((String) vetMap.get("firstName"));
+                        vet.setLastName((String) vetMap.get("lastName"));
+                        return vet;
+                    })
+                    .collect(Collectors.toList());
+            filter.setAvailableVeterinarians(frontendVets);
+        }
+        
+        // Convert species list
+        List<String> species = (List<String>) backendResponse.get("species");
+        if (species != null) {
+            filter.setSpecies(species);
+        }
+        
+        // Convert visit types
+        List<String> visitTypes = (List<String>) backendResponse.get("visitTypes");
+        if (visitTypes != null) {
+            filter.setVisitTypes(visitTypes);
+        }
+        
+        return filter;
     }
 
     /**

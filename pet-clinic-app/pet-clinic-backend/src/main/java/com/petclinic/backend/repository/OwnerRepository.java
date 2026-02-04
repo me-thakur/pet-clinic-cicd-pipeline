@@ -178,8 +178,21 @@ public interface OwnerRepository extends BaseRepository<Owner, Long> {
     List<Owner> findByPetName(@Param("petName") String petName);
     
     /**
+     * Find all owners with pet count (for list views)
+     * Optimized query that includes pet count without fetching full pet details
+     */
+    @Query("SELECT o FROM Owner o LEFT JOIN FETCH o.pets")
+    Page<Owner> findAllWithPets(Pageable pageable);
+    /**
      * Find owners by email containing text (case-insensitive)
      * Supports email-based search - Requirement 8.4
      */
     List<Owner> findByEmailContainingIgnoreCase(String email);
+    
+    /**
+     * Find owners by multiple text criteria (name, email) with pagination
+     * Supports comprehensive search for pet form owner selection
+     */
+    Page<Owner> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+        String firstName, String lastName, String email, Pageable pageable);
 }

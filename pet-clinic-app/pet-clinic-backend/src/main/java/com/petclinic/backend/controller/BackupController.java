@@ -189,6 +189,11 @@ public class BackupController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, 
                        "attachment; filename=\"" + backupFile.getName() + "\"")
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate, private")
+                .header(HttpHeaders.PRAGMA, "no-cache")
+                .header(HttpHeaders.EXPIRES, "0")
+                .header("X-Content-Type-Options", "nosniff")
+                .header("X-Download-Options", "noopen")
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
     }

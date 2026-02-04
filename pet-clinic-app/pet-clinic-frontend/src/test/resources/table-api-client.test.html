@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TableApiClient Tests</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .test-pass {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .test-fail {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .test-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .test-summary {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error-details {
+            font-family: monospace;
+            font-size: 0.9em;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>TableApiClient Unit Tests</h1>
+    
+    <div class="test-container">
+        <h2>Test Controls</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="clearResults()">Clear Results</button>
+        <button onclick="runApiTests()">Run API Tests</button>
+        <button onclick="runCacheTests()">Run Cache Tests</button>
+        <button onclick="runErrorHandlingTests()">Run Error Handling Tests</button>
+    </div>
+
+    <div class="test-container">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+        <div id="test-summary" class="test-summary"></div>
+    </div>
+
+    <!-- Include the TableApiClient -->
+    <script src="../../../main/resources/static/js/table-api-client.js"></script>
+
+    <script>
+        // Test framework
+        class TestFramework {
+            constructor() {
+                this.tests = [];
+                this.results = [];
+            }
+
+            test(name, testFn) {
+                this.tests.push({ name, testFn });
+            }
+
+            async runTests() {
+                this.results = [];
+                const resultsContainer = document.getElementById('test-results');
+                resultsContainer.innerHTML = '';
+
+                for (const test of this.tests) {
+                    try {
+                        await test.testFn();
+                        this.addResult(test.name, true);
+                    } catch (error) {
+                        this.addResult(test.name, false, error);
+                    }
+                }
+
+                this.displaySummary();
+            }
+
+            addResult(testName, passed, error = null) {
+                const result = { testName, passed, error };
+                this.results.push(result);
+
+                const resultsContainer = document.getElementById('test-results');
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `test-result ${passed ? 'test-pass' : 'test-fail'}`;
+                
+                let content = `${passed ? '✓' : '✗'} ${testName}`;
+                if (error) {
+                    content += `<div class="error-details">Error: ${error.message}</div>`;
+                }
+                
+                resultDiv.innerHTML = content;
+                resultsContainer.appendChild(resultDiv);
+            }
+
+            displaySummary() {
+                const passed = this.results.filter(r => r.passed).length;
+                const total = this.results.length;
+                const summaryDiv = document.getElementById('test-summary');
+                
+                summaryDiv.innerHTML = `Tests: ${passed}/${total} passed`;
+                summaryDiv.className = `test-summary ${passed === total ? 'test-pass' : 'test-fail'}`;
+            }
+
+            assert(condition, message) {
+                if (!condition) {
+                    throw new Error(message || 'Assertion failed');
+                }
+            }
+
+            assertEquals(actual, expected, message) {
+                if (actual !== expected) {
+                    throw new Error(message || `Expected ${expected}, but got ${actual}`);
+                }
+            }
+
+            assertNotNull(value, message) {
+                if (value === null || value === undefined) {
+                    throw new Error(message || 'Value should not be null or undefined');
+                }
+            }
+
+            clear() {
+                this.tests = [];
+                this.results = [];
+                document.getElementById('test-results').innerHTML = '';
+                document.getElementById('test-summary').innerHTML = '';
+            }
+        }
+
+        const testFramework = new TestFramework();
+
+        // Mock fetch for testing
+        const originalFetch = window.fetch;
+        let mockResponses = new Map();
+        let fetchCalls = [];
+
+        function mockFetch(url, options) {
+            fetchCalls.push({ url, options });
+            
+            const mockResponse = mockResponses.get(url) || mockResponses.get('default');
+            if (mockResponse) {
+                return Promise.resolve({
+                    ok: mockResponse.ok !== false,
+                    status: mockResponse.status || 200,
+                    json: () => Promise.resolve(mockResponse.data),
+                    text: () => Promise.resolve(mockResponse.text || ''),
+                    headers: new Map([['content-type', 'application/json']])
+                });
+            }
+
+            return Promise.reject(new Error('No mock response configured'));
+        }
+
+        function setMockResponse(url, response) {
+            mockResponses.set(url, response);
+        }
+
+        function clearMockResponses() {
+            mockResponses.clear();
+            fetchCalls = [];
+        }
+
+        function enableMocking() {
+            window.fetch = mockFetch;
+        }
+
+        function disableMocking() {
+            window.fetch = originalFetch;
+        }
+
+        // Test cases
+        function setupApiClientTests() {
+            testFramework.test('TableApiClient should be available globally', () => {
+                testFramework.assertNotNull(window.TableApiClient, 'TableApiClient should be available');
+                testFramework.assertNotNull(window.tableApiClient, 'Default instance should be available');
+            });
+
+            testFramework.test('TableApiClient constructor should set default config', () => {
+                const client = new window.TableApiClient();
+                const config = client.getConfig();
+                
+                testFramework.assertEquals(config.BASE_URL, '/api/v1', 'Base URL should be set');
+                testFramework.assertEquals(config.MAX_RETRIES, 3, 'Max retries should be 3');
+                testFramework.assert(config.DEFAULT_TIMEOUT > 0, 'Timeout should be positive');
+            });
+
+            testFramework.test('TableApiClient should allow config override', () => {
+                const customConfig = { MAX_RETRIES: 5, BASE_URL: '/custom/api' };
+                const client = new window.TableApiClient(customConfig);
+                const config = client.getConfig();
+                
+                testFramework.assertEquals(config.MAX_RETRIES, 5, 'Max retries should be overridden');
+                testFramework.assertEquals(config.BASE_URL, '/custom/api', 'Base URL should be overridden');
+            });
+        }
+
+        function setupCacheTests() {
+            testFramework.test('Cache should generate consistent keys', () => {
+                const client = new window.TableApiClient();
+                const key1 = client.cache.generateKey('GET', '/test', { a: 1, b: 2 });
+                const key2 = client.cache.generateKey('GET', '/test', { b: 2, a: 1 });
+                
+                testFramework.assertEquals(key1, key2, 'Keys should be consistent regardless of parameter order');
+            });
+
+            testFramework.test('Cache should store and retrieve values', () => {
+                const client = new window.TableApiClient();
+                const key = 'test-key';
+                const value = { data: 'test' };
+                
+                client.cache.set(key, value);
+                const retrieved = client.cache.get(key);
+                
+                testFramework.assertEquals(retrieved.data, 'test', 'Cached value should be retrievable');
+            });
+
+            testFramework.test('Cache should expire old entries', async () => {
+                const client = new window.TableApiClient({ CACHE_TTL: 100 }); // 100ms TTL
+                const key = 'test-key';
+                const value = { data: 'test' };
+                
+                client.cache.set(key, value);
+                
+                // Wait for expiration
+                await new Promise(resolve => setTimeout(resolve, 150));
+                
+                const retrieved = client.cache.get(key);
+                testFramework.assertEquals(retrieved, null, 'Expired cache entry should return null');
+            });
+
+            testFramework.test('Cache should clear entity-specific entries', () => {
+                const client = new window.TableApiClient();
+                
+                client.cache.set('GET:/api/v1/visits:{}', { data: 'visits' });
+                client.cache.set('GET:/api/v1/owners:{}', { data: 'owners' });
+                client.cache.set('GET:/api/v1/pets:{}', { data: 'pets' });
+                
+                client.clearEntityCache('visits');
+                
+                testFramework.assertEquals(client.cache.get('GET:/api/v1/visits:{}'), null, 'Visits cache should be cleared');
+                testFramework.assertNotNull(client.cache.get('GET:/api/v1/owners:{}'), 'Owners cache should remain');
+                testFramework.assertNotNull(client.cache.get('GET:/api/v1/pets:{}'), 'Pets cache should remain');
+            });
+        }
+
+        function setupErrorHandlingTests() {
+            testFramework.test('ApiError should classify network errors correctly', () => {
+                const networkError = new window.ApiError('Network failed', 0, null, new TypeError('Failed to fetch'));
+                
+                testFramework.assert(networkError.isNetworkError(), 'Should identify network error');
+                testFramework.assert(networkError.isRetryable(), 'Network errors should be retryable');
+                testFramework.assert(!networkError.isServerError(), 'Should not be server error');
+                testFramework.assert(!networkError.isClientError(), 'Should not be client error');
+            });
+
+            testFramework.test('ApiError should classify server errors correctly', () => {
+                const serverError = new window.ApiError('Server error', 500, null, null);
+                
+                testFramework.assert(serverError.isServerError(), 'Should identify server error');
+                testFramework.assert(serverError.isRetryable(), 'Server errors should be retryable');
+                testFramework.assert(!serverError.isNetworkError(), 'Should not be network error');
+                testFramework.assert(!serverError.isClientError(), 'Should not be client error');
+            });
+
+            testFramework.test('ApiError should classify client errors correctly', () => {
+                const clientError = new window.ApiError('Bad request', 400, null, null);
+                
+                testFramework.assert(clientError.isClientError(), 'Should identify client error');
+                testFramework.assert(!clientError.isRetryable(), 'Client errors should not be retryable');
+                testFramework.assert(!serverError.isNetworkError(), 'Should not be network error');
+                testFramework.assert(!serverError.isServerError(), 'Should not be server error');
+            });
+        }
+
+        function setupTransformationTests() {
+            testFramework.test('Should transform frontend filters to backend format', () => {
+                const client = new window.TableApiClient();
+                const frontendFilters = [
+                    { column: 'status', value: 'ACTIVE', operator: 'equals' },
+                    { column: 'name', value: 'John', operator: 'contains' }
+                ];
+                
+                const backendFilters = client.transformFiltersToBackend(frontendFilters, 'visits');
+                
+                testFramework.assertEquals(backendFilters.status, 'ACTIVE', 'Status filter should be transformed');
+                testFramework.assertEquals(backendFilters.name, 'John', 'Name filter should be transformed');
+            });
+
+            testFramework.test('Should create bulk delete request correctly', () => {
+                const client = new window.TableApiClient();
+                const selectedIds = ['1', '2', '3'];
+                const filters = [{ column: 'status', value: 'ACTIVE' }];
+                
+                const request = client.createBulkDeleteRequest(selectedIds, false, filters, 'visits');
+                
+                testFramework.assertEquals(request.selectedIds.length, 3, 'Should have 3 selected IDs');
+                testFramework.assertEquals(request.selectedIds[0], 1, 'IDs should be converted to integers');
+                testFramework.assertEquals(request.entityType, 'visits', 'Entity type should be set');
+                testFramework.assertEquals(request.selectAll, false, 'Select all should be false');
+                testFramework.assertEquals(request.currentFilters.length, 1, 'Should have 1 filter');
+            });
+        }
+
+        function setupMockApiTests() {
+            testFramework.test('Should make GET request for entities', async () => {
+                enableMocking();
+                clearMockResponses();
+                
+                const mockData = {
+                    content: [{ id: 1, name: 'Test' }],
+                    page: { number: 0, size: 10, totalElements: 1 }
+                };
+                
+                setMockResponse('http://localhost/api/v1/visits?page=0&size=10', { data: mockData });
+                
+                const client = new window.TableApiClient();
+                const result = await client.getEntities('visits', { page: 0, size: 10 });
+                
+                testFramework.assertEquals(result.content.length, 1, 'Should return 1 item');
+                testFramework.assertEquals(result.content[0].name, 'Test', 'Should return correct data');
+                
+                disableMocking();
+            });
+
+            testFramework.test('Should handle API errors gracefully', async () => {
+                enableMocking();
+                clearMockResponses();
+                
+                setMockResponse('http://localhost/api/v1/visits?page=0&size=10', { 
+                    ok: false, 
+                    status: 500, 
+                    data: { message: 'Server error' } 
+                });
+                
+                const client = new window.TableApiClient();
+                
+                try {
+                    await client.getEntities('visits', { page: 0, size: 10 });
+                    testFramework.assert(false, 'Should have thrown an error');
+                } catch (error) {
+                    testFramework.assert(error instanceof window.ApiError, 'Should throw ApiError');
+                    testFramework.assertEquals(error.status, 500, 'Should have correct status');
+                }
+                
+                disableMocking();
+            });
+        }
+
+        // Test runner functions
+        async function runAllTests() {
+            testFramework.clear();
+            setupApiClientTests();
+            setupCacheTests();
+            setupErrorHandlingTests();
+            setupTransformationTests();
+            setupMockApiTests();
+            await testFramework.runTests();
+        }
+
+        async function runApiTests() {
+            testFramework.clear();
+            setupApiClientTests();
+            setupMockApiTests();
+            await testFramework.runTests();
+        }
+
+        async function runCacheTests() {
+            testFramework.clear();
+            setupCacheTests();
+            await testFramework.runTests();
+        }
+
+        async function runErrorHandlingTests() {
+            testFramework.clear();
+            setupErrorHandlingTests();
+            await testFramework.runTests();
+        }
+
+        function clearResults() {
+            testFramework.clear();
+        }
+
+        // Auto-run tests on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const info = document.createElement('div');
+            info.className = 'test-result test-info';
+            info.innerHTML = 'TableApiClient tests loaded. Click "Run All Tests" to execute.';
+            document.getElementById('test-results').appendChild(info);
+        });
+    </script>
+</body>
+</html>

@@ -1,9 +1,16 @@
 spring:
+  application:
+    name: pet-clinic-backend-test
+  
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
     password: 
+  
+  h2:
+    console:
+      enabled: false
   
   jpa:
     hibernate:
@@ -11,6 +18,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
+        format_sql: false
         dialect: org.hibernate.dialect.H2Dialect
   
   flyway:
@@ -18,21 +26,34 @@ spring:
   
   sql:
     init:
-      mode: never # Disable schema.sql execution
+      mode: never  # Disable schema.sql execution
 
-# Test-specific configuration
-app:
-  encryption:
-    key: test-encryption-key-32-characters
-  jwt:
-    secret: test-secret-key-that-is-at-least-256-bits-long-for-security-testing
-    expiration: 3600000 # 1 hour
-  session:
-    timeout: 1800000 # 30 minutes
-  https:
+# Disable data seeding for tests
+pet-clinic:
+  data-seeding:
     enabled: false
+
+# Validation configuration for tests
+petclinic:
+  validation:
+    mobile-number:
+      required: false
+      enforce-uniqueness: true
+      default-country-code: US
+      allow-international: true
+    email:
+      required: false
+      enforce-uniqueness: true
+      max-length: 100
+    name:
+      max-length: 50
+      allow-special-characters: true
+    general:
+      fail-fast: false
+      enable-audit-logging: false
 
 logging:
   level:
-    com.petclinic: DEBUG
-    org.springframework.security: DEBUG
+    com.petclinic: WARN
+    org.springframework: WARN
+    org.hibernate: WARN

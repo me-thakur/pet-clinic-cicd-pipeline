@@ -1,0 +1,419 @@
+/**
+ * Performance Optimization Styles
+ * CSS for loading indicators, skeleton loaders, and performance-related UI elements
+ * Validates: Requirements 16.1, 16.2, 16.3, 16.4, 16.5
+ */
+
+/* Loading Indicators */
+.loading-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+.global-loading-indicator {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+}
+
+/* Spinner Animation */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Progress Bars */
+.upload-progress {
+    margin-top: 10px;
+    width: 100%;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #f0f0f0;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #007bff, #0056b3);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.progress-text {
+    display: block;
+    text-align: center;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Skeleton Loaders */
+.skeleton-loader {
+    padding: 20px;
+}
+
+.skeleton-line {
+    height: 16px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.skeleton-line.short {
+    width: 60%;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Lazy Loading Images */
+img[data-src] {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+img.loaded {
+    opacity: 1;
+}
+
+img.loading {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+}
+
+/* Search Results */
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.search-result-item {
+    padding: 10px 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+    background-color: #f8f9fa;
+}
+
+.search-result-item:last-child {
+    border-bottom: none;
+}
+
+/* Virtual Scrolling */
+.large-table {
+    position: relative;
+    overflow: auto;
+    max-height: 500px;
+}
+
+.virtual-row {
+    position: absolute;
+    width: 100%;
+    transition: transform 0.1s ease;
+}
+
+/* Performance Indicators */
+.performance-indicator {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 9999;
+    display: none;
+}
+
+.performance-indicator.slow {
+    background: rgba(220, 53, 69, 0.9);
+}
+
+.performance-indicator.fast {
+    background: rgba(40, 167, 69, 0.9);
+}
+
+/* Optimized Images */
+.optimized-image {
+    max-width: 100%;
+    height: auto;
+    transition: opacity 0.3s ease;
+}
+
+.optimized-image.loading {
+    opacity: 0.5;
+}
+
+/* Cache Status Indicator */
+.cache-status {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 123, 255, 0.9);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    z-index: 9999;
+    display: none;
+}
+
+.cache-status.hit {
+    background: rgba(40, 167, 69, 0.9);
+}
+
+.cache-status.miss {
+    background: rgba(255, 193, 7, 0.9);
+}
+
+/* Network Status Indicator */
+.network-status {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 9999;
+    display: none;
+}
+
+.network-status.online {
+    background: rgba(40, 167, 69, 0.9);
+    color: white;
+}
+
+.network-status.offline {
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+}
+
+.network-status.slow {
+    background: rgba(255, 193, 7, 0.9);
+    color: black;
+}
+
+/* Preloading Indicators */
+.preloading {
+    position: relative;
+}
+
+.preloading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #007bff, transparent);
+    animation: preload-progress 2s infinite;
+}
+
+@keyframes preload-progress {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Responsive Optimizations */
+@media (max-width: 768px) {
+    .loading-indicator {
+        padding: 10px;
+    }
+    
+    .spinner {
+        width: 30px;
+        height: 30px;
+        border-width: 3px;
+    }
+    
+    .skeleton-line {
+        height: 14px;
+    }
+    
+    .search-results {
+        max-height: 200px;
+    }
+    
+    .search-result-item {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .global-loading-indicator {
+        padding: 15px;
+        border-radius: 6px;
+    }
+    
+    .progress-bar {
+        height: 16px;
+    }
+    
+    .progress-text {
+        font-size: 11px;
+    }
+    
+    .performance-indicator,
+    .cache-status,
+    .network-status {
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .loading-indicator {
+        background: rgba(33, 37, 41, 0.9);
+        color: white;
+    }
+    
+    .global-loading-indicator {
+        background: rgba(33, 37, 41, 0.95);
+        color: white;
+    }
+    
+    .progress-bar {
+        background-color: #495057;
+    }
+    
+    .skeleton-line {
+        background: linear-gradient(90deg, #495057 25%, #6c757d 50%, #495057 75%);
+        background-size: 200% 100%;
+    }
+    
+    .search-results {
+        background: #212529;
+        border-color: #495057;
+        color: white;
+    }
+    
+    .search-result-item {
+        border-bottom-color: #495057;
+    }
+    
+    .search-result-item:hover {
+        background-color: #343a40;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .spinner {
+        border-color: #000;
+        border-top-color: #007bff;
+    }
+    
+    .progress-fill {
+        background: #007bff;
+    }
+    
+    .skeleton-line {
+        background: linear-gradient(90deg, #ccc 25%, #999 50%, #ccc 75%);
+        background-size: 200% 100%;
+    }
+    
+    .search-results {
+        border-color: #000;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .spinner,
+    .progress-fill::after,
+    .skeleton-line,
+    .preloading::after {
+        animation: none;
+    }
+    
+    .optimized-image,
+    .search-result-item,
+    .virtual-row {
+        transition: none;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .loading-indicator,
+    .global-loading-indicator,
+    .spinner,
+    .progress-bar,
+    .skeleton-loader,
+    .search-results,
+    .performance-indicator,
+    .cache-status,
+    .network-status {
+        display: none !important;
+    }
+}

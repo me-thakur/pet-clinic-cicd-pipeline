@@ -35,8 +35,12 @@
                     <i class="fas fa-analytics"></i> Advanced Analytics
                 </h1>
                 <p class="text-muted mb-0">
-                    Analysis Period: <strong th:text="${#temporals.format(startDate, 'MMM dd, yyyy')} + ' - ' + ${#temporals.format(endDate, 'MMM dd, yyyy')}">Date Range</strong>
+                    Analysis Period: <strong><span th:text="${startDate}">Start Date</span> - <span th:text="${endDate}">End Date</span></strong>
                 </p>
+                <!-- JavaScript Status Indicator -->
+                <div id="js-status" class="alert alert-warning mt-2" style="display: none;">
+                    <i class="fas fa-cog fa-spin"></i> Loading analytics data...
+                </div>
             </div>
             <div>
                 <a th:href="@{/dashboard}" class="btn btn-secondary">
@@ -75,7 +79,7 @@
         </div>
 
         <!-- Veterinarian Performance -->
-        <div th:if="${visitsByVet != null}" class="row mb-4">
+        <div class="row mb-4">
             <div class="col-12">
                 <div class="card analytics-card">
                     <div class="card-header">
@@ -86,42 +90,16 @@
                             <!-- Visit Statistics by Veterinarian -->
                             <div class="col-md-6">
                                 <h6>Visit Statistics by Veterinarian</h6>
-                                <div th:if="${visitsByVet != null and !visitsByVet.empty}">
-                                    <div th:each="entry : ${visitsByVet}" class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span th:text="${entry.key}">Veterinarian</span>
-                                            <span class="badge bg-primary" th:text="${entry.value}">0</span>
-                                        </div>
-                                        <div class="progress mt-1" style="height: 8px;">
-                                            <div class="progress-bar" role="progressbar" 
-                                                 th:style="'width: ' + ${(entry.value * 100.0) / T(java.util.Collections).max(visitsByVet.values())} + '%'">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div th:if="${visitsByVet == null or visitsByVet.empty}" class="text-muted text-center">
-                                    <i class="fas fa-info-circle"></i> No data available
+                                <div id="visits-by-vet" class="text-muted text-center">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading visit statistics...
                                 </div>
                             </div>
                             
                             <!-- Revenue by Veterinarian -->
                             <div class="col-md-6">
                                 <h6>Revenue by Veterinarian</h6>
-                                <div th:if="${revenueByVet != null and !revenueByVet.empty}">
-                                    <div th:each="entry : ${revenueByVet}" class="mb-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span th:text="${entry.key}">Veterinarian</span>
-                                            <span class="badge bg-success" th:text="'$' + ${#numbers.formatDecimal(entry.value, 1, 2)}">$0.00</span>
-                                        </div>
-                                        <div class="progress mt-1" style="height: 8px;">
-                                            <div class="progress-bar bg-success" role="progressbar" 
-                                                 th:style="'width: ' + ${(entry.value * 100.0) / T(java.util.Collections).max(revenueByVet.values())} + '%'">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div th:if="${revenueByVet == null or revenueByVet.empty}" class="text-muted text-center">
-                                    <i class="fas fa-info-circle"></i> No data available
+                                <div id="revenue-by-vet" class="text-muted text-center">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading revenue data...
                                 </div>
                             </div>
                         </div>
@@ -131,7 +109,7 @@
         </div>
 
         <!-- Species Analysis -->
-        <div th:if="${visitsBySpecies != null}" class="row mb-4">
+        <div class="row mb-4">
             <div class="col-12">
                 <div class="card analytics-card">
                     <div class="card-header">
@@ -141,22 +119,8 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <h6>Visit Distribution by Species</h6>
-                                <div th:if="${visitsBySpecies != null and !visitsBySpecies.empty}">
-                                    <div class="row">
-                                        <div th:each="entry : ${visitsBySpecies}" class="col-md-4 mb-3">
-                                            <div class="card border-0 bg-light">
-                                                <div class="card-body text-center">
-                                                    <i class="fas fa-paw fa-2x text-info mb-2"></i>
-                                                    <h5 th:text="${entry.value}">0</h5>
-                                                    <p class="mb-0" th:text="${entry.key}">Species</p>
-                                                    <small class="text-muted" th:text="${#numbers.formatDecimal((entry.value * 100.0) / T(java.util.Collections).sum(visitsBySpecies.values()), 1, 1)} + '%'">0%</small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div th:if="${visitsBySpecies == null or visitsBySpecies.empty}" class="text-muted text-center">
-                                    <i class="fas fa-info-circle"></i> No species data available
+                                <div id="visits-by-species" class="text-muted text-center">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading species data...
                                 </div>
                             </div>
                         </div>
@@ -166,7 +130,7 @@
         </div>
 
         <!-- Utilization Analysis -->
-        <div th:if="${utilization != null}" class="row mb-4">
+        <div class="row mb-4">
             <div class="col-12">
                 <div class="card analytics-card">
                     <div class="card-header">
@@ -176,43 +140,30 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="text-center">
-                                    <div class="metric-highlight text-primary" th:text="${#numbers.formatDecimal(utilization.overallUtilization ?: 0, 1, 1)} + '%'">0%</div>
+                                    <div id="overall-utilization" class="metric-highlight text-primary">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </div>
                                     <p class="text-muted">Overall Utilization</p>
                                     <div class="progress utilization-bar">
-                                        <div class="progress-bar" role="progressbar" 
-                                             th:style="'width: ' + ${utilization.overallUtilization ?: 0} + '%'"
-                                             th:classappend="${(utilization.overallUtilization ?: 0) >= 80} ? 'bg-success' : (${(utilization.overallUtilization ?: 0) >= 60} ? 'bg-warning' : 'bg-danger')">
+                                        <div id="utilization-bar" class="progress-bar bg-primary" role="progressbar" style="width: 0%">
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="text-center">
-                                    <div class="metric-highlight text-success" th:text="${utilization.peakHours ?: 'N/A'}">N/A</div>
+                                    <div id="peak-hours" class="metric-highlight text-success">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </div>
                                     <p class="text-muted">Peak Hours</p>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="text-center">
-                                    <div class="metric-highlight text-info" th:text="${#numbers.formatDecimal(utilization.averageWaitTime ?: 0, 1, 0)} + ' min'">0 min</div>
-                                    <p class="text-muted">Avg Wait Time</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Individual Veterinarian Utilization -->
-                        <div th:if="${utilization.veterinarianUtilization != null and !utilization.veterinarianUtilization.empty}" class="mt-4">
-                            <h6>Individual Veterinarian Utilization</h6>
-                            <div th:each="entry : ${utilization.veterinarianUtilization}" class="mb-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span th:text="${entry.key}">Veterinarian</span>
-                                    <span th:text="${#numbers.formatDecimal(entry.value, 1, 1)} + '%'">0%</span>
-                                </div>
-                                <div class="progress" style="height: 10px;">
-                                    <div class="progress-bar" role="progressbar" 
-                                         th:style="'width: ' + ${entry.value} + '%'"
-                                         th:classappend="${entry.value >= 80} ? 'bg-success' : (${entry.value >= 60} ? 'bg-warning' : 'bg-danger')">
+                                    <div id="avg-wait-time" class="metric-highlight text-info">
+                                        <i class="fas fa-spinner fa-spin"></i>
                                     </div>
+                                    <p class="text-muted">Avg Wait Time</p>
                                 </div>
                             </div>
                         </div>
@@ -222,7 +173,7 @@
         </div>
 
         <!-- Monthly Trends -->
-        <div th:if="${monthlyTrends != null}" class="row mb-4">
+        <div class="row mb-4">
             <div class="col-12">
                 <div class="card analytics-card">
                     <div class="card-header">
@@ -232,62 +183,37 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <h6>Revenue Trends</h6>
-                                <div th:if="${monthlyTrends.revenueByMonth != null and !monthlyTrends.revenueByMonth.empty}">
-                                    <div th:each="entry : ${monthlyTrends.revenueByMonth}" class="d-flex justify-content-between align-items-center mb-2">
-                                        <span th:text="${entry.key}">Month</span>
-                                        <div class="d-flex align-items-center">
-                                            <span class="me-2" th:text="'$' + ${#numbers.formatDecimal(entry.value, 1, 2)}">$0.00</span>
-                                            <div class="progress" style="width: 100px; height: 15px;">
-                                                <div class="progress-bar bg-success" role="progressbar" 
-                                                     th:style="'width: ' + ${(entry.value * 100.0) / T(java.util.Collections).max(monthlyTrends.revenueByMonth.values())} + '%'">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div th:if="${monthlyTrends.revenueByMonth == null or monthlyTrends.revenueByMonth.empty}" class="text-muted text-center">
-                                    <i class="fas fa-info-circle"></i> No revenue trend data
+                                <div id="revenue-trends" class="text-muted text-center">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading revenue trends...
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <h6>Visit Trends</h6>
-                                <div th:if="${monthlyTrends.visitsByMonth != null and !monthlyTrends.visitsByMonth.empty}">
-                                    <div th:each="entry : ${monthlyTrends.visitsByMonth}" class="d-flex justify-content-between align-items-center mb-2">
-                                        <span th:text="${entry.key}">Month</span>
-                                        <div class="d-flex align-items-center">
-                                            <span class="me-2" th:text="${entry.value}">0</span>
-                                            <div class="progress" style="width: 100px; height: 15px;">
-                                                <div class="progress-bar bg-primary" role="progressbar" 
-                                                     th:style="'width: ' + ${(entry.value * 100.0) / T(java.util.Collections).max(monthlyTrends.visitsByMonth.values())} + '%'">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div th:if="${monthlyTrends.visitsByMonth == null or monthlyTrends.visitsByMonth.empty}" class="text-muted text-center">
-                                    <i class="fas fa-info-circle"></i> No visit trend data
+                                <div id="visit-trends" class="text-muted text-center">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading visit trends...
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Growth Indicators -->
-                        <div th:if="${monthlyTrends.growthRate != null}" class="mt-4">
+                        <div class="mt-4">
                             <div class="row">
                                 <div class="col-md-6 text-center">
                                     <div class="alert alert-light">
-                                        <h5 th:text="${#numbers.formatDecimal(monthlyTrends.growthRate, 1, 1)} + '%'"
-                                            th:classappend="${monthlyTrends.growthRate > 0} ? 'text-success' : (${monthlyTrends.growthRate < 0} ? 'text-danger' : 'text-muted')">
-                                            0%
+                                        <h5 id="growth-rate">
+                                            <i class="fas fa-spinner fa-spin"></i>
                                         </h5>
                                         <p class="mb-0">
-                                            <i th:classappend="${monthlyTrends.growthRate > 0} ? 'fas fa-arrow-up text-success' : (${monthlyTrends.growthRate < 0} ? 'fas fa-arrow-down text-danger' : 'fas fa-minus text-muted')"></i>
+                                            <i class="fas fa-minus text-muted"></i>
                                             Monthly Growth Rate
                                         </p>
                                     </div>
                                 </div>
                                 <div class="col-md-6 text-center">
                                     <div class="alert alert-light">
-                                        <h5 th:text="'$' + ${#numbers.formatDecimal(monthlyTrends.averageMonthlyRevenue ?: 0, 1, 2)}">$0.00</h5>
+                                        <h5 id="avg-monthly-revenue">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                        </h5>
                                         <p class="mb-0">Average Monthly Revenue</p>
                                     </div>
                                 </div>
@@ -311,7 +237,7 @@
                                 <div class="card bg-primary text-white">
                                     <div class="card-body">
                                         <i class="fas fa-calendar-check fa-2x mb-2"></i>
-                                        <h4 th:text="${visitsByVet != null ? T(java.util.Collections).sum(visitsByVet.values()) : 0}">0</h4>
+                                        <h4 th:text="${totalVisits}">0</h4>
                                         <p class="mb-0">Total Visits</p>
                                     </div>
                                 </div>
@@ -320,7 +246,9 @@
                                 <div class="card bg-success text-white">
                                     <div class="card-body">
                                         <i class="fas fa-dollar-sign fa-2x mb-2"></i>
-                                        <h4 th:text="'$' + ${#numbers.formatDecimal(revenueByVet != null ? T(java.util.Collections).sum(revenueByVet.values()) : 0, 1, 2)}">$0.00</h4>
+                                        <h4 id="total-revenue">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                        </h4>
                                         <p class="mb-0">Total Revenue</p>
                                     </div>
                                 </div>
@@ -329,7 +257,7 @@
                                 <div class="card bg-info text-white">
                                     <div class="card-body">
                                         <i class="fas fa-paw fa-2x mb-2"></i>
-                                        <h4 th:text="${visitsBySpecies != null ? T(java.util.Collections).sum(visitsBySpecies.values()) : 0}">0</h4>
+                                        <h4 th:text="${totalAnimals}">0</h4>
                                         <p class="mb-0">Animals Treated</p>
                                     </div>
                                 </div>
@@ -338,7 +266,7 @@
                                 <div class="card bg-warning text-white">
                                     <div class="card-body">
                                         <i class="fas fa-user-md fa-2x mb-2"></i>
-                                        <h4 th:text="${visitsByVet != null ? visitsByVet.size() : 0}">0</h4>
+                                        <h4 th:text="${activeVets}">0</h4>
                                         <p class="mb-0">Active Vets</p>
                                     </div>
                                 </div>
@@ -381,22 +309,51 @@
     </div>
 
     <script>
+        // Simple export function
         function exportAnalytics(reportType, format) {
-            const startDate = /*[[${startDate}]]*/ '';
-            const endDate = /*[[${endDate}]]*/ '';
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
             
-            let url = `/dashboard/export/${reportType}?startDate=${startDate}&endDate=${endDate}&format=${format}`;
+            const startDate = startDateInput ? startDateInput.value : '';
+            const endDate = endDateInput ? endDateInput.value : '';
+            
+            // Create a form to submit the export request with proper authentication
+            const form = document.createElement('form');
+            form.method = 'GET';
+            form.action = `/dashboard/export/${reportType}`;
+            form.target = '_blank'; // Open in new tab/window
+            
+            // Add CSRF token for security
+            const csrfToken = document.querySelector('meta[name="_csrf"]');
+            
+            // Add form parameters
+            const params = {
+                startDate: startDate,
+                endDate: endDate,
+                format: format
+            };
+            
             if (reportType === 'revenue') {
-                url += '&includeTrends=true';
+                params.includeTrends = 'true';
             }
             
-            // Create a temporary link to trigger download
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${reportType}-analytics-${startDate}-to-${endDate}.${format}`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Add CSRF token if available
+            if (csrfToken && csrfToken.getAttribute('content')) {
+                params['_csrf'] = csrfToken.getAttribute('content');
+            }
+            
+            for (const [key, value] of Object.entries(params)) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            }
+            
+            // Submit the form
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
         }
     </script>
 </body>

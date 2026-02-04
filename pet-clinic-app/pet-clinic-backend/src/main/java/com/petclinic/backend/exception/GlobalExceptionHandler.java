@@ -1,462 +1,420 @@
 package com.petclinic.backend.exception;
 
-import com.petclinic.backend.config.ApiVersionConfig;
 import com.petclinic.backend.dto.ErrorResponse;
+import com.petclinic.backend.dto.FieldError;
+import com.petclinic.backend.dto.StandardApiResponse;
+import com.petclinic.backend.service.ErrorSuggestionService;
+import com.petclinic.backend.service.SecurityAuditService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.validation.FieldError;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import java.time.LocalDateTime;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
- * Global exception handler for Pet Clinic application
- * Provides centralized exception handling with consistent error response format
- * Supports API versioning and comprehensive error logging
+ * Global exception handler for standardized error responses with specific, actionable error messages
  */
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
     
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     
-    /**
-     * Handle Pet Clinic specific exceptions
-     */
-    @ExceptionHandler(PetClinicException.class)
-    public ResponseEntity<ErrorResponse> handlePetClinicException(PetClinicException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
-        
-        ErrorResponse errorResponse = createErrorResponse(
-            ex.getHttpStatus().value(),
-            ex.getHttpStatus().getReasonPhrase(),
-            ex.getMessage(),
-            getPath(request),
-            ex.getErrorCode(),
-            getApiVersion(request),
-            traceId
-        );
-        
-        return new ResponseEntity<>(errorResponse, ex.getHttpStatus());
-    }
+    @Autowired
+    private ErrorSuggestionService errorSuggestionService;
+    
+    @Autowired
+    private SecurityAuditService securityAuditService;
     
     /**
-     * Handle entity not found exceptions
-     */
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
-        
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.NOT_FOUND.value(),
-            HttpStatus.NOT_FOUND.getReasonPhrase(),
-            ex.getMessage(),
-            getPath(request),
-            ex.getErrorCode(),
-            getApiVersion(request),
-            traceId
-        );
-        
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-    }
-    
-    /**
-     * Handle validation exceptions
+     * Handle custom validation exceptions with specific field-level feedback
      */
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
+    public ResponseEntity<ErrorResponse> handleValidationException(
+            ValidationException ex, HttpServletRequest request) {
         
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            HttpStatus.BAD_REQUEST.getReasonPhrase(),
-            ex.getMessage(),
-            getPath(request),
-            ex.getErrorCode(),
-            getApiVersion(request),
-            traceId
-        );
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode("VALIDATION_FAILED")
+            .message("Please correct the following fields to continue:")
+            .fieldErrors(ex.getFieldErrors())
+            .suggestions(errorSuggestionService.generateSuggestions(ex))
+            .path(request.getRequestURI())
+            .build();
         
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        logger.warn("Validation failed for {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.badRequest().body(response);
     }
     
     /**
-     * Handle business rule exceptions
+     * Handle service unavailable exceptions with fallback options
      */
-    @ExceptionHandler(BusinessRuleException.class)
-    public ResponseEntity<ErrorResponse> handleBusinessRuleException(BusinessRuleException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleServiceUnavailableException(
+            ServiceUnavailableException ex, HttpServletRequest request) {
         
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.UNPROCESSABLE_ENTITY.value(),
-            HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
-            ex.getMessage(),
-            getPath(request),
-            ex.getErrorCode(),
-            getApiVersion(request),
-            traceId
-        );
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode("SERVICE_UNAVAILABLE")
+            .message("Service temporarily unavailable: " + ex.getServiceName())
+            .retryAfter(ex.getRetryAfter())
+            .fallbackOptions(ex.getFallbackOptions())
+            .suggestions(errorSuggestionService.generateServiceUnavailableSuggestions(ex.getServiceName()))
+            .path(request.getRequestURI())
+            .build();
         
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
+        logger.warn("Service unavailable: {} - {}", ex.getServiceName(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
     }
     
     /**
-     * Handle conflict exceptions
+     * Handle business logic exceptions with specific guidance
      */
-    @ExceptionHandler(ConflictException.class)
-    public ResponseEntity<ErrorResponse> handleConflictException(ConflictException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
+    @ExceptionHandler(BusinessLogicException.class)
+    public ResponseEntity<ErrorResponse> handleBusinessLogicException(
+            BusinessLogicException ex, HttpServletRequest request) {
         
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.CONFLICT.value(),
-            HttpStatus.CONFLICT.getReasonPhrase(),
-            ex.getMessage(),
-            getPath(request),
-            ex.getErrorCode(),
-            getApiVersion(request),
-            traceId
-        );
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode(ex.getErrorCode())
+            .message(ex.getMessage())
+            .suggestions(errorSuggestionService.generateSuggestions(ex.getErrorCode()))
+            .path(request.getRequestURI())
+            .context(ex.getContext())
+            .build();
         
-        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+        logger.warn("Business logic error on {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.badRequest().body(response);
     }
     
     /**
-     * Handle method argument validation exceptions
+     * Handle validation errors from @Valid annotations with specific field guidance
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(
+            MethodArgumentNotValidException ex, HttpServletRequest request) {
         
-        Map<String, String> fieldErrors = new HashMap<>();
+        List<FieldError> fieldErrors = new ArrayList<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
+            String fieldName = ((org.springframework.validation.FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
-            fieldErrors.put(fieldName, errorMessage);
+            Object rejectedValue = ((org.springframework.validation.FieldError) error).getRejectedValue();
+            
+            List<String> fieldSuggestions = errorSuggestionService.generateFieldSuggestions(
+                fieldName, "VALIDATION_ERROR"
+            );
+            
+            fieldErrors.add(FieldError.builder()
+                .field(fieldName)
+                .message(errorMessage)
+                .rejectedValue(rejectedValue != null ? rejectedValue.toString() : null)
+                .suggestions(fieldSuggestions)
+                .build());
         });
         
-        String message = "Validation failed for " + fieldErrors.size() + " field(s)";
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode("FIELD_VALIDATION_FAILED")
+            .message("Please correct the highlighted fields below:")
+            .fieldErrors(fieldErrors)
+            .suggestions(List.of(
+                "Review each field for specific formatting requirements",
+                "All required fields must be completed",
+                "Check for typos and ensure data matches expected formats"
+            ))
+            .path(request.getRequestURI())
+            .build();
         
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            HttpStatus.BAD_REQUEST.getReasonPhrase(),
-            message,
-            getPath(request),
-            "VALIDATION_ERROR",
-            getApiVersion(request),
-            traceId
-        );
-        errorResponse.setFieldErrors(fieldErrors);
-        
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        logger.warn("Field validation failed for {}: {} errors", request.getRequestURI(), fieldErrors.size());
+        return ResponseEntity.badRequest().body(response);
     }
     
     /**
-     * Handle constraint violation exceptions
+     * Handle constraint violation exceptions with specific field guidance
      */
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(
+            ConstraintViolationException ex, HttpServletRequest request) {
         
-        Map<String, String> fieldErrors = new HashMap<>();
-        for (ConstraintViolation<?> violation : ex.getConstraintViolations()) {
-            String fieldName = violation.getPropertyPath().toString();
-            String errorMessage = violation.getMessage();
-            fieldErrors.put(fieldName, errorMessage);
-        }
+        List<FieldError> fieldErrors = ex.getConstraintViolations()
+            .stream()
+            .map(violation -> {
+                String fieldName = violation.getPropertyPath().toString();
+                String message = violation.getMessage();
+                Object invalidValue = violation.getInvalidValue();
+                
+                List<String> fieldSuggestions = errorSuggestionService.generateFieldSuggestions(
+                    fieldName, "CONSTRAINT_VIOLATION"
+                );
+                
+                return FieldError.builder()
+                    .field(fieldName)
+                    .message(message)
+                    .rejectedValue(invalidValue != null ? invalidValue.toString() : null)
+                    .suggestions(fieldSuggestions)
+                    .build();
+            })
+            .collect(Collectors.toList());
         
-        String message = "Constraint validation failed for " + fieldErrors.size() + " field(s)";
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode("CONSTRAINT_VIOLATION")
+            .message("Data constraints were not met for the following fields:")
+            .fieldErrors(fieldErrors)
+            .suggestions(List.of(
+                "Ensure all data meets the required constraints",
+                "Check for duplicate values where uniqueness is required",
+                "Verify data types and formats match requirements"
+            ))
+            .path(request.getRequestURI())
+            .build();
         
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            HttpStatus.BAD_REQUEST.getReasonPhrase(),
-            message,
-            getPath(request),
-            "CONSTRAINT_VIOLATION",
-            getApiVersion(request),
-            traceId
-        );
-        errorResponse.setFieldErrors(fieldErrors);
-        
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        logger.warn("Constraint violations for {}: {} violations", request.getRequestURI(), fieldErrors.size());
+        return ResponseEntity.badRequest().body(response);
     }
     
     /**
-     * Handle data integrity violation exceptions
+     * Handle entity not found exceptions with specific guidance
      */
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(
+            EntityNotFoundException ex, HttpServletRequest request) {
         
-        String message = "Data integrity constraint violation";
-        if (ex.getMessage() != null && ex.getMessage().contains("foreign key constraint")) {
-            message = "Cannot delete entity due to existing references";
-        } else if (ex.getMessage() != null && ex.getMessage().contains("unique constraint")) {
-            message = "Duplicate value violates uniqueness constraint";
-        }
+        String entityType = extractEntityTypeFromMessage(ex.getMessage());
         
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.CONFLICT.value(),
-            HttpStatus.CONFLICT.getReasonPhrase(),
-            message,
-            getPath(request),
-            "DATA_INTEGRITY_VIOLATION",
-            getApiVersion(request),
-            traceId
-        );
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode("ENTITY_NOT_FOUND")
+            .message("The requested " + entityType + " could not be found")
+            .suggestions(List.of(
+                "Verify the " + entityType + " ID is correct",
+                "The " + entityType + " may have been deleted by another user",
+                "Try refreshing the page to see updated data",
+                "Use the search function to find the correct " + entityType
+            ))
+            .path(request.getRequestURI())
+            .build();
         
-        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+        logger.warn("Entity not found on {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
     
     /**
-     * Handle HTTP message not readable exceptions
+     * Extract entity type from exception message for better error context
      */
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
+    private String extractEntityTypeFromMessage(String message) {
+        if (message == null) return "resource";
         
-        String message = "Malformed JSON request";
-        if (ex.getMessage() != null && ex.getMessage().contains("JSON parse error")) {
-            message = "Invalid JSON format in request body";
-        }
+        String lowerMessage = message.toLowerCase();
+        if (lowerMessage.contains("owner")) return "owner";
+        if (lowerMessage.contains("pet")) return "pet";
+        if (lowerMessage.contains("visit")) return "visit";
+        if (lowerMessage.contains("veterinarian") || lowerMessage.contains("vet")) return "veterinarian";
         
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            HttpStatus.BAD_REQUEST.getReasonPhrase(),
-            message,
-            getPath(request),
-            "MALFORMED_REQUEST",
-            getApiVersion(request),
-            traceId
-        );
-        
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return "resource";
     }
     
     /**
-     * Handle method argument type mismatch exceptions
-     */
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
-        
-        String message = String.format("Invalid value '%s' for parameter '%s'. Expected type: %s", 
-            ex.getValue(), ex.getName(), ex.getRequiredType().getSimpleName());
-        
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            HttpStatus.BAD_REQUEST.getReasonPhrase(),
-            message,
-            getPath(request),
-            "INVALID_PARAMETER_TYPE",
-            getApiVersion(request),
-            traceId
-        );
-        
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-    
-    /**
-     * Handle missing request parameter exceptions
-     */
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
-        
-        String message = String.format("Required parameter '%s' is missing", ex.getParameterName());
-        
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.BAD_REQUEST.value(),
-            HttpStatus.BAD_REQUEST.getReasonPhrase(),
-            message,
-            getPath(request),
-            "MISSING_PARAMETER",
-            getApiVersion(request),
-            traceId
-        );
-        
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
-    
-    /**
-     * Handle HTTP request method not supported exceptions
-     */
-    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
-        
-        String message = String.format("HTTP method '%s' is not supported for this endpoint", ex.getMethod());
-        List<String> details = new ArrayList<>();
-        if (ex.getSupportedMethods() != null) {
-            details.add("Supported methods: " + String.join(", ", ex.getSupportedMethods()));
-        }
-        
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.METHOD_NOT_ALLOWED.value(),
-            HttpStatus.METHOD_NOT_ALLOWED.getReasonPhrase(),
-            message,
-            getPath(request),
-            "METHOD_NOT_ALLOWED",
-            getApiVersion(request),
-            traceId
-        );
-        errorResponse.setDetails(details);
-        
-        return new ResponseEntity<>(errorResponse, HttpStatus.METHOD_NOT_ALLOWED);
-    }
-    
-    /**
-     * Handle access denied exceptions
-     */
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
-        
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.FORBIDDEN.value(),
-            HttpStatus.FORBIDDEN.getReasonPhrase(),
-            "Access denied: insufficient permissions",
-            getPath(request),
-            "ACCESS_DENIED",
-            getApiVersion(request),
-            traceId
-        );
-        
-        return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
-    }
-    
-    /**
-     * Handle bad credentials exceptions
+     * Handle authentication errors with specific guidance
      */
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(
+            BadCredentialsException ex, HttpServletRequest request) {
         
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.UNAUTHORIZED.value(),
-            HttpStatus.UNAUTHORIZED.getReasonPhrase(),
-            "Invalid credentials provided",
-            getPath(request),
-            "INVALID_CREDENTIALS",
-            getApiVersion(request),
-            traceId
-        );
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode("AUTHENTICATION_FAILED")
+            .message("Login failed - please check your credentials")
+            .suggestions(errorSuggestionService.generateAuthenticationSuggestions())
+            .path(request.getRequestURI())
+            .build();
         
-        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+        logger.warn("Authentication failed for {}: Invalid credentials", request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
     
     /**
-     * Handle all other exceptions
+     * Handle authorization errors with specific guidance
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            AccessDeniedException ex, HttpServletRequest request) {
+        
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String resource = extractResourceFromPath(request.getRequestURI());
+        
+        // Log the access denied event for security monitoring
+        securityAuditService.logAccessDenied("ACCESS_DENIED", resource, authentication, 
+            "Insufficient permissions for " + request.getMethod() + " " + request.getRequestURI());
+        
+        // Sanitize the error message based on user's role
+        String sanitizedMessage = securityAuditService.sanitizeErrorMessage(
+            "You don't have permission to access this " + resource, authentication);
+        
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode("ACCESS_DENIED")
+            .message(sanitizedMessage)
+            .suggestions(errorSuggestionService.generateAuthorizationSuggestions(resource))
+            .path(request.getRequestURI())
+            .build();
+        
+        logger.warn("Access denied for {} on {}: Insufficient permissions", 
+                   request.getRemoteUser(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+    
+    /**
+     * Extract resource type from request path for better error context
+     */
+    private String extractResourceFromPath(String path) {
+        if (path == null) return "resource";
+        
+        String lowerPath = path.toLowerCase();
+        if (lowerPath.contains("/owners")) return "owner information";
+        if (lowerPath.contains("/pets")) return "pet information";
+        if (lowerPath.contains("/visits")) return "visit records";
+        if (lowerPath.contains("/veterinarians")) return "veterinarian information";
+        if (lowerPath.contains("/reports")) return "reports";
+        if (lowerPath.contains("/admin")) return "administrative function";
+        
+        return "resource";
+    }
+    
+    /**
+     * Handle network connectivity exceptions
+     */
+    @ExceptionHandler({ConnectException.class, SocketTimeoutException.class})
+    public ResponseEntity<ErrorResponse> handleNetworkException(
+            Exception ex, HttpServletRequest request) {
+        
+        String errorCode = ex instanceof ConnectException ? "CONNECTION_FAILED" : "REQUEST_TIMEOUT";
+        String message = ex instanceof ConnectException ? 
+            "Unable to connect to the service" : 
+            "Request timed out - the service is taking too long to respond";
+        
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode(errorCode)
+            .message(message)
+            .suggestions(errorSuggestionService.generateNetworkErrorSuggestions())
+            .retryAfter("30 seconds")
+            .path(request.getRequestURI())
+            .build();
+        
+        logger.warn("Network error on {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+    }
+    
+    /**
+     * Handle illegal argument exceptions with specific guidance
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+            IllegalArgumentException ex, HttpServletRequest request) {
+        
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode("INVALID_ARGUMENT")
+            .message("Invalid data provided: " + ex.getMessage())
+            .suggestions(List.of(
+                "Check that all required parameters are provided",
+                "Verify data types and formats are correct",
+                "Ensure numeric values are within valid ranges",
+                "Check that dates are in the correct format"
+            ))
+            .path(request.getRequestURI())
+            .build();
+        
+        logger.warn("Invalid argument on {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.badRequest().body(response);
+    }
+    
+    /**
+     * Handle illegal state exceptions with specific guidance
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(
+            IllegalStateException ex, HttpServletRequest request) {
+        
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode("INVALID_OPERATION_STATE")
+            .message("Operation cannot be performed in current state: " + ex.getMessage())
+            .suggestions(List.of(
+                "Ensure all prerequisites are met before performing this operation",
+                "Check that the resource is in the correct state",
+                "Try refreshing the page to get the latest data",
+                "Contact support if the problem persists"
+            ))
+            .path(request.getRequestURI())
+            .build();
+        
+        logger.warn("Invalid state on {}: {}", request.getRequestURI(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+    
+    /**
+     * Handle runtime exceptions with recovery guidance
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(
+            RuntimeException ex, HttpServletRequest request) {
+        
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+        // Sanitize the error message to prevent information leakage
+        String sanitizedMessage = securityAuditService.sanitizeErrorMessage(ex.getMessage(), authentication);
+        
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode("RUNTIME_ERROR")
+            .message("An unexpected error occurred while processing your request")
+            .suggestions(List.of(
+                "Please try your request again",
+                "If the problem persists, try refreshing the page",
+                "Contact support if you continue to experience issues",
+                "Include the timestamp and error details when contacting support"
+            ))
+            .path(request.getRequestURI())
+            .build();
+        
+        logger.error("Runtime error on {}: {}", request.getRequestURI(), sanitizedMessage, ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+    
+    /**
+     * Handle all other exceptions with general recovery guidance
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, WebRequest request) {
-        String traceId = generateTraceId();
-        logError(ex, traceId);
+    public ResponseEntity<ErrorResponse> handleGenericException(
+            Exception ex, HttpServletRequest request) {
         
-        ErrorResponse errorResponse = createErrorResponse(
-            HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-            "An unexpected error occurred",
-            getPath(request),
-            "INTERNAL_ERROR",
-            getApiVersion(request),
-            traceId
-        );
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
-        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    
-    /**
-     * Create standardized error response
-     */
-    private ErrorResponse createErrorResponse(int status, String error, String message, 
-                                            String path, String errorCode, String apiVersion, String traceId) {
-        return ErrorResponse.builder()
-            .status(status)
-            .error(error)
-            .message(message)
-            .path(path)
-            .errorCode(errorCode)
-            .apiVersion(apiVersion)
-            .traceId(traceId)
+        // Sanitize the error message to prevent information leakage
+        String sanitizedMessage = securityAuditService.sanitizeErrorMessage(ex.getMessage(), authentication);
+        
+        ErrorResponse response = ErrorResponse.builder()
+            .errorCode("INTERNAL_ERROR")
+            .message("An internal server error occurred")
+            .suggestions(List.of(
+                "This is a temporary issue - please try again",
+                "If the problem continues, contact technical support",
+                "Include the error timestamp when reporting the issue",
+                "Try using a different browser if the problem persists"
+            ))
+            .path(request.getRequestURI())
             .build();
-    }
-    
-    /**
-     * Extract path from web request
-     */
-    private String getPath(WebRequest request) {
-        if (request instanceof ServletWebRequest) {
-            return ((ServletWebRequest) request).getRequest().getRequestURI();
-        }
-        return request.getDescription(false).replace("uri=", "");
-    }
-    
-    /**
-     * Get API version from request
-     */
-    private String getApiVersion(WebRequest request) {
-        if (request instanceof ServletWebRequest) {
-            HttpServletRequest httpRequest = ((ServletWebRequest) request).getRequest();
-            return ApiVersionConfig.getApiVersion(httpRequest);
-        }
-        return ApiVersionConfig.CURRENT_API_VERSION;
-    }
-    
-    /**
-     * Generate unique trace ID for error tracking
-     */
-    private String generateTraceId() {
-        return UUID.randomUUID().toString().substring(0, 8);
-    }
-    
-    /**
-     * Log error with trace ID
-     */
-    private void logError(Exception ex, String traceId) {
-        MDC.put("traceId", traceId);
-        try {
-            if (ex instanceof PetClinicException) {
-                logger.warn("Pet Clinic Exception [{}]: {}", traceId, ex.getMessage());
-            } else {
-                logger.error("Unexpected Exception [{}]: {}", traceId, ex.getMessage(), ex);
-            }
-        } finally {
-            MDC.remove("traceId");
-        }
+        
+        logger.error("Unexpected error on {}: {}", request.getRequestURI(), sanitizedMessage, ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

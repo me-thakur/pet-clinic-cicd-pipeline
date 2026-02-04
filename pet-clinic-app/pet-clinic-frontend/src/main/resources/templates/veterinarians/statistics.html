@@ -1,12 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Veterinarian Statistics</title>
 </head>
-<body th:replace="~{layout :: layout(~{::main}, 'Veterinarian Statistics')}">
-    <main>
+<body>
+    <div th:fragment="content">
         <div class="row">
             <div class="col-12">
                 <div class="card">
@@ -106,12 +104,21 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
-                                            <table class="table table-striped">
-                                                <thead>
+                                            <table class="table table-striped table-sortable enhanced-table" id="diagnosesTable">
+                                                <thead class="table-light">
                                                     <tr>
-                                                        <th>Diagnosis</th>
-                                                        <th>Count</th>
-                                                        <th>Percentage</th>
+                                                        <th class="sortable-header" data-column="diagnosis" data-sort-type="text" title="Click to sort by diagnosis">
+                                                            Diagnosis
+                                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                                        </th>
+                                                        <th class="sortable-header" data-column="count" data-sort-type="number" title="Click to sort by count">
+                                                            Count
+                                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                                        </th>
+                                                        <th class="sortable-header" data-column="percentage" data-sort-type="number" title="Click to sort by percentage">
+                                                            Percentage
+                                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -145,15 +152,30 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="table-responsive">
-                                            <table class="table table-hover">
-                                                <thead>
+                                            <table class="table table-hover table-sortable enhanced-table" id="recentVisitsTable">
+                                                <thead class="table-light">
                                                     <tr>
-                                                        <th>Date</th>
-                                                        <th>Pet</th>
-                                                        <th>Owner</th>
-                                                        <th>Description</th>
-                                                        <th>Cost</th>
-                                                        <th>Actions</th>
+                                                        <th class="sortable-header" data-column="visitDate" data-sort-type="datetime" title="Click to sort by visit date">
+                                                            Date
+                                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                                        </th>
+                                                        <th class="sortable-header" data-column="petName" data-sort-type="text" title="Click to sort by pet name">
+                                                            Pet
+                                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                                        </th>
+                                                        <th class="sortable-header" data-column="ownerName" data-sort-type="text" title="Click to sort by owner name">
+                                                            Owner
+                                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                                        </th>
+                                                        <th class="sortable-header" data-column="description" data-sort-type="text" title="Click to sort by description">
+                                                            Description
+                                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                                        </th>
+                                                        <th class="sortable-header" data-column="cost" data-sort-type="number" title="Click to sort by cost">
+                                                            Cost
+                                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                                        </th>
+                                                        <th class="no-sort">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -204,6 +226,6 @@
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 </body>
 </html>

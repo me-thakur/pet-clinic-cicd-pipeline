@@ -184,14 +184,26 @@ INSERT INTO user_accounts (username, password_hash, email, first_name, last_name
 -- Admin account (password: admin123)
 ('admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBaLyifkdwP7Iq', 'admin@petclinic.com', 'System', 'Administrator', 'ADMIN'),
 
--- Veterinarian accounts (password: vet123)
-('sjohnson', '$2a$10$8K1p/h8MkkmqYTwes7L24.4J4d4H5vT5wOmRJqqhFJdOQEYdtP.4e', 'sarah.johnson@petclinic.com', 'Sarah', 'Johnson', 'VET'),
-('mchen', '$2a$10$8K1p/h8MkkmqYTwes7L24.4J4d4H5vT5wOmRJqqhFJdOQEYdtP.4e', 'michael.chen@petclinic.com', 'Michael', 'Chen', 'VET'),
-('erodriguez', '$2a$10$8K1p/h8MkkmqYTwes7L24.4J4d4H5vT5wOmRJqqhFJdOQEYdtP.4e', 'emily.rodriguez@petclinic.com', 'Emily', 'Rodriguez', 'VET'),
+-- Veterinarian accounts (password: admin123 - using same as admin for demo)
+('sjohnson', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBaLyifkdwP7Iq', 'sarah.johnson@petclinic.com', 'Sarah', 'Johnson', 'VET'),
+('mchen', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBaLyifkdwP7Iq', 'michael.chen@petclinic.com', 'Michael', 'Chen', 'VET'),
+('erodriguez', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBaLyifkdwP7Iq', 'emily.rodriguez@petclinic.com', 'Emily', 'Rodriguez', 'VET'),
+('vet1', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBaLyifkdwP7Iq', 'vet1@petclinic.com', 'Dr. Vet', 'One', 'VET'),
+('vet2', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBaLyifkdwP7Iq', 'vet2@petclinic.com', 'Dr. Vet', 'Two', 'VET'),
 
 -- Staff accounts (password: staff123)
 ('receptionist1', '$2a$10$7L2p/g7LjjlpXSvdr6K13.3I3c3G4uS4vNlQIpphEIcNPDXcsO.3d', 'reception@petclinic.com', 'Jane', 'Doe', 'STAFF'),
-('nurse1', '$2a$10$7L2p/g7LjjlpXSvdr6K13.3I3c3G4uS4vNlQIpphEIcNPDXcsO.3d', 'nurse@petclinic.com', 'Alice', 'Smith', 'STAFF');
+('nurse1', '$2a$10$7L2p/g7LjjlpXSvdr6K13.3I3c3G4uS4vNlQIpphEIcNPDXcsO.3d', 'nurse@petclinic.com', 'Alice', 'Smith', 'STAFF'),
+('staff1', '$2a$10$7L2p/g7LjjlpXSvdr6K13.3I3c3G4uS4vNlQIpphEIcNPDXcsO.3d', 'staff1@petclinic.com', 'Staff', 'One', 'STAFF'),
+('staff2', '$2a$10$7L2p/g7LjjlpXSvdr6K13.3I3c3G4uS4vNlQIpphEIcNPDXcsO.3d', 'staff2@petclinic.com', 'Staff', 'Two', 'STAFF'),
+
+-- Additional user accounts 
+-- user123 hash: $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.
+-- test123 hash: $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi. (using same for demo)
+-- password123 hash: $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi. (using same for demo)
+('user', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'user@petclinic.com', 'Test', 'User', 'USER'),
+('test', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'test@petclinic.com', 'Test', 'Account', 'USER'),
+('demo', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'demo@petclinic.com', 'Demo', 'User', 'USER');
 
 -- Insert system settings
 INSERT INTO system_settings (setting_key, setting_value, setting_type, description, category, is_public) VALUES

@@ -23,7 +23,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/search")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "${pet-clinic.cors.allowed-origins}", maxAge = 3600)
 public class SearchController {
     
     private static final Logger logger = LoggerFactory.getLogger(SearchController.class);
@@ -248,6 +248,38 @@ public class SearchController {
             
         } catch (Exception e) {
             logger.error("Error getting search suggestions for partial query: '{}'", partialQuery, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * Get search suggestions when no results are found
+     * @param originalQuery The original query that returned no results
+     * @param maxSuggestions Maximum number of suggestions to return
+     * @return List of alternative search suggestions
+     */
+    @GetMapping("/no-results-suggestions")
+    public ResponseEntity<List<String>> getNoResultsSuggestions(
+            @RequestParam String originalQuery,
+            @RequestParam(defaultValue = "5") @Min(1) @Max(20) int maxSuggestions) {
+        
+        logger.info("No-results suggestions request for query: '{}', maxSuggestions: {}", originalQuery, maxSuggestions);
+        
+        try {
+            if (originalQuery == null || originalQuery.trim().isEmpty()) {
+                logger.warn("Empty original query provided");
+                return ResponseEntity.badRequest().build();
+            }
+            
+            List<String> suggestions = globalSearchService.getNoResultsSuggestions(originalQuery, maxSuggestions);
+            
+            logger.info("No-results suggestions completed for query: '{}', found {} suggestions", 
+                       originalQuery, suggestions.size());
+            
+            return ResponseEntity.ok(suggestions);
+            
+        } catch (Exception e) {
+            logger.error("Error getting no-results suggestions for query: '{}'", originalQuery, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

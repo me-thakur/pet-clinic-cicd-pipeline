@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Search Owners</title>
+    <link th:href="@{/css/table-header-visibility.css}" rel="stylesheet">
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-search"></i> Search Owners
+            </h1>
+            <div>
+                <a th:href="@{/owners}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to All Owners
+                </a>
+                <a th:href="@{/owners/new}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Owner
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-search"></i> Search Criteria</h5>
+                <form th:action="@{/owners/search}" method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstName" name="firstName" th:value="${firstName}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastName" name="lastName" th:value="${lastName}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" th:value="${email}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" class="form-control" id="city" name="city" th:value="${city}">
+                    </div>
+                    <div class="col-12 d-flex align-items-end">
+                        <button type="submit" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <a th:href="@{/owners/search}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}">Error message</span>
+        </div>
+
+        <!-- Search Results -->
+        <div th:if="${searchType != null and searchTerm != null}">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p class="text-muted">
+                        Search Results for <strong th:text="${searchType}">search type</strong>: 
+                        "<span th:text="${searchTerm}">search term</span>" - 
+                        <span th:text="${#lists.size(owners)}">0</span> owner(s) found
+                    </p>
+                </div>
+            </div>
+
+            <!-- Results Table -->
+            <div class="card">
+                <div class="card-body">
+                    <div th:if="${owners == null or #lists.isEmpty(owners)}" 
+                         class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No owners found</h5>
+                        <p class="text-muted">Try adjusting your search criteria.</p>
+                        <a th:href="@{/owners/new}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add New Owner
+                        </a>
+                    </div>
+
+                    <div th:if="${owners != null and !#lists.isEmpty(owners)}" 
+                         class="table-responsive">
+                        <table class="table table-hover table-sortable enhanced-table" id="ownersSearchTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="sortable-header" data-column="fullName" data-sort-type="text" title="Click to sort by owner name">
+                                        Name
+                                        <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                    </th>
+                                    <th class="sortable-header" data-column="contact" data-sort-type="text" title="Click to sort by contact information">
+                                        Contact
+                                        <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                    </th>
+                                    <th class="sortable-header" data-column="address" data-sort-type="text" title="Click to sort by address">
+                                        Address
+                                        <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                    </th>
+                                    <th class="sortable-header" data-column="petCount" data-sort-type="number" title="Click to sort by number of pets">
+                                        Pets
+                                        <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                    </th>
+                                    <th class="no-sort">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="owner : ${owners}">
+                                    <td>
+                                        <strong th:text="${owner.firstName} + ' ' + ${owner.lastName}">Owner Name</strong>
+                                    </td>
+                                    <td>
+                                        <div th:if="${owner.telephone != null}">
+                                            <i class="fas fa-phone"></i> <span th:text="${owner.telephone}">Phone</span>
+                                        </div>
+                                        <div th:if="${owner.email != null}">
+                                            <i class="fas fa-envelope"></i> 
+                                            <a th:href="'mailto:' + ${owner.email}" th:text="${owner.email}">Email</a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div th:if="${owner.address != null}" th:text="${owner.address}">Address</div>
+                                        <div th:if="${owner.city != null}">
+                                            <span th:text="${owner.city}">City</span><span th:if="${owner.state != null}">, <span th:text="${owner.state}">State</span></span>
+                                            <span th:if="${owner.zipCode != null}"> <span th:text="${owner.zipCode}">ZIP</span></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info" th:text="${owner.pets != null ? #lists.size(owner.pets) : '0'}">0</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a th:href="@{/owners/{id}(id=${owner.id})}" 
+                                               class="btn btn-outline-info btn-action" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a th:href="@{/pets/owner/{id}(id=${owner.id})}" 
+                                               class="btn btn-outline-success btn-action" title="View Pets">
+                                                <i class="fas fa-paw"></i>
+                                            </a>
+                                            <a th:href="@{/owners/{id}/edit(id=${owner.id})}" 
+                                               class="btn btn-outline-primary btn-action" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form th:action="@{/owners/{id}/delete(id=${owner.id})}" method="post" style="display: inline;">
+                                                <button type="submit" class="btn btn-outline-danger btn-action btn-delete" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Search Performed -->
+        <div th:if="${searchType == null}">
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Enter search criteria above</h5>
+                <p class="text-muted">Search by first name, last name, email, or city to find owners.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

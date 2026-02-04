@@ -1,13 +1,12 @@
 -- Pet Clinic Database Schema
 -- This script creates the database schema for the Pet Clinic application
 
--- Disable foreign key checks temporarily for clean setup
-SET FOREIGN_KEY_CHECKS = 0;
+-- H2 Database compatible schema (no foreign key checks needed for H2)
 
 -- Drop tables if they exist (for clean setup)
--- Order doesn't matter when foreign key checks are disabled
-DROP TABLE IF EXISTS audit_log;
-DROP TABLE IF EXISTS medical_records;
+-- Order doesn't matter in H2
+DROP TABLE IF EXISTS audit_log CASCADE;
+DROP TABLE IF EXISTS medical_records CASCADE;
 DROP TABLE IF EXISTS vaccinations;
 DROP TABLE IF EXISTS appointments;
 DROP TABLE IF EXISTS visits;
@@ -19,8 +18,7 @@ DROP TABLE IF EXISTS specialties;
 DROP TABLE IF EXISTS user_accounts;
 DROP TABLE IF EXISTS system_settings;
 
--- Re-enable foreign key checks
-SET FOREIGN_KEY_CHECKS = 1;
+-- H2 Database compatible schema (no foreign key checks needed for H2)
 
 -- Create specialties table
 CREATE TABLE specialties (

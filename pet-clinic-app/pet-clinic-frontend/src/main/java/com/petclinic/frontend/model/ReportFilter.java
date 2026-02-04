@@ -12,6 +12,7 @@ public class ReportFilter {
     private LocalDate endDate;
     private Long veterinarianId;
     private String veterinarianName;
+    private List<VeterinarianOption> availableVeterinarians; // Available veterinarians for dropdown
     private List<String> species;
     private List<String> visitTypes;
     private List<Long> petIds;
@@ -62,6 +63,14 @@ public class ReportFilter {
     
     public void setVeterinarianName(String veterinarianName) {
         this.veterinarianName = veterinarianName;
+    }
+    
+    public List<VeterinarianOption> getAvailableVeterinarians() {
+        return availableVeterinarians;
+    }
+    
+    public void setAvailableVeterinarians(List<VeterinarianOption> availableVeterinarians) {
+        this.availableVeterinarians = availableVeterinarians;
     }
     
     public List<String> getSpecies() {

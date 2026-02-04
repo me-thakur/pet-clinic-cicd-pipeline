@@ -59,7 +59,7 @@ class FilterServiceImplTest {
     @BeforeEach
     void setUp() {
         // Create test data
-        testOwner = new Owner("John", "Doe", "123 Main St", "Springfield", "555-1234", "john.doe@email.com");
+        testOwner = new Owner("John", "Doe", "123 Main St", "Springfield", "IL", "62701", "555-1234", "+1-555-1234", "john.doe@email.com");
         testOwner.setId(1L);
         
         testPet = new Pet("Buddy", "Dog", "Golden Retriever", LocalDate.of(2020, 1, 15), testOwner);

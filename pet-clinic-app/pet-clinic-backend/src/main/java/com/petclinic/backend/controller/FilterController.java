@@ -24,7 +24,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/filters")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${pet-clinic.cors.allowed-origins}")
 public class FilterController {
     
     private static final Logger logger = LoggerFactory.getLogger(FilterController.class);
@@ -360,22 +360,48 @@ public class FilterController {
             
             byte[] exportData = filterService.exportFilteredResults(filters, format);
             
-            String filename = "filtered_results." + format.toLowerCase();
-            MediaType mediaType = "csv".equalsIgnoreCase(format) ? 
-                    MediaType.parseMediaType("text/csv") : 
-                    MediaType.TEXT_PLAIN;
+            if (exportData == null || exportData.length == 0) {
+                logger.error("Export service returned empty data for filtered results");
+                return ResponseEntity.internalServerError()
+                        .header("Content-Type", "application/json")
+                        .body("{\"error\":\"Export generation failed - no data produced\"}".getBytes());
+            }
             
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(mediaType);
-            headers.setContentDispositionFormData("attachment", filename);
+            String filename = "filtered_results." + format.toLowerCase();
+            String mimeType;
+            
+            // Set proper MIME types according to task requirements
+            switch (format.toLowerCase()) {
+                case "pdf":
+                    mimeType = "application/pdf";
+                    break;
+                case "csv":
+                    mimeType = "text/csv";
+                    break;
+                default:
+                    mimeType = "application/octet-stream";
+                    break;
+            }
+            
+            logger.info("Successfully exported filtered results - Size: {} bytes, Filename: {}", 
+                       exportData.length, filename);
             
             return ResponseEntity.ok()
-                    .headers(headers)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                    .header(HttpHeaders.CONTENT_TYPE, mimeType)
+                    .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(exportData.length))
+                    .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate, private")
+                    .header(HttpHeaders.PRAGMA, "no-cache")
+                    .header(HttpHeaders.EXPIRES, "0")
+                    .header("X-Content-Type-Options", "nosniff")
+                    .header("X-Download-Options", "noopen")
                     .body(exportData);
             
         } catch (Exception e) {
             logger.error("Error exporting filtered results: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.internalServerError()
+                    .header("Content-Type", "application/json")
+                    .body(("{\"error\":\"Export failed: " + e.getMessage() + "\"}").getBytes());
         }
     }
     

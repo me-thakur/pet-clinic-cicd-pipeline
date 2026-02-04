@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.petclinic.backend.config.EncryptionConverter;
+import com.petclinic.backend.validation.ValidMobileNumber;
+import com.petclinic.backend.validation.UniqueMobileNumber;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -44,10 +46,24 @@ public class Owner {
     @Column(name = "city", length = 50)
     private String city;
     
+    @Size(max = 50, message = "State must not exceed 50 characters")
+    @Column(name = "state", length = 50)
+    private String state;
+    
+    @Size(max = 10, message = "ZIP code must not exceed 10 characters")
+    @Column(name = "zip_code", length = 10)
+    private String zipCode;
+    
     @Pattern(regexp = "^[+]?[0-9\\s\\-\\(\\)\\.]{7,20}$", message = "Invalid telephone format")
     @Column(name = "telephone", length = 200) // Increased length for encrypted data
     @Convert(converter = EncryptionConverter.class)
     private String telephone;
+    
+    @ValidMobileNumber(message = "Mobile number must be in valid international format")
+    @UniqueMobileNumber(message = "Mobile number already exists in the system")
+    @Column(name = "mobile_number", length = 200) // Increased length for encrypted data
+    @Convert(converter = EncryptionConverter.class)
+    private String mobileNumber;
     
     @Email(message = "Invalid email format")
     @Size(max = 100, message = "Email must not exceed 100 characters")
@@ -70,13 +86,16 @@ public class Owner {
         this.updatedAt = LocalDate.now();
     }
     
-    public Owner(String firstName, String lastName, String address, String city, String telephone, String email) {
+    public Owner(String firstName, String lastName, String address, String city, String state, String zipCode, String telephone, String mobileNumber, String email) {
         this();
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
         this.city = city;
+        this.state = state;
+        this.zipCode = zipCode;
         this.telephone = telephone;
+        this.mobileNumber = mobileNumber;
         this.email = email;
     }
     
@@ -125,12 +144,39 @@ public class Owner {
         this.updatedAt = LocalDate.now();
     }
     
+    public String getState() {
+        return state;
+    }
+    
+    public void setState(String state) {
+        this.state = state;
+        this.updatedAt = LocalDate.now();
+    }
+    
+    public String getZipCode() {
+        return zipCode;
+    }
+    
+    public void setZipCode(String zipCode) {
+        this.zipCode = zipCode;
+        this.updatedAt = LocalDate.now();
+    }
+    
     public String getTelephone() {
         return telephone;
     }
     
     public void setTelephone(String telephone) {
         this.telephone = telephone;
+        this.updatedAt = LocalDate.now();
+    }
+    
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+    
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
         this.updatedAt = LocalDate.now();
     }
     
@@ -197,12 +243,13 @@ public class Owner {
         return Objects.equals(id, owner.id) &&
                Objects.equals(firstName, owner.firstName) &&
                Objects.equals(lastName, owner.lastName) &&
-               Objects.equals(email, owner.email);
+               Objects.equals(email, owner.email) &&
+               Objects.equals(mobileNumber, owner.mobileNumber);
     }
     
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, email);
+        return Objects.hash(id, firstName, lastName, email, mobileNumber);
     }
     
     @Override
@@ -212,6 +259,7 @@ public class Owner {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
+                ", mobileNumber='" + mobileNumber + '\'' +
                 ", petCount=" + getPetCount() +
                 '}';
     }

@@ -10,6 +10,9 @@ class SearchNavigationManager {
         this.resultsContainer = null;
         this.filtersContainer = null;
         this.currentQuery = '';
+        this.currentPage = 0;
+        this.currentSortBy = 'relevance';
+        this.currentSortDirection = 'desc';
         this.searchTimeout = null;
         this.activeFilters = new Map();
         this.entityCounts = new Map();
@@ -34,7 +37,10 @@ class SearchNavigationManager {
         this.suggestionsContainer = document.getElementById('searchSuggestions');
         this.resultsContainer = document.getElementById('searchResults');
         
-        if (!this.searchInput) return;
+        if (!this.searchInput) {
+            // Search input not found on this page, skip search setup
+            return;
+        }
         
         // Create suggestions container if it doesn't exist
         if (!this.suggestionsContainer) {
@@ -68,7 +74,10 @@ class SearchNavigationManager {
     setupFilters() {
         this.filtersContainer = document.getElementById('advancedFilters');
         
-        if (!this.filtersContainer) return;
+        if (!this.filtersContainer) {
+            // Filters not available on this page, skip filter setup
+            return;
+        }
         
         // Setup filter toggle
         const filterToggle = document.getElementById('filtersToggle');
@@ -396,11 +405,13 @@ class SearchNavigationManager {
         this.showSearchLoading();
         
         try {
-            // Get search results with current filters
+            // Get search results with current filters, pagination, and sorting
             const searchParams = new URLSearchParams({
                 query: this.currentQuery,
-                page: 0,
-                size: 20
+                page: this.currentPage || 0,
+                size: 20,
+                sortBy: this.currentSortBy || 'relevance',
+                sortDirection: this.currentSortDirection || 'desc'
             });
             
             // Add active filters to search params
@@ -419,7 +430,7 @@ class SearchNavigationManager {
             }
         } catch (error) {
             console.error('Search error:', error);
-            this.showSearchError('An error occurred while searching. Please try again.');
+            this.showSearchError('An error occurred while searching. Please check your connection and try again.');
         }
         
         this.hideSuggestions();
@@ -454,8 +465,32 @@ class SearchNavigationManager {
                     ${results.executionTimeMs ? `in ${results.executionTimeMs}ms` : ''}
                 </div>
                 <div class="search-results-actions">
-                    <button class="btn btn-sm btn-outline-secondary" onclick="searchManager.exportResults()">
-                        <i class="fas fa-download"></i> Export
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="searchManager.exportResults()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="searchManager.toggleSortOptions()">
+                            <i class="fas fa-sort"></i> Sort
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sort-options" id="sortOptions" style="display: none;">
+                <div class="d-flex align-items-center gap-2 mb-3 p-2 bg-light rounded">
+                    <label class="form-label mb-0">Sort by:</label>
+                    <select id="sortBySelect" class="form-select form-select-sm" style="width: auto;">
+                        <option value="relevance">Relevance</option>
+                        <option value="date">Date</option>
+                        <option value="name">Name</option>
+                        <option value="type">Type</option>
+                    </select>
+                    <select id="sortDirectionSelect" class="form-select form-select-sm" style="width: auto;">
+                        <option value="desc">Descending</option>
+                        <option value="asc">Ascending</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary" onclick="searchManager.applySorting()">
+                        Apply
                     </button>
                 </div>
             </div>
@@ -472,18 +507,144 @@ class SearchNavigationManager {
         
         this.resultsContainer.innerHTML = html;
         this.resultsContainer.classList.add('fade-in');
+        
+        // Set current sort values
+        if (results.sortBy) {
+            const sortBySelect = document.getElementById('sortBySelect');
+            const sortDirectionSelect = document.getElementById('sortDirectionSelect');
+            if (sortBySelect) sortBySelect.value = results.sortBy;
+            if (sortDirectionSelect) sortDirectionSelect.value = results.sortDirection || 'desc';
+        }
+    }
+    
+    createPagination(results) {
+        const currentPage = results.page || 0;
+        const totalPages = results.totalPages || 1;
+        
+        if (totalPages <= 1) return '';
+        
+        let paginationHtml = `
+            <nav aria-label="Search results pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+        `;
+        
+        // Previous button
+        paginationHtml += `
+            <li class="page-item ${currentPage === 0 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="searchManager.goToPage(${currentPage - 1})">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            </li>
+        `;
+        
+        // Page numbers
+        const startPage = Math.max(0, currentPage - 2);
+        const endPage = Math.min(totalPages - 1, currentPage + 2);
+        
+        if (startPage > 0) {
+            paginationHtml += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="searchManager.goToPage(0)">1</a>
+                </li>
+            `;
+            if (startPage > 1) {
+                paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            paginationHtml += `
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="searchManager.goToPage(${i})">${i + 1}</a>
+                </li>
+            `;
+        }
+        
+        if (endPage < totalPages - 1) {
+            if (endPage < totalPages - 2) {
+                paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            }
+            paginationHtml += `
+                <li class="page-item">
+                    <a class="page-link" href="#" onclick="searchManager.goToPage(${totalPages - 1})">${totalPages}</a>
+                </li>
+            `;
+        }
+        
+        // Next button
+        paginationHtml += `
+            <li class="page-item ${currentPage === totalPages - 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="searchManager.goToPage(${currentPage + 1})">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        `;
+        
+        paginationHtml += `
+                </ul>
+            </nav>
+        `;
+        
+        return paginationHtml;
+    }
+    
+    async goToPage(page) {
+        if (page < 0) return;
+        
+        this.currentPage = page;
+        await this.performSearch();
+    }
+    
+    toggleSortOptions() {
+        const sortOptions = document.getElementById('sortOptions');
+        if (sortOptions) {
+            sortOptions.style.display = sortOptions.style.display === 'none' ? 'block' : 'none';
+        }
+    }
+    
+    async applySorting() {
+        const sortBySelect = document.getElementById('sortBySelect');
+        const sortDirectionSelect = document.getElementById('sortDirectionSelect');
+        
+        if (sortBySelect && sortDirectionSelect) {
+            this.currentSortBy = sortBySelect.value;
+            this.currentSortDirection = sortDirectionSelect.value;
+            this.currentPage = 0; // Reset to first page when sorting
+            await this.performSearch();
+        }
     }
     
     createResultCard(result) {
         const typeClass = `result-type-${result.entityType.toLowerCase()}`;
         const icon = this.getEntityIcon(result.entityType);
         
+        // Enhanced relevance indicator
+        const relevanceStars = this.getRelevanceStars(result.relevanceScore);
+        
+        // Enhanced highlighting - use server-side highlighted content if available
+        const title = result.highlightedTitle || this.highlightMatch(result.title, this.currentQuery);
+        const description = result.highlightedDescription || this.highlightMatch(result.description, this.currentQuery);
+        
+        // Show matched fields if available
+        let matchedFieldsHtml = '';
+        if (result.matchedFields && result.matchedFields.length > 0) {
+            matchedFieldsHtml = `
+                <div class="matched-fields">
+                    <small class="text-muted">
+                        <i class="fas fa-search"></i> 
+                        Matches: ${result.matchedFields.join(', ')}
+                    </small>
+                </div>
+            `;
+        }
+        
         return `
             <div class="result-card">
                 <div class="result-card-header">
                     <div class="result-title">
                         <i class="${icon}"></i>
-                        ${this.highlightMatch(result.title, this.currentQuery)}
+                        ${title}
+                        <span class="relevance-indicator ms-2">${relevanceStars}</span>
                     </div>
                     <span class="result-type-badge ${typeClass}">
                         ${result.entityType}
@@ -491,12 +652,14 @@ class SearchNavigationManager {
                 </div>
                 <div class="result-card-body">
                     <div class="result-description">
-                        ${this.highlightMatch(result.description, this.currentQuery)}
+                        ${description}
                     </div>
+                    ${matchedFieldsHtml}
                     <div class="result-metadata">
                         ${result.metadata ? Object.entries(result.metadata).map(([key, value]) => 
                             `<span><strong>${key}:</strong> ${value}</span>`
                         ).join('') : ''}
+                        ${result.lastModified ? `<span><strong>Last updated:</strong> ${new Date(result.lastModified).toLocaleDateString()}</span>` : ''}
                     </div>
                     <div class="result-actions mt-2">
                         <a href="${result.url}" class="btn btn-sm btn-primary">
@@ -513,6 +676,24 @@ class SearchNavigationManager {
         `;
     }
     
+    getRelevanceStars(score) {
+        if (!score || score <= 0) return '';
+        
+        const normalizedScore = Math.min(Math.max(score / 3, 0), 1); // Normalize to 0-1 range
+        const starCount = Math.round(normalizedScore * 5);
+        
+        let stars = '';
+        for (let i = 0; i < 5; i++) {
+            if (i < starCount) {
+                stars += '<i class="fas fa-star text-warning"></i>';
+            } else {
+                stars += '<i class="far fa-star text-muted"></i>';
+            }
+        }
+        
+        return `<span class="relevance-stars" title="Relevance: ${score.toFixed(1)}">${stars}</span>`;
+    }
+    
     getEntityIcon(entityType) {
         const icons = {
             'Pet': 'fas fa-paw',
@@ -526,22 +707,59 @@ class SearchNavigationManager {
     showEmptyResults() {
         if (!this.resultsContainer) return;
         
-        this.resultsContainer.innerHTML = `
-            <div class="search-empty">
-                <i class="fas fa-search"></i>
-                <h5>No results found</h5>
-                <p>We couldn't find anything matching "<strong>${this.currentQuery}</strong>"</p>
-                <div class="search-suggestions-help">
-                    <p class="mb-2">Try:</p>
-                    <ul class="list-unstyled">
-                        <li>• Checking your spelling</li>
-                        <li>• Using different keywords</li>
-                        <li>• Removing some filters</li>
-                        <li>• Using more general terms</li>
-                    </ul>
+        // Get suggestions for no results
+        this.getNoResultsSuggestions(this.currentQuery).then(suggestions => {
+            let suggestionsHtml = '';
+            if (suggestions && suggestions.length > 0) {
+                suggestionsHtml = `
+                    <div class="search-suggestions-help">
+                        <p class="mb-2"><strong>Try these suggestions:</strong></p>
+                        <ul class="list-unstyled">
+                            ${suggestions.map(suggestion => 
+                                `<li>• <a href="#" onclick="performGlobalSearch('${suggestion}')" class="text-primary">${suggestion}</a></li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            this.resultsContainer.innerHTML = `
+                <div class="search-empty">
+                    <i class="fas fa-search"></i>
+                    <h5>No results found</h5>
+                    <p>We couldn't find anything matching "<strong>${this.currentQuery}</strong>"</p>
+                    <div class="search-suggestions-help">
+                        <p class="mb-2">Try:</p>
+                        <ul class="list-unstyled">
+                            <li>• Checking your spelling</li>
+                            <li>• Using different keywords</li>
+                            <li>• Removing some filters</li>
+                            <li>• Using more general terms</li>
+                        </ul>
+                    </div>
+                    ${suggestionsHtml}
                 </div>
-            </div>
-        `;
+            `;
+        }).catch(error => {
+            console.error('Error getting no-results suggestions:', error);
+            // Fallback to basic empty results display
+            this.resultsContainer.innerHTML = `
+                <div class="search-empty">
+                    <i class="fas fa-search"></i>
+                    <h5>No results found</h5>
+                    <p>We couldn't find anything matching "<strong>${this.currentQuery}</strong>"</p>
+                    <div class="search-suggestions-help">
+                        <p class="mb-2">Try:</p>
+                        <ul class="list-unstyled">
+                            <li>• Checking your spelling</li>
+                            <li>• Using different keywords</li>
+                            <li>• Removing some filters</li>
+                            <li>• Using more general terms</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        });
     }
     
     showSearchError(message) {
@@ -549,10 +767,31 @@ class SearchNavigationManager {
         
         this.resultsContainer.innerHTML = `
             <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle"></i>
-                ${message}
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <div>
+                        <strong>Search Error</strong><br>
+                        ${message}
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-outline-danger btn-sm" onclick="searchManager.performSearch()">
+                        <i class="fas fa-redo"></i> Try Again
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm ms-2" onclick="searchManager.clearSearch()">
+                        <i class="fas fa-times"></i> Clear Search
+                    </button>
+                </div>
             </div>
         `;
+    }
+    
+    clearSearch() {
+        this.searchInput.value = '';
+        this.currentQuery = '';
+        this.resultsContainer.innerHTML = '';
+        this.hideSuggestions();
+        this.clearAllFilters();
     }
     
     updateEntityCounts(results) {
@@ -771,6 +1010,20 @@ class SearchNavigationManager {
         }
     }
     
+    async getNoResultsSuggestions(query) {
+        try {
+            const response = await fetch(`/api/search/no-results-suggestions?originalQuery=${encodeURIComponent(query)}&maxSuggestions=5`);
+            
+            if (response.ok) {
+                return await response.json();
+            }
+        } catch (error) {
+            console.error('Error getting no-results suggestions:', error);
+        }
+        
+        return [];
+    }
+    
     async exportResults() {
         try {
             const searchParams = new URLSearchParams({
@@ -852,9 +1105,6 @@ function performGlobalSearch(query) {
 
 function clearSearch() {
     if (window.searchManager) {
-        window.searchManager.searchInput.value = '';
-        window.searchManager.currentQuery = '';
-        window.searchManager.resultsContainer.innerHTML = '';
-        window.searchManager.hideSuggestions();
+        window.searchManager.clearSearch();
     }
 }

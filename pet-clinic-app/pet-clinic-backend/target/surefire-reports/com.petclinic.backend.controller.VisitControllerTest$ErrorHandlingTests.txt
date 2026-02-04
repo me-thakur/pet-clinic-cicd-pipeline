@@ -1,26 +1,26 @@
 -------------------------------------------------------------------------------
 Test set: com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests
 -------------------------------------------------------------------------------
-Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 3.456 s <<< FAILURE! -- in com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests
-com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests.scheduleVisit_WithConflict_ShouldReturn409 -- Time elapsed: 0.071 s <<< FAILURE!
+Tests run: 3, Failures: 3, Errors: 0, Skipped: 0, Time elapsed: 4.614 s <<< FAILURE! -- in com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests
+com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests.scheduleVisit_WithConflict_ShouldReturn409 -- Time elapsed: 0.088 s <<< FAILURE!
 java.lang.AssertionError: Status expected:<409> but was:<500>
 	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
 	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
 	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$9(StatusResultMatchers.java:637)
 	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
-	at com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests.scheduleVisit_WithConflict_ShouldReturn409(VisitControllerTest.java:691)
+	at com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests.scheduleVisit_WithConflict_ShouldReturn409(VisitControllerTest.java:1176)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
 
-com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests.completeVisit_WhenVisitNotFound_ShouldReturn404 -- Time elapsed: 0.011 s <<< FAILURE!
-java.lang.AssertionError: Status expected:<404> but was:<500>
+com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests.completeVisit_WhenVisitNotFound_ShouldReturn404 -- Time elapsed: 0.012 s <<< FAILURE!
+java.lang.AssertionError: Status expected:<404> but was:<400>
 	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
 	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
 	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$9(StatusResultMatchers.java:637)
 	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
-	at com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests.completeVisit_WhenVisitNotFound_ShouldReturn404(VisitControllerTest.java:711)
+	at com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests.completeVisit_WhenVisitNotFound_ShouldReturn404(VisitControllerTest.java:1196)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
@@ -32,7 +32,7 @@ java.lang.AssertionError: Status expected:<422> but was:<500>
 	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
 	at org.springframework.test.web.servlet.result.StatusResultMatchers.lambda$matcher$9(StatusResultMatchers.java:637)
 	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
-	at com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests.createVisit_WithBusinessRuleViolation_ShouldReturn422(VisitControllerTest.java:735)
+	at com.petclinic.backend.controller.VisitControllerTest$ErrorHandlingTests.createVisit_WithBusinessRuleViolation_ShouldReturn422(VisitControllerTest.java:1220)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)

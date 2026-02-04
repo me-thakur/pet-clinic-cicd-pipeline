@@ -16,7 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -123,6 +125,13 @@ public class VeterinarianServiceImpl implements VeterinarianService {
     public List<Veterinarian> findAll() {
         logger.debug("Finding all veterinarians");
         return veterinarianRepository.findAll(Sort.by(Sort.Direction.ASC, "lastName", "firstName"));
+    }
+    
+    @Override
+    public Page<Veterinarian> findAllWithPagination(Pageable pageable) {
+        logger.debug("Finding all veterinarians with server-side pagination and sorting: {}", pageable);
+        // Use repository's findAll method with Pageable for server-side sorting and pagination
+        return veterinarianRepository.findAll(pageable);
     }
     
     @Override
@@ -298,6 +307,18 @@ public class VeterinarianServiceImpl implements VeterinarianService {
         combinedResults.addAll(lastNameResults);
         
         return new ArrayList<>(combinedResults);
+    }
+    
+    @Override
+    public List<Veterinarian> searchByFirstName(String firstName) {
+        logger.debug("Searching veterinarians by first name: {}", firstName);
+        
+        if (!StringUtils.hasText(firstName)) {
+            return new ArrayList<>();
+        }
+        
+        String trimmedFirstName = firstName.trim();
+        return veterinarianRepository.findByFirstNameContainingIgnoreCase(trimmedFirstName);
     }
     
     // Additional business logic methods

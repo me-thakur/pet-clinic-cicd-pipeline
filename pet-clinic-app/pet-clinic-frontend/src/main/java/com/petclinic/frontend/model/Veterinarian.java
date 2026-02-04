@@ -1,5 +1,6 @@
 package com.petclinic.frontend.model;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -32,6 +33,16 @@ public class Veterinarian {
     @NotBlank(message = "License number is required")
     @Size(max = 20, message = "License number must not exceed 20 characters")
     private String licenseNumber;
+    
+    @Size(max = 20, message = "Telephone must not exceed 20 characters")
+    private String telephone;
+    
+    @Email(message = "Invalid email format")
+    @Size(max = 100, message = "Email must not exceed 100 characters")
+    private String email;
+    
+    @Size(max = 200, message = "Address must not exceed 200 characters")
+    private String address;
     
     private LocalDate createdAt;
     private LocalDate updatedAt;
@@ -90,6 +101,30 @@ public class Veterinarian {
 
     public void setLicenseNumber(String licenseNumber) {
         this.licenseNumber = licenseNumber;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public LocalDate getCreatedAt() {

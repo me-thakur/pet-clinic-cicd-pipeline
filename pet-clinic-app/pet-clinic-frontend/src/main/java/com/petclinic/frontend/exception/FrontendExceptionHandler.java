@@ -127,6 +127,21 @@ public class FrontendExceptionHandler {
     }
 
     /**
+     * Handle access denied exceptions (Spring Security)
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleAccessDeniedException(org.springframework.security.access.AccessDeniedException ex, Model model) {
+        logger.error("Access denied: {}", ex.getMessage());
+        
+        model.addAttribute("errorMessage", "Access denied. You don't have permission to access this resource.");
+        model.addAttribute("errorDetails", "Please contact an administrator if you believe you should have access.");
+        model.addAttribute("statusCode", 403);
+        
+        return "error/access-denied";
+    }
+
+    /**
      * Handle generic runtime exceptions
      */
     @ExceptionHandler(RuntimeException.class)

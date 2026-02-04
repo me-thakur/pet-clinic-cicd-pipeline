@@ -1,0 +1,364 @@
+/* Performance Dashboard Styles - performance-dashboard */
+
+.health-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.health-score {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.metric-card {
+    background: white;
+    border: 1px solid #e3e6f0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease-in-out;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #5a5c69;
+    margin-bottom: 0.5rem;
+}
+
+.alerts-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.recommendations-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.recommendation-item {
+    background: #f8f9fc;
+    border: 1px solid #e3e6f0 !important;
+    transition: background-color 0.2s ease;
+}
+
+.recommendation-item:hover {
+    background: #eaecf4;
+}
+
+.optimization-status h6 {
+    color: #5a5c69;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.optimization-status p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+/* Chart containers */
+.card canvas {
+    max-height: 300px;
+}
+
+/* Table styling */
+.table th {
+    background-color: #f8f9fc;
+    border-top: none;
+    font-weight: 600;
+    color: #5a5c69;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.table td {
+    vertical-align: middle;
+    font-size: 0.9rem;
+}
+
+/* Badge styling */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+}
+
+/* Alert styling */
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.alert-light {
+    background-color: #fefefe;
+    color: #818182;
+    border: 1px solid #e3e6f0;
+}
+
+/* Progress bar styling */
+.progress {
+    height: 0.75rem;
+    border-radius: 0.5rem;
+    background-color: #e3e6f0;
+}
+
+.progress-bar {
+    border-radius: 0.5rem;
+}
+
+/* Button styling */
+.btn-group .btn {
+    margin-left: 0.25rem;
+}
+
+.btn-group .btn:first-child {
+    margin-left: 0;
+}
+
+/* Card header styling */
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.card-header h5 {
+    color: #5a5c69;
+    font-weight: 600;
+}
+
+/* Tab styling */
+.nav-tabs .nav-link {
+    color: #6c757d;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
+}
+
+.nav-tabs .nav-link:hover {
+    border-bottom-color: #dee2e6;
+    background: none;
+}
+
+.nav-tabs .nav-link.active {
+    color: #495057;
+    border-bottom-color: #007bff;
+    background: none;
+    font-weight: 600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .health-score {
+        font-size: 2rem;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        margin-left: 0;
+        margin-bottom: 0.25rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.8rem;
+    }
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.status-indicator.healthy {
+    background-color: #28a745;
+}
+
+.status-indicator.warning {
+    background-color: #ffc107;
+}
+
+.status-indicator.critical {
+    background-color: #dc3545;
+}
+
+/* Metric trend indicators */
+.trend-up {
+    color: #28a745;
+}
+
+.trend-down {
+    color: #dc3545;
+}
+
+.trend-stable {
+    color: #6c757d;
+}
+
+.trend-up::before {
+    content: '↗';
+    margin-right: 0.25rem;
+}
+
+.trend-down::before {
+    content: '↘';
+    margin-right: 0.25rem;
+}
+
+.trend-stable::before {
+    content: '→';
+    margin-right: 0.25rem;
+}
+
+/* Custom scrollbar for containers */
+.alerts-container::-webkit-scrollbar,
+.recommendations-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.alerts-container::-webkit-scrollbar-track,
+.recommendations-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.alerts-container::-webkit-scrollbar-thumb,
+.recommendations-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.alerts-container::-webkit-scrollbar-thumb:hover,
+.recommendations-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Animation for new alerts/recommendations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.alert.new,
+.recommendation-item.new {
+    animation: slideInRight 0.5s ease-out;
+}
+
+/* Tooltip styling */
+.tooltip {
+    font-size: 0.8rem;
+}
+
+.tooltip-inner {
+    background-color: #5a5c69;
+    border-radius: 0.375rem;
+}
+
+/* Performance score styling */
+.performance-score {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.performance-score-value {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.performance-score-bar {
+    width: 60px;
+    height: 6px;
+    background-color: #e3e6f0;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.performance-score-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.performance-score-fill.excellent {
+    background-color: #28a745;
+}
+
+.performance-score-fill.good {
+    background-color: #20c997;
+}
+
+.performance-score-fill.fair {
+    background-color: #ffc107;
+}
+
+.performance-score-fill.poor {
+    background-color: #fd7e14;
+}
+
+.performance-score-fill.critical {
+    background-color: #dc3545;
+}

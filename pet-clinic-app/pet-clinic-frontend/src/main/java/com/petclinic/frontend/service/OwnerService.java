@@ -1,6 +1,7 @@
 package com.petclinic.frontend.service;
 
 import com.petclinic.frontend.model.Owner;
+import com.petclinic.frontend.model.Pet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,20 +63,131 @@ public class OwnerService {
      * Create new owner
      */
     public Mono<Owner> createOwner(Owner owner) {
+        // Convert Owner object to Map to avoid content type issues
+        Map<String, Object> ownerData = new HashMap<>();
+        
+        if (owner.getFirstName() != null) {
+            ownerData.put("firstName", owner.getFirstName());
+        }
+        
+        if (owner.getLastName() != null) {
+            ownerData.put("lastName", owner.getLastName());
+        }
+        
+        if (owner.getAddress() != null) {
+            ownerData.put("address", owner.getAddress());
+        }
+        
+        if (owner.getCity() != null) {
+            ownerData.put("city", owner.getCity());
+        }
+        
+        if (owner.getState() != null) {
+            ownerData.put("state", owner.getState());
+        }
+        
+        if (owner.getZipCode() != null) {
+            ownerData.put("zipCode", owner.getZipCode());
+        }
+        
+        if (owner.getTelephone() != null) {
+            ownerData.put("telephone", owner.getTelephone());
+        }
+        
+        if (owner.getEmail() != null) {
+            ownerData.put("email", owner.getEmail());
+        }
+        
+        System.out.println("DEBUG: Creating owner with data: " + ownerData);
+        
         return webClient.post()
                 .uri("/owners")
-                .bodyValue(owner)
+                .bodyValue(ownerData)
                 .retrieve()
-                .bodyToMono(Owner.class);
+                .onStatus(status -> status.is4xxClientError(), 
+                         clientResponse -> {
+                             System.out.println("DEBUG: Client error response status: " + clientResponse.statusCode());
+                             return clientResponse.bodyToMono(String.class)
+                                 .defaultIfEmpty("") // Handle empty response body
+                                 .map(body -> {
+                                     System.out.println("DEBUG: Error response body: '" + body + "'");
+                                     
+                                     // Handle specific error cases
+                                     if (clientResponse.statusCode().value() == 400) {
+                                         if (body.contains("email") || body.contains("unique") || body.contains("duplicate")) {
+                                             return new RuntimeException("EMAIL_DUPLICATE");
+                                         } else if (body.contains("validation") || body.contains("Validation")) {
+                                             return new RuntimeException("VALIDATION_ERROR");
+                                         } else {
+                                             // For 400 with empty body, likely a constraint violation
+                                             return new RuntimeException("EMAIL_DUPLICATE");
+                                         }
+                                     } else if (clientResponse.statusCode().value() == 401) {
+                                         return new RuntimeException("AUTHENTICATION_ERROR");
+                                     } else if (clientResponse.statusCode().value() == 403) {
+                                         return new RuntimeException("AUTHORIZATION_ERROR");
+                                     } else {
+                                         return new RuntimeException("CLIENT_ERROR: " + clientResponse.statusCode());
+                                     }
+                                 });
+                         })
+                .onStatus(status -> status.is5xxServerError(), 
+                         clientResponse -> {
+                             System.out.println("DEBUG: Server error response status: " + clientResponse.statusCode());
+                             return clientResponse.bodyToMono(String.class)
+                                 .defaultIfEmpty("")
+                                 .map(body -> {
+                                     System.out.println("DEBUG: Server error response body: '" + body + "'");
+                                     return new RuntimeException("SERVER_ERROR");
+                                 });
+                         })
+                .bodyToMono(Owner.class)
+                .doOnSuccess(savedOwner -> System.out.println("DEBUG: Successfully created owner: " + savedOwner))
+                .doOnError(error -> System.out.println("DEBUG: Error creating owner: " + error.getMessage()));
     }
 
     /**
      * Update existing owner
      */
     public Mono<Owner> updateOwner(Long id, Owner owner) {
+        // Convert Owner object to Map to avoid content type issues
+        Map<String, Object> ownerData = new HashMap<>();
+        
+        if (owner.getFirstName() != null) {
+            ownerData.put("firstName", owner.getFirstName());
+        }
+        
+        if (owner.getLastName() != null) {
+            ownerData.put("lastName", owner.getLastName());
+        }
+        
+        if (owner.getAddress() != null) {
+            ownerData.put("address", owner.getAddress());
+        }
+        
+        if (owner.getCity() != null) {
+            ownerData.put("city", owner.getCity());
+        }
+        
+        if (owner.getState() != null) {
+            ownerData.put("state", owner.getState());
+        }
+        
+        if (owner.getZipCode() != null) {
+            ownerData.put("zipCode", owner.getZipCode());
+        }
+        
+        if (owner.getTelephone() != null) {
+            ownerData.put("telephone", owner.getTelephone());
+        }
+        
+        if (owner.getEmail() != null) {
+            ownerData.put("email", owner.getEmail());
+        }
+        
         return webClient.put()
                 .uri("/owners/{id}", id)
-                .bodyValue(owner)
+                .bodyValue(ownerData)
                 .retrieve()
                 .bodyToMono(Owner.class);
     }
@@ -196,8 +309,19 @@ public class OwnerService {
         owner.setLastName((String) ownerMap.get("lastName"));
         owner.setAddress((String) ownerMap.get("address"));
         owner.setCity((String) ownerMap.get("city"));
+        owner.setState((String) ownerMap.get("state"));
+        owner.setZipCode((String) ownerMap.get("zipCode"));
         owner.setTelephone((String) ownerMap.get("telephone"));
         owner.setEmail((String) ownerMap.get("email"));
+        
+        // Map pets if present
+        if (ownerMap.get("pets") != null) {
+            List<Map<String, Object>> petsData = (List<Map<String, Object>>) ownerMap.get("pets");
+            List<Pet> pets = petsData.stream()
+                    .map(this::mapToPet)
+                    .collect(Collectors.toList());
+            owner.setPets(pets);
+        }
         
         // Handle date fields if present
         if (ownerMap.get("createdAt") != null) {
@@ -208,5 +332,23 @@ public class OwnerService {
         }
         
         return owner;
+    }
+    
+    /**
+     * Map backend pet response to Pet model
+     */
+    @SuppressWarnings("unchecked")
+    private Pet mapToPet(Map<String, Object> petMap) {
+        Pet pet = new Pet();
+        pet.setId(((Number) petMap.get("id")).longValue());
+        pet.setName((String) petMap.get("name"));
+        pet.setSpecies((String) petMap.get("species"));
+        pet.setBreed((String) petMap.get("breed"));
+        
+        if (petMap.get("birthDate") != null) {
+            pet.setBirthDate(java.time.LocalDate.parse((String) petMap.get("birthDate")));
+        }
+        
+        return pet;
     }
 }

@@ -1,0 +1,565 @@
+/**
+ * Table Header Visibility Fixes
+ * Addresses critical table header visibility issues across all data tables
+ * Ensures proper contrast, accessibility, and responsive behavior
+ * 
+ * Requirements addressed:
+ * - 10.1: Sufficient color contrast for readability
+ * - 10.2: Clear visual indicators for sort capability and current sort state
+ * - 10.3: Appropriate hover states and tooltips
+ * - 10.4: Responsive header behavior across screen sizes
+ * - 10.5: Dark mode adaptation with maintained contrast
+ */
+
+/* ==========================================================================
+   Base Table Header Styles
+   ========================================================================== */
+
+/* Enhanced table header base styling */
+.table thead th,
+.enhanced-table thead th,
+.table-sortable thead th {
+    /* Improved contrast and visibility */
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border-bottom: 2px solid #dee2e6 !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.025em !important;
+    padding: 0.75rem 0.5rem !important;
+    position: relative !important;
+    vertical-align: middle !important;
+    
+    /* Ensure text is always visible */
+    text-shadow: none !important;
+    box-shadow: none !important;
+    
+    /* Accessibility improvements */
+    min-height: 2.5rem !important;
+    line-height: 1.4 !important;
+}
+
+/* Light theme headers (Bootstrap table-light) */
+.table thead.table-light th,
+.enhanced-table thead.table-light th,
+.table-sortable thead.table-light th {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border-color: #dee2e6 !important;
+}
+
+/* Dark theme headers (Bootstrap table-dark) */
+.table thead.table-dark th,
+.enhanced-table thead.table-dark th,
+.table-sortable thead.table-dark th {
+    background-color: #343a40 !important;
+    color: #ffffff !important;
+    border-color: #495057 !important;
+}
+
+/* ==========================================================================
+   Sortable Header Enhancements
+   ========================================================================== */
+
+/* Sortable header base styling */
+.sortable-header {
+    cursor: pointer !important;
+    user-select: none !important;
+    position: relative !important;
+    transition: all 0.2s ease !important;
+    padding-right: 2rem !important;
+    
+    /* Ensure visibility */
+    background-color: inherit !important;
+    color: inherit !important;
+    
+    /* Focus and accessibility */
+    outline: none !important;
+    border-radius: 0.25rem !important;
+}
+
+/* Hover states for sortable headers */
+.sortable-header:hover {
+    background-color: rgba(0, 0, 0, 0.08) !important;
+    color: #495057 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Dark theme hover states */
+.table-dark .sortable-header:hover,
+thead.table-dark .sortable-header:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+/* Focus states for keyboard navigation */
+.sortable-header:focus,
+.sortable-header:focus-visible {
+    outline: 2px solid #0d6efd !important;
+    outline-offset: 2px !important;
+    background-color: rgba(13, 110, 253, 0.1) !important;
+    z-index: 1 !important;
+}
+
+/* Active/sorted header styling */
+.sortable-header.sorted,
+.sortable-header[aria-sort="ascending"],
+.sortable-header[aria-sort="descending"] {
+    background-color: rgba(13, 110, 253, 0.15) !important;
+    color: #0d6efd !important;
+    font-weight: 700 !important;
+    border-left: 3px solid #0d6efd !important;
+}
+
+/* Dark theme sorted headers */
+.table-dark .sortable-header.sorted,
+thead.table-dark .sortable-header.sorted,
+.table-dark .sortable-header[aria-sort="ascending"],
+thead.table-dark .sortable-header[aria-sort="ascending"],
+.table-dark .sortable-header[aria-sort="descending"],
+thead.table-dark .sortable-header[aria-sort="descending"] {
+    background-color: rgba(13, 110, 253, 0.3) !important;
+    color: #66b3ff !important;
+    border-left-color: #66b3ff !important;
+}
+
+/* ==========================================================================
+   Sort Indicators
+   ========================================================================== */
+
+/* Sort indicator base styling */
+.sort-indicator {
+    position: absolute !important;
+    right: 0.5rem !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 0.875rem !important;
+    font-weight: bold !important;
+    opacity: 0.6 !important;
+    transition: all 0.2s ease !important;
+    pointer-events: none !important;
+    z-index: 1 !important;
+}
+
+/* Sort indicator visibility on hover */
+.sortable-header:hover .sort-indicator {
+    opacity: 1 !important;
+    transform: translateY(-50%) scale(1.1) !important;
+}
+
+/* Active sort indicator */
+.sort-indicator.active,
+.sortable-header.sorted .sort-indicator,
+.sortable-header[aria-sort="ascending"] .sort-indicator,
+.sortable-header[aria-sort="descending"] .sort-indicator {
+    opacity: 1 !important;
+    color: #0d6efd !important;
+    font-size: 1rem !important;
+}
+
+/* Dark theme sort indicators */
+.table-dark .sort-indicator.active,
+thead.table-dark .sort-indicator.active,
+.table-dark .sortable-header.sorted .sort-indicator,
+thead.table-dark .sortable-header.sorted .sort-indicator {
+    color: #66b3ff !important;
+}
+
+/* Sort direction indicators */
+.sort-indicator.neutral::before {
+    content: "⇅" !important;
+    color: #6c757d !important;
+}
+
+.sort-indicator.asc::before,
+.sortable-header[aria-sort="ascending"] .sort-indicator::before {
+    content: "↑" !important;
+    color: #198754 !important;
+}
+
+.sort-indicator.desc::before,
+.sortable-header[aria-sort="descending"] .sort-indicator::before {
+    content: "↓" !important;
+    color: #dc3545 !important;
+}
+
+/* Global sort indicator */
+.sort-indicator.global::after {
+    content: "🌐" !important;
+    font-size: 0.7rem !important;
+    margin-left: 0.2rem !important;
+    opacity: 0.8 !important;
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+/* Mobile and tablet adjustments */
+@media (max-width: 768px) {
+    .table thead th,
+    .enhanced-table thead th,
+    .table-sortable thead th {
+        font-size: 0.75rem !important;
+        padding: 0.5rem 0.25rem !important;
+        min-height: 2rem !important;
+    }
+    
+    .sortable-header {
+        padding-right: 1.5rem !important;
+    }
+    
+    .sort-indicator {
+        right: 0.25rem !important;
+        font-size: 0.75rem !important;
+    }
+    
+    /* Simplified hover effects on mobile */
+    .sortable-header:hover {
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}
+
+/* Large screen enhancements */
+@media (min-width: 1200px) {
+    .table thead th,
+    .enhanced-table thead th,
+    .table-sortable thead th {
+        font-size: 0.9rem !important;
+        padding: 1rem 0.75rem !important;
+    }
+    
+    .sortable-header {
+        padding-right: 2.5rem !important;
+    }
+    
+    .sort-indicator {
+        right: 0.75rem !important;
+        font-size: 1rem !important;
+    }
+}
+
+/* ==========================================================================
+   Accessibility Enhancements
+   ========================================================================== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .table thead th,
+    .enhanced-table thead th,
+    .table-sortable thead th {
+        border-bottom-width: 3px !important;
+        font-weight: 700 !important;
+    }
+    
+    .sortable-header.sorted {
+        border-left-width: 4px !important;
+    }
+    
+    .sort-indicator.active {
+        font-weight: 900 !important;
+        text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5) !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .sortable-header,
+    .sort-indicator {
+        transition: none !important;
+    }
+    
+    .sortable-header:hover {
+        transform: none !important;
+    }
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* ==========================================================================
+   Dark Mode Support
+   ========================================================================== */
+
+/* System dark mode preference */
+@media (prefers-color-scheme: dark) {
+    .table thead th,
+    .enhanced-table thead th,
+    .table-sortable thead th {
+        background-color: #343a40 !important;
+        color: #ffffff !important;
+        border-color: #495057 !important;
+    }
+    
+    .sortable-header:hover {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
+    }
+    
+    .sortable-header.sorted {
+        background-color: rgba(13, 110, 253, 0.3) !important;
+        color: #66b3ff !important;
+        border-left-color: #66b3ff !important;
+    }
+    
+    .sort-indicator.neutral::before {
+        color: #adb5bd !important;
+    }
+}
+
+/* Manual dark mode class support */
+.dark-mode .table thead th,
+.dark-mode .enhanced-table thead th,
+.dark-mode .table-sortable thead th,
+body.dark-mode .table thead th,
+body.dark-mode .enhanced-table thead th,
+body.dark-mode .table-sortable thead th {
+    background-color: #343a40 !important;
+    color: #ffffff !important;
+    border-color: #495057 !important;
+}
+
+.dark-mode .sortable-header:hover,
+body.dark-mode .sortable-header:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+}
+
+.dark-mode .sortable-header.sorted,
+body.dark-mode .sortable-header.sorted {
+    background-color: rgba(13, 110, 253, 0.3) !important;
+    color: #66b3ff !important;
+    border-left-color: #66b3ff !important;
+}
+
+/* ==========================================================================
+   Tooltip Support
+   ========================================================================== */
+
+/* Tooltip styling for sortable headers */
+.sortable-header[title]:hover::after {
+    content: attr(title) !important;
+    position: absolute !important;
+    bottom: 100% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background-color: #212529 !important;
+    color: #ffffff !important;
+    padding: 0.25rem 0.5rem !important;
+    border-radius: 0.25rem !important;
+    font-size: 0.75rem !important;
+    font-weight: normal !important;
+    white-space: nowrap !important;
+    z-index: 1000 !important;
+    margin-bottom: 0.25rem !important;
+    opacity: 0.9 !important;
+    pointer-events: none !important;
+}
+
+/* Tooltip arrow */
+.sortable-header[title]:hover::before {
+    content: "" !important;
+    position: absolute !important;
+    bottom: 100% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    border: 4px solid transparent !important;
+    border-top-color: #212529 !important;
+    z-index: 1001 !important;
+    pointer-events: none !important;
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+    .table thead th,
+    .enhanced-table thead th,
+    .table-sortable thead th {
+        background-color: #f8f9fa !important;
+        color: #000000 !important;
+        border: 1px solid #000000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    
+    .sort-indicator {
+        display: none !important;
+    }
+    
+    .sortable-header {
+        cursor: default !important;
+    }
+    
+    .sortable-header:hover::after,
+    .sortable-header:hover::before {
+        display: none !important;
+    }
+}
+
+/* ==========================================================================
+   Loading States
+   ========================================================================== */
+
+/* Loading state for table headers */
+.table.loading thead th,
+.enhanced-table.loading thead th,
+.table-sortable.loading thead th {
+    opacity: 0.6 !important;
+    pointer-events: none !important;
+}
+
+.table.loading .sortable-header,
+.enhanced-table.loading .sortable-header,
+.table-sortable.loading .sortable-header {
+    cursor: wait !important;
+}
+
+/* Loading indicator in sort indicator */
+.sort-indicator.loading::before {
+    content: "⟳" !important;
+    animation: spin 1s linear infinite !important;
+    color: #0d6efd !important;
+}
+
+@keyframes spin {
+    0% { transform: translateY(-50%) rotate(0deg) !important; }
+    100% { transform: translateY(-50%) rotate(360deg) !important; }
+}
+
+/* ==========================================================================
+   Error States
+   ========================================================================== */
+
+/* Error state for table headers */
+.table.error thead th,
+.enhanced-table.error thead th,
+.table-sortable.error thead th {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    border-color: #f5c6cb !important;
+}
+
+.table.error .sortable-header:hover,
+.enhanced-table.error .sortable-header:hover,
+.table-sortable.error .sortable-header:hover {
+    background-color: #f1aeb5 !important;
+}
+
+/* ==========================================================================
+   Multi-Select Column
+   ========================================================================== */
+
+/* Select column header styling */
+.select-column {
+    width: 40px !important;
+    text-align: center !important;
+    padding: 0.5rem 0.25rem !important;
+    background-color: inherit !important;
+    border-right: 1px solid #dee2e6 !important;
+}
+
+.select-column input[type="checkbox"] {
+    margin: 0 !important;
+    transform: scale(1.1) !important;
+    cursor: pointer !important;
+}
+
+.select-column input[type="checkbox"]:focus {
+    outline: 2px solid #0d6efd !important;
+    outline-offset: 2px !important;
+}
+
+/* Dark mode select column */
+.table-dark .select-column,
+thead.table-dark .select-column {
+    border-right-color: #495057 !important;
+}
+
+/* ==========================================================================
+   Specific Table Type Overrides
+   ========================================================================== */
+
+/* Owners table specific styling */
+#ownersTable thead th {
+    background-color: #343a40 !important;
+    color: #ffffff !important;
+}
+
+/* Pets table specific styling */
+#petsTable thead th {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+/* Veterinarians table specific styling */
+#veterinariansTable thead th,
+#veterinariansListTable thead th {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+/* Visits table specific styling */
+#visitsTable thead th {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+}
+
+/* Senior pets table specific styling */
+.senior-pets-table thead th {
+    background-color: #f8f9fa !important;
+    color: #212529 !important;
+    border-color: #dee2e6 !important;
+}
+
+/* Dark mode overrides for senior pets */
+@media (prefers-color-scheme: dark) {
+    .senior-pets-table thead th {
+        background-color: #495057 !important;
+        color: #f8f9fa !important;
+        border-color: #6c757d !important;
+    }
+}
+
+/* ==========================================================================
+   Browser-Specific Fixes
+   ========================================================================== */
+
+/* Safari specific fixes */
+@supports (-webkit-appearance: none) {
+    .sortable-header {
+        -webkit-user-select: none !important;
+    }
+    
+    .sort-indicator {
+        -webkit-transform: translateY(-50%) !important;
+    }
+}
+
+/* Firefox specific fixes */
+@-moz-document url-prefix() {
+    .sortable-header {
+        -moz-user-select: none !important;
+    }
+}
+
+/* Edge/IE specific fixes */
+@supports (-ms-ime-align: auto) {
+    .sortable-header {
+        -ms-user-select: none !important;
+    }
+}

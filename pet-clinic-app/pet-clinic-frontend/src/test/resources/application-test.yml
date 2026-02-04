@@ -1,0 +1,12 @@
+pet-clinic:
+  backend:
+    url: http://localhost:9090
+    api-path: /api
+  ui:
+    title: "Pet Clinic Test"
+
+logging:
+  level:
+    com.petclinic: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG

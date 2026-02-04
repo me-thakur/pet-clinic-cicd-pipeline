@@ -2,15 +2,22 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
 <head>
     <title>Pets</title>
+    <!-- Enhanced Table Styles and Scripts -->
+    <link rel="stylesheet" th:href="@{/css/enhanced-table.css}">
+    <link rel="stylesheet" th:href="@{/css/table-header-visibility.css}">
+    <link rel="stylesheet" th:href="@{/css/pet-view-modes.css}">
+    <script th:src="@{/js/table-api-client.js}" defer></script>
+    <script th:src="@{/js/enhanced-table.js}" defer></script>
+    <script th:src="@{/js/pet-view-modes.js}" defer></script>
 </head>
 <body>
     <div th:fragment="content">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>
                 <i class="fas fa-paw"></i> 
-                <span th:if="${filterByOwner}">Pets for <span th:text="${owner.fullName}">Owner</span></span>
-                <span th:if="${filterBySenior}">Senior Pets (Age <span th:text="${seniorAge}">7</span>+)</span>
-                <span th:unless="${filterByOwner or filterBySenior}">All Pets</span>
+                <span th:if="${filterByOwner != null and filterByOwner}">Pets for <span th:text="${owner.fullName}">Owner</span></span>
+                <span th:if="${filterBySenior != null and filterBySenior}">Senior Pets (Age <span th:text="${seniorAge}">7</span>+)</span>
+                <span th:unless="${(filterByOwner != null and filterByOwner) or (filterBySenior != null and filterBySenior)}">All Pets</span>
             </h1>
             <div>
                 <a th:href="@{/pets/new}" class="btn btn-primary">
@@ -19,13 +26,57 @@
                 <a th:href="@{/pets/senior}" class="btn btn-outline-info">
                     <i class="fas fa-birthday-cake"></i> Senior Pets
                 </a>
+                <!-- Enhanced view toggle with improved state management -->
+                <div class="btn-group view-toggle-group" role="group" aria-label="View mode selection">
+                    <a th:href="@{/pets}" 
+                       class="btn view-toggle-btn" 
+                       th:classappend="${!enhancedView} ? 'btn-secondary active' : 'btn-outline-secondary'"
+                       title="Standard View - Basic pet information"
+                       data-view="standard"
+                       aria-pressed="${!enhancedView}">
+                        <i class="fas fa-list"></i> 
+                        <span class="d-none d-md-inline">Standard</span>
+                        <span th:if="${!enhancedView}" class="view-state-indicator badge bg-light text-dark ms-1 d-none d-lg-inline">Active</span>
+                    </a>
+                    <a th:href="@{/pets/enhanced}" 
+                       class="btn view-toggle-btn" 
+                       th:classappend="${enhancedView} ? 'btn-secondary active' : 'btn-outline-secondary'"
+                       title="Enhanced View - Pet information with owner details"
+                       data-view="enhanced"
+                       aria-pressed="${enhancedView}">
+                        <i class="fas fa-list-alt"></i> 
+                        <span class="d-none d-md-inline">Enhanced</span>
+                        <span th:if="${enhancedView}" class="view-state-indicator badge bg-light text-dark ms-1 d-none d-lg-inline">Active</span>
+                    </a>
+                </div>
             </div>
         </div>
 
-        <!-- Search Form -->
-        <div class="search-form" th:unless="${filterByOwner or filterBySenior}">
+        <!-- Error/Warning Messages with Enhanced Handling -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span th:text="${error}">Error message</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        
+        <div th:if="${fallbackMessage}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-info-circle"></i>
+            <span th:text="${fallbackMessage}">Fallback message</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Loading State Container -->
+        <div id="viewLoadingState" class="alert alert-info" style="display: none;">
+            <div class="d-flex align-items-center">
+                <div class="spinner-border spinner-border-sm me-2" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span>Loading pet data...</span>
+            </div>
+        </div>
+        <!-- Search Form -->>
+        <div class="search-form" th:unless="${(filterByOwner != null and filterByOwner) or (filterBySenior != null and filterBySenior)}"
             <h5><i class="fas fa-search"></i> Search Pets</h5>
-            <form th:action="@{/pets/search}" method="get" class="row g-3">
                 <div class="col-md-3">
                     <label for="name" class="form-label">Name</label>
                     <input type="text" class="form-control" id="name" name="name" th:value="${searchName}">
@@ -66,12 +117,13 @@
             <div class="col-md-6">
                 <p class="text-muted">
                     <span th:if="${searchPerformed}">Search Results: </span>
-                    <span th:if="${pets.totalElements != null}" th:text="${pets.totalElements}">0</span>
-                    <span th:unless="${pets.totalElements != null}" th:text="${#lists.size(pets)}">0</span>
+                    <span th:if="${pets != null and pets.class.simpleName == 'PageImpl'}" th:text="${pets.totalElements}">0</span>
+                    <span th:if="${pets != null and pets.class.simpleName != 'PageImpl'}" th:text="${#lists.size(pets)}">0</span>
+                    <span th:if="${pets == null}">0</span>
                     pet(s) found
                 </p>
             </div>
-            <div class="col-md-6 text-end" th:if="${pets.totalPages != null and pets.totalPages > 1}">
+            <div class="col-md-6 text-end" th:if="${pets != null and pets.class.simpleName == 'PageImpl' and pets.totalPages != null and pets.totalPages > 1}">
                 <nav>
                     <ul class="pagination pagination-sm justify-content-end">
                         <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
@@ -89,10 +141,31 @@
             </div>
         </div>
 
+        <!-- Active Filters Display -->
+        <div class="active-filters" id="activeFilters">
+            <!-- Active filter badges will be dynamically inserted here -->
+        </div>
+
+        <!-- Bulk Operations Controls -->
+        <div class="bulk-actions" id="bulkActions">
+            <div class="selected-info">
+                <i class="fas fa-check-square"></i>
+                <span class="selected-count">0</span> pets selected
+            </div>
+            <div class="bulk-action-buttons">
+                <button type="button" class="btn btn-sm btn-outline-danger" id="bulkDeleteBtn">
+                    <i class="fas fa-trash"></i> Delete Selected
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="clearSelectionBtn">
+                    <i class="fas fa-times"></i> Clear Selection
+                </button>
+            </div>
+        </div>
+
         <!-- Pets Table -->
         <div class="card">
-            <div class="card-body">
-                <div th:if="${pets == null or #lists.isEmpty(pets) or (pets.content != null and #lists.isEmpty(pets.content))}" 
+            <div class="card-body pets-table-container" id="petsTableContainer">
+                <div th:if="${pets == null or #lists.isEmpty(pets) or (pets.class.simpleName == 'PageImpl' and #lists.isEmpty(pets.content))}" 
                      class="text-center py-5">
                     <i class="fas fa-paw fa-3x text-muted mb-3"></i>
                     <h5 class="text-muted">No pets found</h5>
@@ -105,52 +178,110 @@
                     </a>
                 </div>
 
-                <div th:if="${pets != null and (!#lists.isEmpty(pets) or (pets.content != null and !#lists.isEmpty(pets.content)))}" 
-                     class="table-responsive">
-                    <table class="table table-hover">
+                <div th:if="${pets != null and (!#lists.isEmpty(pets) or (pets.class.simpleName == 'PageImpl' and !#lists.isEmpty(pets.content)))}" 
+                     class="table-responsive"
+                     th:classappend="${enhancedView} ? 'enhanced-view' : 'standard-view'">
+                    <table class="table table-hover table-sortable enhanced-table" id="petsTable">
                         <thead class="table-light">
                             <tr>
-                                <th>Name</th>
-                                <th>Species</th>
-                                <th>Breed</th>
-                                <th>Age</th>
-                                <th>Owner</th>
-                                <th>Actions</th>
+                                <th class="select-column" title="Select all pets">
+                                    <input type="checkbox" class="form-check-input" title="Select all pets" aria-label="Select all pets">
+                                </th>
+                                <th class="sortable-header" data-column="name" data-sort-type="text" title="Click to sort by pet name">
+                                    Name
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="species" data-sort-type="text" title="Click to sort by species">
+                                    Species
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="breed" data-sort-type="text" title="Click to sort by breed">
+                                    Breed
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="age" data-sort-type="number" title="Click to sort by age">
+                                    Age
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="owner" data-sort-type="text" title="Click to sort by owner name">
+                                    Owner
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th th:if="${enhancedView}" class="sortable-header" data-column="contactInfo" data-sort-type="text" title="Click to sort by contact information">
+                                    Contact Info
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="no-sort">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="pet : ${pets.content != null ? pets.content : pets}">
-                                <td>
-                                    <strong th:text="${pet.name}">Pet Name</strong>
-                                    <span th:if="${pet.youngPet}" class="badge bg-success ms-1">Young</span>
-                                    <span th:if="${pet.seniorPet}" class="badge bg-warning ms-1">Senior</span>
+                            <tr th:each="pet : ${pets.class.simpleName == 'PageImpl' ? pets.content : pets}" 
+                                th:data-id="${pet.id != null ? pet.id : (pet.petId != null ? pet.petId : 0)}">
+                                <td class="select-column">
+                                    <input type="checkbox" class="form-check-input" 
+                                           th:data-id="${pet.id != null ? pet.id : (pet.petId != null ? pet.petId : 0)}" 
+                                           th:aria-label="'Select pet ' + ${pet.name != null ? pet.name : (pet.petName != null ? pet.petName : 'Unknown')}">
                                 </td>
-                                <td th:text="${pet.species}">Species</td>
-                                <td th:text="${pet.breed}">Breed</td>
-                                <td th:text="${pet.age}">Age</td>
                                 <td>
-                                    <a th:if="${pet.owner != null}" 
-                                       th:href="@{/owners/{id}(id=${pet.owner.id})}" 
-                                       th:text="${pet.owner.fullName}">Owner Name</a>
-                                    <span th:unless="${pet.owner != null}" class="text-muted">No owner</span>
+                                    <strong th:text="${pet.name != null ? pet.name : (pet.petName != null ? pet.petName : 'Unknown')}">Pet Name</strong>
+                                    <span th:if="${(pet.youngPet != null and pet.youngPet) or (pet.age != null and pet.age < 2)}" class="badge bg-success ms-1">Young</span>
+                                    <span th:if="${(pet.seniorPet != null and pet.seniorPet) or (pet.age != null and pet.age >= 7)}" class="badge bg-warning ms-1">Senior</span>
+                                </td>
+                                <td th:text="${pet.species != null ? pet.species : (pet.petSpecies != null ? pet.petSpecies : 'Unknown')}">Species</td>
+                                <td th:text="${pet.breed != null ? pet.breed : (pet.petBreed != null ? pet.petBreed : 'Unknown')}">Breed</td>
+                                <td th:text="${pet.age != null ? pet.age : (pet.petAge != null ? pet.petAge : 'Unknown')}">Age</td>
+                                <td>
+                                    <!-- Enhanced view with PetWithOwnerInfo -->
+                                    <div th:if="${enhancedView}">
+                                        <a th:if="${pet.hasOwner != null and pet.hasOwner()}" 
+                                           th:href="@{/owners/{id}(id=${pet.ownerId})}" 
+                                           th:text="${pet.ownerFullName}">Owner Name</a>
+                                        <span th:unless="${pet.hasOwner != null and pet.hasOwner()}" class="text-muted">No Owner Assigned</span>
+                                    </div>
+                                    <!-- Standard view with Pet -->
+                                    <div th:unless="${enhancedView}">
+                                        <a th:if="${pet.owner != null}" 
+                                           th:href="@{/owners/{id}(id=${pet.owner.id})}" 
+                                           th:text="${pet.owner.fullName}">Owner Name</a>
+                                        <span th:unless="${pet.owner != null}" class="text-muted">No owner</span>
+                                    </div>
+                                </td>
+                                <!-- Enhanced contact info column -->
+                                <td th:if="${enhancedView}">
+                                    <div th:if="${pet.hasOwner != null and pet.hasOwner()}">
+                                        <small class="text-muted" th:text="${pet.ownerContactInfo}">Contact Info</small>
+                                        <br th:if="${pet.ownerFullAddress != null and pet.ownerFullAddress != 'No Address'}">
+                                        <small class="text-muted" th:text="${pet.ownerFullAddress}">Address</small>
+                                    </div>
+                                    <small th:unless="${pet.hasOwner != null and pet.hasOwner()}" class="text-muted">No Contact Info</small>
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm" role="group">
-                                        <a th:href="@{/pets/{id}(id=${pet.id})}" 
+                                        <a th:href="@{/pets/{id}(id=${pet.id != null ? pet.id : (pet.petId != null ? pet.petId : 0)})}" 
                                            class="btn btn-outline-info btn-action" title="View Details">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye"></i> <span class="d-none d-md-inline">View</span>
                                         </a>
-                                        <a th:href="@{/pets/{id}/edit(id=${pet.id})}" 
+                                        <a th:href="@{/pets/{id}/edit(id=${pet.id != null ? pet.id : (pet.petId != null ? pet.petId : 0)})}" 
                                            class="btn btn-outline-primary btn-action" title="Edit">
-                                            <i class="fas fa-edit"></i>
+                                            <i class="fas fa-edit"></i> <span class="d-none d-md-inline">Edit</span>
                                         </a>
-                                        <a th:href="@{/visits/new(petId=${pet.id})}" 
+                                        <a th:href="@{/visits/new(petId=${pet.id != null ? pet.id : (pet.petId != null ? pet.petId : 0)})}" 
                                            class="btn btn-outline-success btn-action" title="Schedule Visit">
-                                            <i class="fas fa-calendar-plus"></i>
+                                            <i class="fas fa-calendar-plus"></i> <span class="d-none d-md-inline">Visit</span>
                                         </a>
-                                        <form th:action="@{/pets/{id}/delete(id=${pet.id})}" method="post" style="display: inline;">
+                                        <!-- Refresh owner info button for enhanced view -->
+                                        <button th:if="${enhancedView and pet.petId != null}" 
+                                                type="button" 
+                                                class="btn btn-outline-warning btn-action refresh-owner-info" 
+                                                th:data-pet-id="${pet.petId}"
+                                                title="Refresh Owner Information"
+                                                aria-label="Refresh owner information for this pet">
+                                            <i class="fas fa-sync" aria-hidden="true"></i> 
+                                            <span class="d-none d-md-inline">Refresh</span>
+                                        </button>
+                                        <form th:action="@{/pets/{id}/delete(id=${pet.id != null ? pet.id : (pet.petId != null ? pet.petId : 0)})}" method="post" style="display: inline;">
                                             <button type="submit" class="btn btn-outline-danger btn-action btn-delete" title="Delete">
-                                                <i class="fas fa-trash"></i>
+                                                <i class="fas fa-trash"></i> <span class="d-none d-md-inline">Delete</span>
                                             </button>
                                         </form>
                                     </div>
@@ -163,11 +294,219 @@
         </div>
 
         <!-- Back to Owner Link -->
-        <div th:if="${filterByOwner}" class="mt-3">
+        <div th:if="${filterByOwner != null and filterByOwner}" class="mt-3">
             <a th:href="@{/owners/{id}(id=${owner.id})}" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> Back to <span th:text="${owner.fullName}">Owner</span>
             </a>
         </div>
     </div>
+
+    <!-- JavaScript for enhanced functionality -->
+    <script th:if="${enhancedView}">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize enhanced table for pets
+            const petsTable = document.getElementById('petsTable');
+            if (petsTable) {
+                try {
+                    // Enhanced table options for pets
+                    const options = {
+                        entityType: 'pets',
+                        enableGlobalSort: true,
+                        enableFiltering: true,
+                        enableBulkOperations: true,
+                        pageSize: 10,
+                        persistState: true
+                    };
+
+                    // Initialize enhanced table
+                    const enhancedTable = new EnhancedTable(petsTable, options);
+                    
+                    // Store reference for debugging
+                    window.petsEnhancedTable = enhancedTable;
+                    
+                    // Setup bulk operations
+                    setupBulkOperations(enhancedTable);
+                    
+                    console.log('Enhanced pets table initialized successfully');
+                    
+                } catch (error) {
+                    console.error('Failed to initialize enhanced pets table:', error);
+                    
+                    // Show user-friendly error message
+                    const messageContainer = document.createElement('div');
+                    messageContainer.className = 'alert alert-warning alert-dismissible fade show';
+                    messageContainer.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Enhanced table features are temporarily unavailable. Basic table functionality is still available.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    petsTable.parentNode.insertBefore(messageContainer, petsTable);
+                }
+            }
+            
+            // Add tooltip for enhanced view indicator
+            if (document.querySelector('[data-bs-toggle="tooltip"]')) {
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+        });
+
+        /**
+         * Setup bulk operations functionality
+         */
+        function setupBulkOperations(enhancedTable) {
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+            const bulkActions = document.getElementById('bulkActions');
+            
+            // Bulk delete button
+            if (bulkDeleteBtn) {
+                bulkDeleteBtn.addEventListener('click', async function() {
+                    try {
+                        const result = await enhancedTable.bulkController.bulkDeleteAsync();
+                        if (result && !result.cancelled) {
+                            // Success handled by the bulk controller
+                            console.log('Bulk delete completed:', result);
+                        }
+                    } catch (error) {
+                        console.error('Bulk delete failed:', error);
+                    }
+                });
+            }
+            
+            // Clear selection button
+            if (clearSelectionBtn) {
+                clearSelectionBtn.addEventListener('click', function() {
+                    enhancedTable.bulkController.clearSelection();
+                });
+            }
+            
+            // Listen for selection changes to show/hide bulk actions
+            if (bulkActions) {
+                // Override the bulk controller's updateSelectionUI to show/hide bulk actions
+                const originalUpdateSelectionUI = enhancedTable.bulkController.updateSelectionUI;
+                enhancedTable.bulkController.updateSelectionUI = function() {
+                    originalUpdateSelectionUI.call(this);
+                    
+                    // Show/hide bulk actions based on selection
+                    if (this.selectedItems.size > 0) {
+                        bulkActions.classList.add('show');
+                        bulkActions.style.display = 'flex';
+                    } else {
+                        bulkActions.classList.remove('show');
+                        bulkActions.style.display = 'none';
+                    }
+                    
+                    // Update selected count
+                    const countElement = bulkActions.querySelector('.selected-count');
+                    if (countElement) {
+                        countElement.textContent = this.selectedItems.size;
+                    }
+                };
+            }
+        }
+    </script>
+
+    <!-- JavaScript for standard view -->
+    <script th:unless="${enhancedView}">
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize enhanced table for pets (standard view)
+            const petsTable = document.getElementById('petsTable');
+            if (petsTable) {
+                try {
+                    // Enhanced table options for pets
+                    const options = {
+                        entityType: 'pets',
+                        enableGlobalSort: true,
+                        enableFiltering: true,
+                        enableBulkOperations: true,
+                        pageSize: 10,
+                        persistState: true
+                    };
+
+                    // Initialize enhanced table
+                    const enhancedTable = new EnhancedTable(petsTable, options);
+                    
+                    // Store reference for debugging
+                    window.petsEnhancedTable = enhancedTable;
+                    
+                    // Setup bulk operations
+                    setupBulkOperations(enhancedTable);
+                    
+                    console.log('Enhanced pets table initialized successfully');
+                    
+                } catch (error) {
+                    console.error('Failed to initialize enhanced pets table:', error);
+                    
+                    // Show user-friendly error message
+                    const messageContainer = document.createElement('div');
+                    messageContainer.className = 'alert alert-warning alert-dismissible fade show';
+                    messageContainer.innerHTML = `
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Enhanced table features are temporarily unavailable. Basic table functionality is still available.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    `;
+                    petsTable.parentNode.insertBefore(messageContainer, petsTable);
+                }
+            }
+        });
+
+        /**
+         * Setup bulk operations functionality
+         */
+        function setupBulkOperations(enhancedTable) {
+            const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+            const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+            const bulkActions = document.getElementById('bulkActions');
+            
+            // Bulk delete button
+            if (bulkDeleteBtn) {
+                bulkDeleteBtn.addEventListener('click', async function() {
+                    try {
+                        const result = await enhancedTable.bulkController.bulkDeleteAsync();
+                        if (result && !result.cancelled) {
+                            // Success handled by the bulk controller
+                            console.log('Bulk delete completed:', result);
+                        }
+                    } catch (error) {
+                        console.error('Bulk delete failed:', error);
+                    }
+                });
+            }
+            
+            // Clear selection button
+            if (clearSelectionBtn) {
+                clearSelectionBtn.addEventListener('click', function() {
+                    enhancedTable.bulkController.clearSelection();
+                });
+            }
+            
+            // Listen for selection changes to show/hide bulk actions
+            if (bulkActions) {
+                // Override the bulk controller's updateSelectionUI to show/hide bulk actions
+                const originalUpdateSelectionUI = enhancedTable.bulkController.updateSelectionUI;
+                enhancedTable.bulkController.updateSelectionUI = function() {
+                    originalUpdateSelectionUI.call(this);
+                    
+                    // Show/hide bulk actions based on selection
+                    if (this.selectedItems.size > 0) {
+                        bulkActions.classList.add('show');
+                        bulkActions.style.display = 'flex';
+                    } else {
+                        bulkActions.classList.remove('show');
+                        bulkActions.style.display = 'none';
+                    }
+                    
+                    // Update selected count
+                    const countElement = bulkActions.querySelector('.selected-count');
+                    if (countElement) {
+                        countElement.textContent = this.selectedItems.size;
+                    }
+                };
+            }
+        }
+    </script>
 </body>
 </html>

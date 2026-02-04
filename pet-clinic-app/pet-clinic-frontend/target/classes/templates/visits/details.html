@@ -140,9 +140,36 @@
                     <div class="card-body text-center">
                         <i class="fas fa-clipboard-list fa-2x text-muted mb-2"></i>
                         <p class="text-muted mb-2">Diagnosis and treatment details not yet recorded</p>
-                        <a th:href="@{/visits/{id}/edit(id=${visit.id})}" class="btn btn-sm btn-primary">
-                            <i class="fas fa-edit"></i> Add Details
-                        </a>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a th:href="@{/visits/{id}/edit(id=${visit.id})}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> Add Details
+                            </a>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong> Visit status will automatically update to "Completed" when both diagnosis and treatment are provided.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status display for visits with details -->
+                <div th:if="${(visit.diagnosis != null and !#strings.isEmpty(visit.diagnosis)) or (visit.treatment != null and !#strings.isEmpty(visit.treatment))}" 
+                     class="card">
+                    <div class="card-body text-center">
+                        <div th:if="${visit.completed != null and visit.completed}">
+                            <p class="text-success mb-0">
+                                <i class="fas fa-check-circle"></i> Visit completed successfully
+                            </p>
+                        </div>
+                        <div th:if="${visit.completed == null or !visit.completed}">
+                            <p class="text-warning mb-2">
+                                <i class="fas fa-clock"></i> Visit is pending completion
+                            </p>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Note:</strong> Visit will be automatically marked as completed when both diagnosis and treatment are provided.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -161,15 +188,30 @@
                         </div>
 
                         <div th:if="${visit.pet.visits != null and !#lists.isEmpty(visit.pet.visits)}" class="table-responsive">
-                            <table class="table table-sm">
-                                <thead>
+                            <table class="table table-sm table-sortable enhanced-table" id="petVisitsHistoryTable">
+                                <thead class="table-light">
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Description</th>
-                                        <th>Veterinarian</th>
-                                        <th>Status</th>
-                                        <th>Cost</th>
-                                        <th>Actions</th>
+                                        <th class="sortable-header" data-column="visitDate" data-sort-type="datetime" title="Click to sort by visit date">
+                                            Date
+                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                        </th>
+                                        <th class="sortable-header" data-column="description" data-sort-type="text" title="Click to sort by description">
+                                            Description
+                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                        </th>
+                                        <th class="sortable-header" data-column="veterinarian" data-sort-type="text" title="Click to sort by veterinarian">
+                                            Veterinarian
+                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                        </th>
+                                        <th class="sortable-header" data-column="status" data-sort-type="status" title="Click to sort by status">
+                                            Status
+                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                        </th>
+                                        <th class="sortable-header" data-column="cost" data-sort-type="number" title="Click to sort by cost">
+                                            Cost
+                                            <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                        </th>
+                                        <th class="no-sort">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -242,6 +284,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 </body>
 </html>

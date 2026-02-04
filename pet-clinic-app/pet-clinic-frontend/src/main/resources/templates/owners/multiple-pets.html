@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Owners with Multiple Pets</title>
+    <link th:href="@{/css/table-header-visibility.css}" rel="stylesheet">
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-users"></i> Owners with Multiple Pets
+            </h1>
+            <div>
+                <a th:href="@{/owners}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to All Owners
+                </a>
+                <a th:href="@{/owners/new}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Owner
+                </a>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> <span th:text="${error}">Error message</span>
+        </div>
+
+        <!-- Results Info -->
+        <div class="row mb-3" th:if="${owners != null}">
+            <div class="col-md-6">
+                <p class="text-muted">
+                    <span th:text="${#lists.size(owners)}">0</span> owner(s) with multiple pets found
+                </p>
+            </div>
+        </div>
+
+        <!-- Owners Table -->
+        <div class="card">
+            <div class="card-body">
+                <div th:if="${owners == null or #lists.isEmpty(owners)}" 
+                     class="text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No owners with multiple pets found</h5>
+                    <p class="text-muted">All current owners have only one pet or no pets.</p>
+                    <a th:href="@{/owners}" class="btn btn-primary">
+                        <i class="fas fa-users"></i> View All Owners
+                    </a>
+                </div>
+
+                <div th:if="${owners != null and !#lists.isEmpty(owners)}" 
+                     class="table-responsive">
+                    <table class="table table-hover table-sortable enhanced-table" id="ownersMultiplePetsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="sortable-header" data-column="fullName" data-sort-type="text" title="Click to sort by owner name">
+                                    Name
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="contact" data-sort-type="text" title="Click to sort by contact information">
+                                    Contact
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="address" data-sort-type="text" title="Click to sort by address">
+                                    Address
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="sortable-header" data-column="petCount" data-sort-type="number" title="Click to sort by number of pets">
+                                    Number of Pets
+                                    <span class="sort-indicator neutral" aria-hidden="true"></span>
+                                </th>
+                                <th class="no-sort">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="owner : ${owners}">
+                                <td>
+                                    <strong th:text="${owner.firstName} + ' ' + ${owner.lastName}">Owner Name</strong>
+                                </td>
+                                <td>
+                                    <div th:if="${owner.telephone != null}">
+                                        <i class="fas fa-phone"></i> <span th:text="${owner.telephone}">Phone</span>
+                                    </div>
+                                    <div th:if="${owner.email != null}">
+                                        <i class="fas fa-envelope"></i> 
+                                        <a th:href="'mailto:' + ${owner.email}" th:text="${owner.email}">Email</a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div th:if="${owner.address != null}" th:text="${owner.address}">Address</div>
+                                    <div th:if="${owner.city != null}">
+                                        <span th:text="${owner.city}">City</span><span th:if="${owner.state != null}">, <span th:text="${owner.state}">State</span></span>
+                                        <span th:if="${owner.zipCode != null}"> <span th:text="${owner.zipCode}">ZIP</span></span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary" th:text="${owner.pets != null ? #lists.size(owner.pets) : 'N/A'}">0</span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a th:href="@{/owners/{id}(id=${owner.id})}" 
+                                           class="btn btn-outline-info btn-action" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a th:href="@{/pets/owner/{id}(id=${owner.id})}" 
+                                           class="btn btn-outline-success btn-action" title="View Pets">
+                                            <i class="fas fa-paw"></i>
+                                        </a>
+                                        <a th:href="@{/pets/new(ownerId=${owner.id})}" 
+                                           class="btn btn-outline-primary btn-action" title="Add Pet">
+                                            <i class="fas fa-plus"></i>
+                                        </a>
+                                        <a th:href="@{/owners/{id}/edit(id=${owner.id})}" 
+                                           class="btn btn-outline-warning btn-action" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row mt-4" th:if="${owners != null and !#lists.isEmpty(owners)}">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Multi-Pet Owners</h5>
+                        <h2 class="text-primary" th:text="${#lists.size(owners)}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Pets</h5>
+                        <h2 class="text-success" th:text="${#aggregates.sum(owners.![pets != null ? #lists.size(pets) : 0])}">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Average Pets per Owner</h5>
+                        <h2 class="text-info" th:text="${#numbers.formatDecimal(#aggregates.sum(owners.![pets != null ? #lists.size(pets) : 0]) / #lists.size(owners), 1, 1)}">0.0</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

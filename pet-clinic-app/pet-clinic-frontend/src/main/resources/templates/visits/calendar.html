@@ -2,187 +2,518 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
 <head>
     <title>Visit Calendar</title>
+    <!-- Calendar Enhancement Styles -->
+    <link rel="stylesheet" th:href="@{/css/calendar-enhancements.css}">
     <style>
+        /* Modern Calendar Styling */
+        .calendar-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+            margin: -2rem -15px 0 -15px;
+        }
+        
+        .calendar-wrapper {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin: 0 15px;
+        }
+        
+        .calendar-header-section {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .calendar-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .calendar-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        
+        .calendar-controls {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .filter-section {
+            background: #f8f9fa;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
         .calendar-container {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        .calendar-header {
+        
+        .calendar-navigation {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
         }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 1px;
-            background-color: #dee2e6;
+        
+        .month-navigation {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-        .calendar-day-header {
-            background: #f8f9fa;
-            padding: 0.5rem;
+        
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .current-month {
+            font-size: 1.5rem;
+            font-weight: 600;
+            min-width: 200px;
             text-align: center;
-            font-weight: bold;
-            color: #495057;
         }
+        
+        .today-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .today-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .calendar-grid {
+            display: grid !important;
+            grid-template-columns: repeat(7, 1fr) !important;
+            gap: 1px !important;
+            background-color: #e9ecef !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            grid-auto-rows: minmax(140px, auto) !important;
+        }
+        
+        .calendar-day-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0.5rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
         .calendar-day {
             background: white;
-            min-height: 120px;
-            padding: 0.5rem;
+            min-height: 140px;
+            padding: 0.75rem;
             position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
         }
+        
+        .calendar-day:hover {
+            background: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #007bff;
+        }
+        
         .calendar-day.other-month {
             background: #f8f9fa;
             color: #6c757d;
+            opacity: 0.6;
         }
+        
         .calendar-day.today {
-            background: #e3f2fd;
-        }
-        .calendar-day-number {
-            font-weight: bold;
-            margin-bottom: 0.25rem;
-        }
-        .visit-item {
-            background: #007bff;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
             color: white;
-            padding: 2px 4px;
-            margin: 1px 0;
-            border-radius: 3px;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+        
+        .calendar-day.today .calendar-day-number {
+            color: white;
+        }
+        
+        .calendar-day-number {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+        
+        .visit-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 8px;
+            margin: 2px 0;
+            border-radius: 8px;
             font-size: 0.75rem;
             cursor: pointer;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .visit-item.emergency {
-            background: #dc3545;
-        }
-        .visit-item.completed {
-            background: #28a745;
-        }
+        
         .visit-item:hover {
-            opacity: 0.8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-        .vet-filter {
-            margin-bottom: 1rem;
+        
+        .visit-item.emergency {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            animation: pulse 2s infinite;
         }
+        
+        .visit-item.completed {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3); }
+            50% { box-shadow: 0 4px 12px rgba(255, 107, 107, 0.6); }
+            100% { box-shadow: 0 2px 4px rgba(255, 107, 107, 0.3); }
+        }
+        
         .legend {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 2rem;
+            justify-content: center;
             flex-wrap: wrap;
+            align-items: center;
         }
+        
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 0.25rem;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-weight: 500;
         }
+        
         .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 3px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .legend-color.regular {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .legend-color.emergency {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+        
+        .legend-color.completed {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+        }
+        
+        .filter-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        
+        .filter-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-calendar {
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .btn-calendar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-outline-gradient {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-outline-gradient:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        /* Modal Enhancements */
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 1.5rem 2rem;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+        }
+        
+        .btn-close {
+            filter: invert(1);
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .modal-footer {
+            border-top: none;
+            padding: 1rem 2rem 2rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .calendar-page {
+                padding: 1rem 0;
+                margin: -1rem -15px 0 -15px;
+            }
+            
+            .calendar-title {
+                font-size: 2rem;
+            }
+            
+            .calendar-grid {
+                grid-auto-rows: minmax(100px, auto) !important;
+            }
+            
+            .calendar-day {
+                min-height: 100px;
+                padding: 0.5rem;
+            }
+            
+            .legend {
+                gap: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-calendar {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+        
+        /* Loading Animation */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div th:fragment="content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>
-                <i class="fas fa-calendar-alt"></i> 
-                Visit Calendar
-            </h1>
-            <div>
-                <a th:href="@{/visits/new}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Schedule Visit
-                </a>
-                <a th:href="@{/visits}" class="btn btn-outline-secondary ms-2">
-                    <i class="fas fa-list"></i> List View
-                </a>
-            </div>
-        </div>
-
-        <!-- Veterinarian Filter -->
-        <div class="vet-filter">
-            <div class="row">
-                <div class="col-md-6">
-                    <label for="veterinarianFilter" class="form-label">Filter by Veterinarian:</label>
-                    <select id="veterinarianFilter" class="form-select" onchange="filterByVeterinarian()">
-                        <option value="">All Veterinarians</option>
-                        <option th:each="vet : ${veterinarians}" 
-                                th:value="${vet.id}" 
-                                th:text="'Dr. ' + ${vet.firstName} + ' ' + ${vet.lastName}"
-                                th:selected="${selectedVeterinarianId != null and selectedVeterinarianId == vet.id}">Veterinarian</option>
-                    </select>
-                </div>
-                <div class="col-md-6 d-flex align-items-end">
-                    <div class="legend">
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #007bff;"></div>
-                            <span>Regular</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #dc3545;"></div>
-                            <span>Emergency</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-color" style="background: #28a745;"></div>
-                            <span>Completed</span>
+        <div class="calendar-page">
+            <div class="container">
+                <div class="calendar-wrapper">
+                    <!-- Header Section -->
+                    <div class="calendar-header-section">
+                        <h1 class="calendar-title">
+                            <i class="fas fa-calendar-alt"></i> 
+                            Visit Calendar
+                        </h1>
+                        <p class="calendar-subtitle">
+                            Manage and view all veterinary appointments in one beautiful calendar
+                        </p>
+                        
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <a th:href="@{/visits/new}" class="btn btn-calendar btn-primary-gradient">
+                                <i class="fas fa-plus"></i> Schedule New Visit
+                            </a>
+                            <a th:href="@{/visits}" class="btn btn-calendar btn-outline-gradient">
+                                <i class="fas fa-list"></i> List View
+                            </a>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Calendar Container -->
-        <div class="calendar-container">
-            <!-- Calendar Header -->
-            <div class="calendar-header">
-                <div>
-                    <button class="btn btn-outline-primary" onclick="navigateMonth(-1)">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <span class="mx-3 h4" th:text="${currentMonthYear}">Month Year</span>
-                    <button class="btn btn-outline-primary" onclick="navigateMonth(1)">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-                <div>
-                    <button class="btn btn-outline-info" onclick="goToToday()">Today</button>
-                </div>
-            </div>
+                    <!-- Filter Section -->
+                    <div class="filter-section">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="filter-card">
+                                    <label for="veterinarianFilter" class="filter-label">
+                                        <i class="fas fa-user-md"></i> Filter by Veterinarian
+                                    </label>
+                                    <select id="veterinarianFilter" class="form-select" onchange="filterByVeterinarian()">
+                                        <option value="">All Veterinarians</option>
+                                        <option th:each="vet : ${veterinarians}" 
+                                                th:value="${vet.id}" 
+                                                th:text="'Dr. ' + ${vet.firstName} + ' ' + ${vet.lastName}"
+                                                th:selected="${selectedVeterinarianId != null and selectedVeterinarianId == vet.id}">Veterinarian</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="legend">
+                                    <div class="legend-item">
+                                        <div class="legend-color regular"></div>
+                                        <span>Regular</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color emergency"></div>
+                                        <span>Emergency</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color completed"></div>
+                                        <span>Completed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Calendar Grid -->
-            <div class="calendar-grid">
-                <!-- Day Headers -->
-                <div class="calendar-day-header">Sun</div>
-                <div class="calendar-day-header">Mon</div>
-                <div class="calendar-day-header">Tue</div>
-                <div class="calendar-day-header">Wed</div>
-                <div class="calendar-day-header">Thu</div>
-                <div class="calendar-day-header">Fri</div>
-                <div class="calendar-day-header">Sat</div>
+                    <!-- Calendar Container -->
+                    <div class="calendar-container">
+                        <!-- Calendar Navigation -->
+                        <div class="calendar-navigation">
+                            <div class="month-navigation">
+                                <button class="nav-btn" onclick="navigateMonth(-1)" title="Previous Month">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <div class="current-month" th:text="${currentMonthYear}">January 2026</div>
+                                <button class="nav-btn" onclick="navigateMonth(1)" title="Next Month">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                            <button class="today-btn" onclick="goToToday()">
+                                <i class="fas fa-calendar-day"></i> Today
+                            </button>
+                        </div>
 
-                <!-- Calendar Days -->
-                <div th:each="day : ${calendarDays}" 
-                     class="calendar-day"
-                     th:classappend="${day.otherMonth} ? 'other-month' : ''"
-                     th:classappend="${day.today} ? 'today' : ''"
-                     th:onclick="'showDayDetails(' + ${day.dayNumber} + ', \'' + ${day.dateString} + '\')'">
-                    
-                    <div class="calendar-day-number" th:text="${day.dayNumber}">1</div>
-                    
-                    <!-- Visits for this day -->
-                    <div th:each="visit : ${day.visits}">
-                        <div class="visit-item"
-                             th:classappend="${visit.emergencyVisit} ? 'emergency' : ''"
-                             th:classappend="${visit.completed} ? 'completed' : ''"
-                             th:onclick="'showVisitDetails(' + ${visit.id} + ')'"
-                             th:title="${visit.description + ' - ' + (visit.pet != null ? visit.pet.name : 'Unknown Pet') + ' with Dr. ' + (visit.veterinarian != null ? visit.veterinarian.lastName : 'TBD')}"
-                             th:text="${#temporals.format(visit.visitDate, 'HH:mm')} + ' ' + ${visit.pet != null ? visit.pet.name : 'Unknown'}">
-                            Time Pet
+                        <!-- Debug info (remove in production) -->
+                        <div class="alert alert-info m-3" th:if="${calendarDays != null}">
+                            <i class="fas fa-info-circle"></i>
+                            Calendar loaded with <strong th:text="${#lists.size(calendarDays)}">0</strong> days
+                        </div>
+
+                        <!-- Calendar Grid -->
+                        <div class="calendar-grid">
+                            <!-- Day Headers -->
+                            <div class="calendar-day-header">Sunday</div>
+                            <div class="calendar-day-header">Monday</div>
+                            <div class="calendar-day-header">Tuesday</div>
+                            <div class="calendar-day-header">Wednesday</div>
+                            <div class="calendar-day-header">Thursday</div>
+                            <div class="calendar-day-header">Friday</div>
+                            <div class="calendar-day-header">Saturday</div>
+
+                            <!-- Calendar Days -->
+                            <div th:each="day : ${calendarDays}" 
+                                 class="calendar-day"
+                                 th:classappend="(${day.otherMonth} ? 'other-month' : '') + ' ' + (${day.today} ? 'today' : '')"
+                                 th:data-day-number="${day.dayNumber}"
+                                 th:data-date-string="${day.dateString}"
+                                 onclick="showDayDetails(this.dataset.dayNumber, this.dataset.dateString)">
+                                
+                                <div class="calendar-day-number" th:text="${day.dayNumber}">1</div>
+                                
+                                <!-- Visits for this day -->
+                                <div th:each="visit : ${day.visits}">
+                                    <div class="visit-item"
+                                         th:classappend="(${visit.emergencyVisit} ? 'emergency' : '') + ' ' + (${visit.completed} ? 'completed' : '')"
+                                         th:data-visit-id="${visit.id}"
+                                         onclick="showVisitDetails(this.dataset.visitId)"
+                                         th:title="${visit.description + ' - ' + (visit.pet != null ? visit.pet.name : 'Unknown Pet') + ' with Dr. ' + (visit.veterinarian != null ? visit.veterinarian.lastName : 'TBD')}"
+                                         th:text="${#temporals.format(visit.visitDate, 'HH:mm')} + ' ' + ${visit.pet != null ? visit.pet.name : 'Unknown'}">
+                                        <i class="fas fa-clock"></i> Time Pet
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -202,10 +533,13 @@
                     </div>
                     <div class="modal-body">
                         <div id="dayVisitsList">
-                            <!-- Day visits will be loaded here -->
+                            <div class="text-center">
+                                <div class="loading-spinner"></div>
+                                <p class="mt-2">Loading visits...</p>
+                            </div>
                         </div>
-                        <div class="text-center mt-3">
-                            <a href="#" id="scheduleVisitForDay" class="btn btn-primary">
+                        <div class="text-center mt-4">
+                            <a href="#" id="scheduleVisitForDay" class="btn btn-calendar btn-primary-gradient">
                                 <i class="fas fa-plus"></i> Schedule Visit for This Day
                             </a>
                         </div>
@@ -225,11 +559,18 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body" id="visitQuickContent">
-                        <!-- Visit details will be loaded here -->
+                        <div class="text-center">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-2">Loading visit details...</p>
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <a href="#" id="viewFullVisit" class="btn btn-primary">View Full Details</a>
-                        <a href="#" id="editVisit" class="btn btn-outline-primary">Edit Visit</a>
+                        <a href="#" id="viewFullVisit" class="btn btn-calendar btn-primary-gradient">
+                            <i class="fas fa-eye"></i> View Full Details
+                        </a>
+                        <a href="#" id="editVisit" class="btn btn-calendar btn-outline-gradient">
+                            <i class="fas fa-edit"></i> Edit Visit
+                        </a>
                     </div>
                 </div>
             </div>
@@ -242,8 +583,15 @@
         let currentMonth = /*[[${currentMonth}]]*/ new Date().getMonth();
         let selectedVeterinarianId = /*[[${selectedVeterinarianId}]]*/ null;
 
-        // Navigate to different month
+        // Navigate to different month with smooth loading
         function navigateMonth(direction) {
+            // Add loading state
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => {
+                btn.innerHTML = '<div class="loading-spinner"></div>';
+                btn.disabled = true;
+            });
+            
             const params = new URLSearchParams();
             
             if (direction === 1) {
@@ -268,11 +616,20 @@
                 params.set('veterinarianId', selectedVeterinarianId);
             }
             
-            window.location.href = '/visits/calendar?' + params.toString();
+            // Add smooth transition
+            document.querySelector('.calendar-grid').style.opacity = '0.5';
+            
+            setTimeout(() => {
+                window.location.href = '/visits/calendar?' + params.toString();
+            }, 300);
         }
 
-        // Go to today
+        // Go to today with animation
         function goToToday() {
+            const todayBtn = document.querySelector('.today-btn');
+            todayBtn.innerHTML = '<div class="loading-spinner"></div> Loading...';
+            todayBtn.disabled = true;
+            
             const today = new Date();
             const params = new URLSearchParams();
             params.set('year', today.getFullYear());
@@ -281,12 +638,22 @@
                 params.set('veterinarianId', selectedVeterinarianId);
             }
             
-            window.location.href = '/visits/calendar?' + params.toString();
+            document.querySelector('.calendar-grid').style.opacity = '0.5';
+            
+            setTimeout(() => {
+                window.location.href = '/visits/calendar?' + params.toString();
+            }, 300);
         }
 
-        // Filter by veterinarian
+        // Filter by veterinarian with loading state
         function filterByVeterinarian() {
             const select = document.getElementById('veterinarianFilter');
+            select.disabled = true;
+            
+            // Add loading indicator
+            const filterCard = select.closest('.filter-card');
+            filterCard.style.opacity = '0.7';
+            
             const params = new URLSearchParams();
             params.set('year', currentYear);
             params.set('month', currentMonth);
@@ -294,46 +661,247 @@
                 params.set('veterinarianId', select.value);
             }
             
-            window.location.href = '/visits/calendar?' + params.toString();
+            document.querySelector('.calendar-grid').style.opacity = '0.5';
+            
+            setTimeout(() => {
+                window.location.href = '/visits/calendar?' + params.toString();
+            }, 300);
         }
 
-        // Show day details
+        // Enhanced day details with better UX
         function showDayDetails(dayNumber, dateString) {
-            document.getElementById('selectedDate').textContent = dateString;
+            const modal = new bootstrap.Modal(document.getElementById('dayDetailsModal'));
+            document.getElementById('selectedDate').textContent = formatDateString(dateString);
+            
+            // Show loading state
+            document.getElementById('dayVisitsList').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="loading-spinner"></div>
+                    <p class="mt-3 text-muted">Loading visits for this day...</p>
+                </div>
+            `;
+            
+            document.getElementById('scheduleVisitForDay').href = `/visits/new?date=${dateString}`;
+            modal.show();
             
             // Load visits for the day
             fetch(`/visits/calendar/day?date=${dateString}`)
-                .then(response => response.text())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load visits');
+                    }
+                    return response.text();
+                })
                 .then(html => {
-                    document.getElementById('dayVisitsList').innerHTML = html;
-                    document.getElementById('scheduleVisitForDay').href = `/visits/new?date=${dateString}`;
-                    new bootstrap.Modal(document.getElementById('dayDetailsModal')).show();
+                    document.getElementById('dayVisitsList').innerHTML = html || `
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-plus fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No visits scheduled</h5>
+                            <p class="text-muted">This day is available for new appointments.</p>
+                        </div>
+                    `;
                 })
                 .catch(error => {
                     console.error('Error loading day details:', error);
-                    document.getElementById('dayVisitsList').innerHTML = '<p class="text-danger">Error loading visits for this day.</p>';
-                    new bootstrap.Modal(document.getElementById('dayDetailsModal')).show();
+                    document.getElementById('dayVisitsList').innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <h5 class="text-warning">Unable to load visits</h5>
+                            <p class="text-muted">Please try again or refresh the page.</p>
+                            <button class="btn btn-outline-primary" onclick="showDayDetails('${dayNumber}', '${dateString}')">
+                                <i class="fas fa-redo"></i> Retry
+                            </button>
+                        </div>
+                    `;
                 });
         }
 
-        // Show visit details
+        // Enhanced visit details with better UX
         function showVisitDetails(visitId) {
             event.stopPropagation(); // Prevent day click
             
+            const modal = new bootstrap.Modal(document.getElementById('visitQuickModal'));
+            
+            // Show loading state
+            document.getElementById('visitQuickContent').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="loading-spinner"></div>
+                    <p class="mt-3 text-muted">Loading visit details...</p>
+                </div>
+            `;
+            
+            document.getElementById('viewFullVisit').href = `/visits/${visitId}`;
+            document.getElementById('editVisit').href = `/visits/${visitId}/edit`;
+            modal.show();
+            
             fetch(`/visits/${visitId}/quick`)
-                .then(response => response.text())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load visit details');
+                    }
+                    return response.text();
+                })
                 .then(html => {
                     document.getElementById('visitQuickContent').innerHTML = html;
-                    document.getElementById('viewFullVisit').href = `/visits/${visitId}`;
-                    document.getElementById('editVisit').href = `/visits/${visitId}/edit`;
-                    new bootstrap.Modal(document.getElementById('visitQuickModal')).show();
                 })
                 .catch(error => {
                     console.error('Error loading visit details:', error);
-                    document.getElementById('visitQuickContent').innerHTML = '<p class="text-danger">Error loading visit details.</p>';
-                    new bootstrap.Modal(document.getElementById('visitQuickModal')).show();
+                    document.getElementById('visitQuickContent').innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <h5 class="text-warning">Unable to load visit details</h5>
+                            <p class="text-muted">Please try again or view the full visit page.</p>
+                            <div class="mt-3">
+                                <button class="btn btn-outline-primary me-2" onclick="showVisitDetails('${visitId}')">
+                                    <i class="fas fa-redo"></i> Retry
+                                </button>
+                                <a href="/visits/${visitId}" class="btn btn-primary">
+                                    <i class="fas fa-external-link-alt"></i> View Full Details
+                                </a>
+                            </div>
+                        </div>
+                    `;
                 });
         }
+        
+        // Utility function to format date strings
+        function formatDateString(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
+        
+        // Enhanced calendar grid layout with better error handling
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing beautiful calendar...');
+            
+            // Add smooth animations
+            const calendarDays = document.querySelectorAll('.calendar-day');
+            calendarDays.forEach((day, index) => {
+                day.style.animationDelay = `${index * 10}ms`;
+                day.classList.add('fade-in');
+            });
+            
+            // Add hover effects for visit items
+            const visitItems = document.querySelectorAll('.visit-item');
+            visitItems.forEach(item => {
+                item.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px) scale(1.02)';
+                });
+                
+                item.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+            
+            // Enhanced grid layout handling
+            const calendarGrid = document.querySelector('.calendar-grid');
+            if (calendarGrid) {
+                const computedStyle = window.getComputedStyle(calendarGrid);
+                console.log('Calendar grid display:', computedStyle.display);
+                
+                // Ensure proper grid layout
+                if (computedStyle.display !== 'grid') {
+                    console.log('Applying grid layout fix...');
+                    calendarGrid.style.display = 'grid';
+                    calendarGrid.style.gridTemplateColumns = 'repeat(7, 1fr)';
+                    calendarGrid.style.gap = '1px';
+                }
+                
+                // Add resize handler for responsive behavior
+                window.addEventListener('resize', debounce(function() {
+                    if (window.innerWidth < 768) {
+                        calendarGrid.style.gridAutoRows = 'minmax(100px, auto)';
+                    } else {
+                        calendarGrid.style.gridAutoRows = 'minmax(140px, auto)';
+                    }
+                }, 250));
+            }
+            
+            // Add keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+                
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        navigateMonth(-1);
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        navigateMonth(1);
+                        break;
+                    case 't':
+                    case 'T':
+                        if (!e.ctrlKey && !e.metaKey) {
+                            e.preventDefault();
+                            goToToday();
+                        }
+                        break;
+                }
+            });
+            
+            // Add loading states for better UX
+            const links = document.querySelectorAll('a[href*="/visits/"]');
+            links.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (!this.classList.contains('btn-calendar')) return;
+                    
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<div class="loading-spinner"></div> Loading...';
+                    this.disabled = true;
+                    
+                    // Restore if navigation fails
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                    }, 5000);
+                });
+            });
+            
+            console.log('Beautiful calendar initialized successfully!');
+        });
+        
+        // Utility function for debouncing
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Add CSS animation class
+        const style = document.createElement('style');
+        style.textContent = `
+            .fade-in {
+                animation: fadeInUp 0.6s ease-out forwards;
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            
+            @keyframes fadeInUp {
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
+    
+    <!-- Calendar Enhancement Script -->
+    <script th:src="@{/js/calendar-enhancements.js}"></script>
+    
+    <!-- Calendar Interaction Script -->
+    <script th:src="@{/js/calendar-interactions.js}"></script>
 </body>
 </html>

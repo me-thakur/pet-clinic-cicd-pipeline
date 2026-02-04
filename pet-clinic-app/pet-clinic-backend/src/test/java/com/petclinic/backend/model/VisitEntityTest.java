@@ -1,5 +1,6 @@
 package com.petclinic.backend.model;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 
@@ -198,5 +199,62 @@ class VisitEntityTest {
 
         // Then
         assertEquals(Specialty.CARDIOLOGY, cardiologyVisit.getRecommendedSpecialty());
+    }
+
+    @Test
+    @DisplayName("Should include computed completion status in JSON serialization")
+    void shouldIncludeCompletionStatusInJsonSerialization() throws Exception {
+        // Given
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules(); // Register JavaTimeModule for LocalDateTime
+        
+        Visit completedVisit = new Visit();
+        completedVisit.setId(1L);
+        completedVisit.setVisitDate(LocalDateTime.of(2024, 1, 15, 10, 0));
+        completedVisit.setDiagnosis("Healthy pet");
+        completedVisit.setTreatment("Vaccination administered");
+        completedVisit.setCost(BigDecimal.valueOf(75.00));
+
+        Visit incompleteVisit = new Visit();
+        incompleteVisit.setId(2L);
+        incompleteVisit.setVisitDate(LocalDateTime.of(2024, 1, 16, 14, 0));
+        incompleteVisit.setDiagnosis("Examination in progress");
+        // No treatment set
+
+        // When
+        String completedJson = objectMapper.writeValueAsString(completedVisit);
+        String incompleteJson = objectMapper.writeValueAsString(incompleteVisit);
+
+        // Then
+        assertTrue(completedJson.contains("\"completed\":true"), 
+                   "Completed visit JSON should include 'completed':true");
+        assertTrue(incompleteJson.contains("\"completed\":false"), 
+                   "Incomplete visit JSON should include 'completed':false");
+        
+        // Verify the computed status matches the isCompleted() method
+        assertTrue(completedVisit.isCompleted());
+        assertFalse(incompleteVisit.isCompleted());
+    }
+
+    @Test
+    @DisplayName("Should handle whitespace-only diagnosis and treatment in JSON serialization")
+    void shouldHandleWhitespaceInJsonSerialization() throws Exception {
+        // Given
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.findAndRegisterModules();
+        
+        Visit visitWithWhitespace = new Visit();
+        visitWithWhitespace.setId(3L);
+        visitWithWhitespace.setVisitDate(LocalDateTime.of(2024, 1, 17, 9, 0));
+        visitWithWhitespace.setDiagnosis("   "); // Whitespace only
+        visitWithWhitespace.setTreatment("  \t  "); // Whitespace and tabs
+
+        // When
+        String json = objectMapper.writeValueAsString(visitWithWhitespace);
+
+        // Then
+        assertTrue(json.contains("\"completed\":false"), 
+                   "Visit with whitespace-only fields should be marked as incomplete");
+        assertFalse(visitWithWhitespace.isCompleted());
     }
 }

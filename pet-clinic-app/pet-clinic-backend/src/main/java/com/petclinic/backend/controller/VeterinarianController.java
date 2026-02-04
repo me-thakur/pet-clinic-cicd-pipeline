@@ -1,10 +1,14 @@
 package com.petclinic.backend.controller;
 
 import com.petclinic.backend.dto.PagedResponse;
+import com.petclinic.backend.dto.VeterinarianFilterCriteria;
+import com.petclinic.backend.dto.VeterinarianFilterResult;
 import com.petclinic.backend.model.Specialty;
 import com.petclinic.backend.model.Veterinarian;
 import com.petclinic.backend.model.VisitType;
 import com.petclinic.backend.service.VeterinarianService;
+import com.petclinic.backend.service.VeterinarianFilterService;
+import com.petclinic.backend.service.SecurityAuditService;
 import com.petclinic.backend.service.impl.VeterinarianServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,13 +27,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,10 +45,10 @@ import java.util.Optional;
 /**
  * REST Controller for Veterinarian management
  * Provides comprehensive CRUD operations, availability tracking, and specialty-based filtering
- * Implements proper error handling, validation, and integration with VeterinarianService
+ * Implements server-side sorting and pagination for optimal performance
  * 
  * API Endpoints:
- * - GET /api/veterinarians - List all veterinarians
+ * - GET /api/veterinarians - List all veterinarians with server-side sorting
  * - POST /api/veterinarians - Create new veterinarian
  * - GET /api/veterinarians/{id} - Get veterinarian by ID
  * - PUT /api/veterinarians/{id} - Update veterinarian
@@ -49,11 +57,11 @@ import java.util.Optional;
  * - GET /api/veterinarians/available - Get available veterinarians
  * - GET /api/veterinarians/search - Search veterinarians
  * 
- * Validates: Requirements 3.1, 3.2, 3.3, 3.4, 3.5
+ * Validates: Requirements 6.1, 6.2, 6.3, 6.4, 6.5
  */
 @RestController
 @RequestMapping("/api/veterinarians")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${pet-clinic.cors.allowed-origins}")
 @Validated
 @Tag(name = "Veterinarian Management", description = "Comprehensive veterinarian management operations including CRUD, availability tracking, and specialty-based filtering")
 @SecurityRequirement(name = "bearerAuth")
@@ -63,41 +71,203 @@ public class VeterinarianController {
 
     @Autowired
     private VeterinarianService veterinarianService;
+    
+    @Autowired
+    private VeterinarianFilterService veterinarianFilterService;
+    
+    @Autowired
+    private SecurityAuditService securityAuditService;
+
+    // ========================================
+    // Enhanced Filtering Endpoints
+    // ========================================
+
+    /**
+     * Filter veterinarians with comprehensive criteria
+     * GET /api/veterinarians/filter?specialties=Surgery,Emergency&availableOnly=true&page=0&size=10
+     * 
+     * @param specialties List of specialties to filter by
+     * @param availableOnly Filter only available veterinarians
+     * @param minExperienceYears Minimum experience in years
+     * @param maxExperienceYears Maximum experience in years
+     * @param activeLicenseOnly Filter only active licenses
+     * @param maxVisits Maximum visits for light workload filter
+     * @param emergencyCapable Filter emergency-capable veterinarians
+     * @param surgicalCapable Filter surgical-capable veterinarians
+     * @param searchText Text search across name and license
+     * @param pageable Pagination and sorting parameters
+     * @return Filtered veterinarians with metadata
+     */
+    @GetMapping("/filter")
+    @Operation(summary = "Filter veterinarians with comprehensive criteria", 
+               description = "Filter veterinarians by specialties, availability, experience, and other criteria")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Filtered veterinarians retrieved successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid filter criteria"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public ResponseEntity<VeterinarianFilterResult> filterVeterinarians(
+            @RequestParam(required = false) List<String> specialties,
+            @RequestParam(required = false) Boolean availableOnly,
+            @RequestParam(required = false) Integer minExperienceYears,
+            @RequestParam(required = false) Integer maxExperienceYears,
+            @RequestParam(required = false) Boolean activeLicenseOnly,
+            @RequestParam(required = false) Integer maxVisits,
+            @RequestParam(required = false) Boolean emergencyCapable,
+            @RequestParam(required = false) Boolean surgicalCapable,
+            @RequestParam(required = false) String searchText,
+            Pageable pageable) {
+        
+        logger.debug("Filtering veterinarians with criteria - specialties: {}, availableOnly: {}, searchText: {}", 
+                    specialties, availableOnly, searchText);
+        
+        try {
+            VeterinarianFilterCriteria criteria = VeterinarianFilterCriteria.builder()
+                .specialties(specialties)
+                .availableOnly(availableOnly)
+                .minExperienceYears(minExperienceYears)
+                .maxExperienceYears(maxExperienceYears)
+                .activeLicenseOnly(activeLicenseOnly)
+                .maxVisits(maxVisits)
+                .emergencyCapable(emergencyCapable)
+                .surgicalCapable(surgicalCapable)
+                .searchText(searchText)
+                .build();
+            
+            VeterinarianFilterResult result = veterinarianFilterService.filterVeterinarians(criteria, pageable);
+            
+            logger.debug("Filter completed - found {} veterinarians in {}ms", 
+                        result.getTotalResults(), result.getExecutionTimeMs());
+            
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            logger.error("Error filtering veterinarians: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(VeterinarianFilterResult.builder()
+                    .veterinarians(org.springframework.data.domain.Page.empty(pageable))
+                    .suggestions(java.util.Arrays.asList("Filter temporarily unavailable. Please try again later."))
+                    .build());
+        }
+    }
+
+    /**
+     * Get available filter options for dropdowns
+     * GET /api/veterinarians/filter-options
+     * 
+     * @return Available filter options
+     */
+    @GetMapping("/filter-options")
+    @Operation(summary = "Get available filter options", 
+               description = "Get available options for filter dropdowns")
+    public ResponseEntity<Map<String, List<String>>> getFilterOptions() {
+        logger.debug("Getting veterinarian filter options");
+        
+        try {
+            Map<String, List<String>> options = veterinarianFilterService.getAvailableFilterOptions();
+            logger.debug("Retrieved filter options: {}", options.keySet());
+            return ResponseEntity.ok(options);
+            
+        } catch (Exception e) {
+            logger.error("Error getting filter options: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(java.util.Collections.emptyMap());
+        }
+    }
+
+    /**
+     * Get result counts for filter categories
+     * GET /api/veterinarians/filter-counts?specialties=Surgery&availableOnly=true
+     * 
+     * @param specialties List of specialties
+     * @param availableOnly Available only filter
+     * @param minExperienceYears Minimum experience
+     * @param maxExperienceYears Maximum experience
+     * @param activeLicenseOnly Active license filter
+     * @param maxVisits Maximum visits filter
+     * @param emergencyCapable Emergency capable filter
+     * @param surgicalCapable Surgical capable filter
+     * @param searchText Search text
+     * @return Result counts by category
+     */
+    @GetMapping("/filter-counts")
+    @Operation(summary = "Get result counts for filter categories", 
+               description = "Get counts for each filter category to help users understand filter impact")
+    public ResponseEntity<Map<String, Long>> getFilterCounts(
+            @RequestParam(required = false) List<String> specialties,
+            @RequestParam(required = false) Boolean availableOnly,
+            @RequestParam(required = false) Integer minExperienceYears,
+            @RequestParam(required = false) Integer maxExperienceYears,
+            @RequestParam(required = false) Boolean activeLicenseOnly,
+            @RequestParam(required = false) Integer maxVisits,
+            @RequestParam(required = false) Boolean emergencyCapable,
+            @RequestParam(required = false) Boolean surgicalCapable,
+            @RequestParam(required = false) String searchText) {
+        
+        logger.debug("Getting filter counts for criteria");
+        
+        try {
+            VeterinarianFilterCriteria criteria = VeterinarianFilterCriteria.builder()
+                .specialties(specialties)
+                .availableOnly(availableOnly)
+                .minExperienceYears(minExperienceYears)
+                .maxExperienceYears(maxExperienceYears)
+                .activeLicenseOnly(activeLicenseOnly)
+                .maxVisits(maxVisits)
+                .emergencyCapable(emergencyCapable)
+                .surgicalCapable(surgicalCapable)
+                .searchText(searchText)
+                .build();
+            
+            Map<String, Long> counts = veterinarianFilterService.getResultCounts(criteria);
+            logger.debug("Retrieved filter counts: {}", counts);
+            return ResponseEntity.ok(counts);
+            
+        } catch (Exception e) {
+            logger.error("Error getting filter counts: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(java.util.Collections.emptyMap());
+        }
+    }
 
     // ========================================
     // CRUD Operations
     // ========================================
 
     /**
-     * Get all veterinarians with pagination
+     * Get all veterinarians with server-side pagination and sorting
      * GET /api/veterinarians?page=0&size=10&sort=lastName,asc
      * 
+     * Supports sorting by: id, firstName, lastName, specialties, licenseNumber
+     * Default sort: lastName ascending
+     * 
      * @param pageable Pagination and sorting parameters
-     * @return Paginated list of all veterinarians
+     * @return Paginated list of all veterinarians with server-side sorting applied
      */
     @GetMapping
     public ResponseEntity<PagedResponse<Veterinarian>> getAllVeterinarians(Pageable pageable) {
-        logger.debug("Getting all veterinarians with pagination: {}", pageable);
+        logger.debug("Getting all veterinarians with server-side pagination and sorting: {}", pageable);
         
-        // For now, get all veterinarians and create a page manually
-        // In a real implementation, you'd want to add pagination to the service layer
-        List<Veterinarian> allVeterinarians = veterinarianService.findAll();
-        
-        // Apply pagination manually
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), allVeterinarians.size());
-        List<Veterinarian> pageContent = allVeterinarians.subList(start, end);
-        
-        Page<Veterinarian> veterinarians = new org.springframework.data.domain.PageImpl<>(
-            pageContent, 
-            pageable, 
-            allVeterinarians.size()
-        );
-        
-        PagedResponse<Veterinarian> response = new PagedResponse<>(veterinarians);
-        
-        logger.debug("Retrieved {} veterinarians", veterinarians.getTotalElements());
-        return ResponseEntity.ok(response);
+        try {
+            // Apply default sorting if none specified
+            if (pageable.getSort().isUnsorted()) {
+                pageable = PageRequest.of(
+                    pageable.getPageNumber(), 
+                    pageable.getPageSize(), 
+                    Sort.by(Sort.Direction.ASC, "lastName")
+                );
+            }
+            
+            // Use server-side sorting and pagination - sorting is applied at database level
+            Page<Veterinarian> veterinarians = veterinarianService.findAllWithPagination(pageable);
+            PagedResponse<Veterinarian> response = new PagedResponse<>(veterinarians);
+            
+            logger.debug("Retrieved {} veterinarians with server-side sorting", veterinarians.getTotalElements());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error getting veterinarians with server-side sorting: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**
@@ -173,6 +343,83 @@ public class VeterinarianController {
         veterinarianService.deleteById(id);
         logger.info("Deleted veterinarian with ID: {}", id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Bulk delete veterinarians
+     * DELETE /api/veterinarians/bulk
+     * 
+     * @param request Bulk delete request containing veterinarian IDs
+     * @return Bulk operation result
+     */
+    @DeleteMapping("/bulk")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Map<String, Object>> bulkDeleteVeterinarians(@RequestBody Map<String, Object> request, Authentication authentication) {
+        try {
+            logger.debug("Bulk delete veterinarians request: {}", request);
+            
+            // Extract IDs from request
+            @SuppressWarnings("unchecked")
+            List<Object> idObjects = (List<Object>) request.get("ids");
+            if (idObjects == null || idObjects.isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "No veterinarian IDs provided", "success", false));
+            }
+            
+            List<Long> ids = idObjects.stream()
+                .map(obj -> Long.valueOf(obj.toString()))
+                .collect(java.util.stream.Collectors.toList());
+            
+            int totalRequested = ids.size();
+            int deletedCount = 0;
+            List<String> errors = new ArrayList<>();
+            
+            for (Long id : ids) {
+                try {
+                    // Check if veterinarian exists
+                    if (!veterinarianService.existsById(id)) {
+                        errors.add("Veterinarian with ID " + id + " not found");
+                        continue;
+                    }
+                    
+                    // Check if veterinarian can be deleted (no associated visits)
+                    if (!veterinarianService.canDeleteVeterinarian(id)) {
+                        errors.add("Cannot delete veterinarian with ID " + id + " - has associated visits");
+                        continue;
+                    }
+                    
+                    // Delete the veterinarian
+                    veterinarianService.deleteById(id);
+                    deletedCount++;
+                    
+                    logger.debug("Successfully deleted veterinarian with ID: {}", id);
+                    
+                } catch (Exception e) {
+                    logger.error("Error deleting veterinarian with ID {}: {}", id, e.getMessage(), e);
+                    errors.add("Failed to delete veterinarian with ID " + id + ": " + e.getMessage());
+                }
+            }
+            
+            boolean success = deletedCount > 0;
+            Map<String, Object> result = Map.of(
+                "success", success,
+                "deletedCount", deletedCount,
+                "totalRequested", totalRequested,
+                "failedCount", totalRequested - deletedCount,
+                "errors", errors,
+                "message", success ? 
+                    "Successfully deleted " + deletedCount + " of " + totalRequested + " veterinarians" :
+                    "Failed to delete any veterinarians"
+            );
+            
+            logger.info("Bulk delete veterinarians result: deleted {}/{} veterinarians", deletedCount, totalRequested);
+            return ResponseEntity.ok(result);
+            
+        } catch (Exception e) {
+            logger.error("General error in bulk delete veterinarians: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Bulk delete failed", "details", e.getMessage(), "success", false));
+        }
     }
 
     // ========================================
@@ -352,6 +599,27 @@ public class VeterinarianController {
         List<Veterinarian> veterinarians = veterinarianService.searchByName(name);
         logger.debug("Found {} veterinarians matching name: {}", veterinarians.size(), name);
         return ResponseEntity.ok(veterinarians);
+    }
+
+    /**
+     * Search veterinarians by first name (case-insensitive)
+     * GET /api/veterinarians/search/by-first-name?name={name}
+     * 
+     * @param name First name to search for
+     * @return List of matching veterinarians
+     */
+    @GetMapping("/search/by-first-name")
+    public ResponseEntity<List<Veterinarian>> searchByFirstName(@RequestParam @NotBlank String name) {
+        logger.debug("Searching veterinarians by first name: {}", name);
+        
+        try {
+            List<Veterinarian> veterinarians = veterinarianService.searchByFirstName(name);
+            logger.debug("Found {} veterinarians matching first name: {}", veterinarians.size(), name);
+            return ResponseEntity.ok(veterinarians);
+        } catch (Exception e) {
+            logger.error("Error searching veterinarians by first name: {}", name, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**

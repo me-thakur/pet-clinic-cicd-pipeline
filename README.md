@@ -2,8 +2,8 @@
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/your-org/pet-clinic-management-system)
 [![Security](https://img.shields.io/badge/security-hardened-blue)](https://github.com/your-org/pet-clinic-management-system)
-[![Java](https://img.shields.io/badge/Java-11-orange)](https://openjdk.java.net/projects/jdk/11/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7-green)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-17-orange)](https://openjdk.java.net/projects/jdk/17/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.1-green)](https://spring.io/projects/spring-boot)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0-blue)](https://www.mysql.com/)
 
 A comprehensive, enterprise-grade veterinary practice management system built with Java Spring Boot, featuring complete pet clinic operations, advanced security, and modern web technologies.

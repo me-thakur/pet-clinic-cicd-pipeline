@@ -293,6 +293,24 @@ public interface VisitRepository extends BaseRepository<Visit, Long> {
     List<Visit> findByVisitType(VisitType visitType);
     
     /**
+     * Find visits by visit type with pagination
+     * Supports enhanced filtering with pagination
+     */
+    Page<Visit> findByVisitType(VisitType visitType, Pageable pageable);
+    
+    /**
+     * Find visits by pet ID with pagination
+     * Supports enhanced pet visit search with pagination
+     */
+    Page<Visit> findByPetId(Long petId, Pageable pageable);
+    
+    /**
+     * Find visits by veterinarian ID with pagination
+     * Supports enhanced veterinarian visit search with pagination
+     */
+    Page<Visit> findByVeterinarianId(Long veterinarianId, Pageable pageable);
+    
+    /**
      * Find visits by visit type and date range
      * Supports enhanced filtering
      */

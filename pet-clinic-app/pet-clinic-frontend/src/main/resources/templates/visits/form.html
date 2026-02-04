@@ -129,14 +129,9 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6" th:if="${visit.id != null}">
-                                    <div class="form-check mb-3">
-                                        <input class="form-check-input" type="checkbox" 
-                                               th:field="*{completed}" 
-                                               id="completed">
-                                        <label class="form-check-label" for="completed">
-                                            <i class="fas fa-check-circle text-success"></i> Visit Completed
-                                        </label>
-                                        <div class="form-text">Check when the visit is finished</div>
+                                    <div class="alert alert-info mb-3">
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Visit Status:</strong> A visit is automatically marked as completed when both diagnosis and treatment are provided.
                                     </div>
                                 </div>
                             </div>
@@ -173,7 +168,7 @@
                             <li><strong>Diagnosis & Treatment:</strong> Can be filled during or after the visit by the veterinarian</li>
                             <li><strong>Emergency visits:</strong> Will be prioritized in the schedule</li>
                             <li><strong>Cost:</strong> Can be added when determined (during or after visit)</li>
-                            <li><strong>Completed status:</strong> Mark when the visit is finished</li>
+                            <li><strong>Visit completion:</strong> Visits are automatically marked as completed when both diagnosis and treatment are provided</li>
                         </ul>
                     </div>
                 </div>

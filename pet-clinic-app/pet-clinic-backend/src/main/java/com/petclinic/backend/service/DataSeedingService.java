@@ -1,46 +1,39 @@
 package com.petclinic.backend.service;
 
 /**
- * Service interface for data seeding operations
- * Provides methods for seeding development and test data
- * 
- * Validates: Requirements 8.3, 8.4
+ * Service interface for seeding the database with dummy data for development and testing
  */
 public interface DataSeedingService {
     
     /**
-     * Seed all data for development environment
-     * @throws Exception if seeding fails
+     * Seeds all data types in the correct order
      */
     void seedAllData() throws Exception;
     
     /**
-     * Check if data seeding is needed
-     * @return true if seeding should be performed, false otherwise
+     * Checks if data seeding is needed based on configuration and existing data
      */
     boolean isSeedingNeeded();
     
     /**
-     * Clear all seeded data (for testing purposes)
-     * @throws Exception if clearing fails
+     * Clears all seeded data from the database
      */
     void clearAllData() throws Exception;
     
     /**
-     * Get data seeding statistics
-     * @return statistics about seeded data
+     * Gets statistics about current data in the database
      */
     DataSeedingStatistics getStatistics();
     
     /**
-     * Data seeding statistics holder
+     * Statistics class for data seeding information
      */
     class DataSeedingStatistics {
-        private long ownerCount;
-        private long petCount;
-        private long veterinarianCount;
-        private long visitCount;
-        private long userCount;
+        private final long ownerCount;
+        private final long petCount;
+        private final long veterinarianCount;
+        private final long visitCount;
+        private final long userCount;
         
         public DataSeedingStatistics(long ownerCount, long petCount, long veterinarianCount, long visitCount, long userCount) {
             this.ownerCount = ownerCount;
@@ -50,17 +43,10 @@ public interface DataSeedingService {
             this.userCount = userCount;
         }
         
-        // Getters
         public long getOwnerCount() { return ownerCount; }
         public long getPetCount() { return petCount; }
         public long getVeterinarianCount() { return veterinarianCount; }
         public long getVisitCount() { return visitCount; }
         public long getUserCount() { return userCount; }
-        
-        @Override
-        public String toString() {
-            return String.format("DataSeedingStatistics{owners=%d, pets=%d, veterinarians=%d, visits=%d, users=%d}", 
-                    ownerCount, petCount, veterinarianCount, visitCount, userCount);
-        }
     }
 }

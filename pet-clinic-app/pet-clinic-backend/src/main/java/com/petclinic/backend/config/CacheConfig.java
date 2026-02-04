@@ -29,6 +29,11 @@ public class CacheConfig {
     public static final String DASHBOARD_METRICS_CACHE = "dashboardMetrics";
     public static final String STATISTICS_CACHE = "statistics";
     
+    // Enhanced table caching
+    public static final String TABLE_RESULTS_CACHE = "tableResults";
+    public static final String TABLE_COUNTS_CACHE = "tableCounts";
+    public static final String TABLE_FILTER_VALUES_CACHE = "tableFilterValues";
+    
     @Bean
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
@@ -48,7 +53,10 @@ public class CacheConfig {
             SEARCH_RESULTS_CACHE,
             REPORTS_CACHE,
             DASHBOARD_METRICS_CACHE,
-            STATISTICS_CACHE
+            STATISTICS_CACHE,
+            TABLE_RESULTS_CACHE,
+            TABLE_COUNTS_CACHE,
+            TABLE_FILTER_VALUES_CACHE
         ));
         
         return cacheManager;
@@ -99,6 +107,46 @@ public class CacheConfig {
         return Caffeine.newBuilder()
             .maximumSize(50)
             .expireAfterWrite(2, TimeUnit.MINUTES)
+            .recordStats();
+    }
+    
+    /**
+     * Cache configuration for table results
+     * - Table results: 10 minutes TTL, max 1000 entries
+     * - Optimized for frequent sort/filter operations
+     */
+    @Bean("tableCacheBuilder")
+    public Caffeine<Object, Object> tableCacheBuilder() {
+        return Caffeine.newBuilder()
+            .maximumSize(1000)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .expireAfterAccess(5, TimeUnit.MINUTES) // Evict if not accessed for 5 minutes
+            .recordStats();
+    }
+    
+    /**
+     * Cache configuration for table counts
+     * - Count queries: 15 minutes TTL, max 200 entries
+     * - Longer TTL since counts change less frequently
+     */
+    @Bean("tableCountCacheBuilder")
+    public Caffeine<Object, Object> tableCountCacheBuilder() {
+        return Caffeine.newBuilder()
+            .maximumSize(200)
+            .expireAfterWrite(15, TimeUnit.MINUTES)
+            .recordStats();
+    }
+    
+    /**
+     * Cache configuration for filter values
+     * - Filter values: 30 minutes TTL, max 100 entries
+     * - Longer TTL since filter options change infrequently
+     */
+    @Bean("filterValuesCacheBuilder")
+    public Caffeine<Object, Object> filterValuesCacheBuilder() {
+        return Caffeine.newBuilder()
+            .maximumSize(100)
+            .expireAfterWrite(30, TimeUnit.MINUTES)
             .recordStats();
     }
 }

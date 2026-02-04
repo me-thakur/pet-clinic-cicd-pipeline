@@ -146,14 +146,16 @@ public class FilterCriteria {
         return op.equals("eq") || op.equals("ne") || op.equals("gt") || op.equals("lt") ||
                op.equals("gte") || op.equals("lte") || op.equals("contains") || 
                op.equals("startswith") || op.equals("endswith") || op.equals("before") ||
-               op.equals("after") || op.equals("between") || op.equals("in") || op.equals("notin");
+               op.equals("after") || op.equals("between") || op.equals("in") || op.equals("notin") ||
+               op.equals("equals") || op.equals("notequals");
     }
     
     public boolean hasValidEntityType() {
         if (entityType == null) return false;
         
         String type = entityType.toLowerCase();
-        return type.equals("pet") || type.equals("visit") || type.equals("veterinarian") || type.equals("owner");
+        return type.equals("pet") || type.equals("visit") || type.equals("veterinarian") || type.equals("owner") ||
+               type.equals("pets") || type.equals("visits") || type.equals("veterinarians") || type.equals("owners");
     }
     
     public boolean isValid() {

@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Error Recovery Demo - Pet Clinic</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .demo-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            background: #f8f9fa;
+        }
+        
+        .error-demo-button {
+            margin: 0.25rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-online { background-color: #28a745; }
+        .status-offline { background-color: #dc3545; }
+        .status-degraded { background-color: #ffc107; }
+        
+        .recovery-log {
+            max-height: 300px;
+            overflow-y: auto;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        
+        .partial-data-demo {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 0.25rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .component-status {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            margin: 0.25rem 0;
+            border-radius: 0.25rem;
+            background: #fff;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-4">
+                    <i class="fas fa-shield-alt text-primary"></i>
+                    Comprehensive Error Recovery Demo
+                </h1>
+                <p class="lead">
+                    This demo showcases the comprehensive error recovery system with service availability monitoring,
+                    network connectivity detection, graceful degradation, and user-friendly error handling.
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- System Status Panel -->
+            <div class="col-md-4">
+                <div class="demo-section">
+                    <h3><i class="fas fa-heartbeat"></i> System Status</h3>
+                    
+                    <div class="mb-3">
+                        <h5>Network Status</h5>
+                        <div id="network-status" class="component-status">
+                            <span class="status-indicator status-online"></span>
+                            <span>Checking...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Service Health</h5>
+                        <div id="database-status" class="component-status">
+                            <span class="status-indicator status-online"></span>
+                            <span>Database: Healthy</span>
+                        </div>
+                        <div id="validation-status" class="component-status">
+                            <span class="status-indicator status-online"></span>
+                            <span>Validation: Healthy</span>
+                        </div>
+                        <div id="export-status" class="component-status">
+                            <span class="status-indicator status-online"></span>
+                            <span>Export: Healthy</span>
+                        </div>
+                        <div id="search-status" class="component-status">
+                            <span class="status-indicator status-online"></span>
+                            <span>Search: Healthy</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Error Statistics</h5>
+                        <div id="error-stats">
+                            <small class="text-muted">Loading...</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Recovery Statistics</h5>
+                        <div id="recovery-stats">
+                            <small class="text-muted">Loading...</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Simulation Panel -->
+            <div class="col-md-8">
+                <div class="demo-section">
+                    <h3><i class="fas fa-bug"></i> Error Simulation</h3>
+                    <p>Click the buttons below to simulate different types of errors and observe the recovery mechanisms:</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Network Errors</h5>
+                            <button class="btn btn-outline-danger error-demo-button" onclick="simulateNetworkError()">
+                                <i class="fas fa-wifi-slash"></i> Network Timeout
+                            </button>
+                            <button class="btn btn-outline-danger error-demo-button" onclick="simulateConnectionError()">
+                                <i class="fas fa-unlink"></i> Connection Failed
+                            </button>
+                            <button class="btn btn-outline-warning error-demo-button" onclick="simulateSlowNetwork()">
+                                <i class="fas fa-hourglass-half"></i> Slow Network
+                            </button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Service Errors</h5>
+                            <button class="btn btn-outline-danger error-demo-button" onclick="simulateServiceUnavailable()">
+                                <i class="fas fa-server"></i> Service Unavailable
+                            </button>
+                            <button class="btn btn-outline-danger error-demo-button" onclick="simulateServerError()">
+                                <i class="fas fa-exclamation-triangle"></i> Server Error
+                            </button>
+                            <button class="btn btn-outline-warning error-demo-button" onclick="simulateDatabaseError()">
+                                <i class="fas fa-database"></i> Database Error
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h5>Validation Errors</h5>
+                            <button class="btn btn-outline-warning error-demo-button" onclick="simulateValidationError()">
+                                <i class="fas fa-exclamation-circle"></i> Field Validation
+                            </button>
+                            <button class="btn btn-outline-warning error-demo-button" onclick="simulateFormError()">
+                                <i class="fas fa-edit"></i> Form Error
+                            </button>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Authentication Errors</h5>
+                            <button class="btn btn-outline-danger error-demo-button" onclick="simulateAuthError()">
+                                <i class="fas fa-lock"></i> Session Expired
+                            </button>
+                            <button class="btn btn-outline-danger error-demo-button" onclick="simulatePermissionError()">
+                                <i class="fas fa-ban"></i> Access Denied
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h5>System Controls</h5>
+                            <button class="btn btn-success error-demo-button" onclick="clearAllErrors()">
+                                <i class="fas fa-broom"></i> Clear All Errors
+                            </button>
+                            <button class="btn btn-info error-demo-button" onclick="testRecoverySystem()">
+                                <i class="fas fa-play"></i> Test Recovery System
+                            </button>
+                            <button class="btn btn-secondary error-demo-button" onclick="toggleOfflineMode()">
+                                <i class="fas fa-wifi-slash"></i> Toggle Offline Mode
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Demo Form for Validation Errors -->
+                <div class="demo-section">
+                    <h3><i class="fas fa-edit"></i> Demo Form</h3>
+                    <p>Use this form to test validation error recovery:</p>
+                    
+                    <form id="demo-form" onsubmit="return handleFormSubmit(event)">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="demo-name" class="form-label">Name *</label>
+                                    <input type="text" class="form-control" id="demo-name" name="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="demo-email" class="form-label">Email *</label>
+                                    <input type="email" class="form-control" id="demo-email" name="email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="demo-phone" class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" id="demo-phone" name="phone">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="demo-postal" class="form-label">Postal Code</label>
+                                    <input type="text" class="form-control" id="demo-postal" name="postalCode">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Submit Form
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="triggerValidationError()">
+                            <i class="fas fa-exclamation-triangle"></i> Trigger Validation Error
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Partial Data Display Demo -->
+                <div class="demo-section">
+                    <h3><i class="fas fa-table"></i> Partial Data Display</h3>
+                    <p>This section demonstrates partial data display when full data cannot be loaded:</p>
+                    
+                    <button class="btn btn-outline-info" onclick="loadPartialData()">
+                        <i class="fas fa-download"></i> Load Data (with Partial Failure)
+                    </button>
+                    
+                    <div id="partial-data-container" class="mt-3">
+                        <!-- Partial data will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recovery Log -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="demo-section">
+                    <h3><i class="fas fa-list"></i> Recovery Log</h3>
+                    <p>Real-time log of error recovery activities:</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="clearRecoveryLog()">
+                                <i class="fas fa-trash"></i> Clear Log
+                            </button>
+                            <button class="btn btn-sm btn-outline-info" onclick="exportRecoveryLog()">
+                                <i class="fas fa-download"></i> Export Log
+                            </button>
+                        </div>
+                        <div>
+                            <small class="text-muted">Auto-scroll: </small>
+                            <input type="checkbox" id="auto-scroll" checked>
+                        </div>
+                    </div>
+                    
+                    <div id="recovery-log" class="recovery-log">
+                        <div class="text-muted">Recovery log will appear here...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Error Recovery System Scripts -->
+    <script src="/js/error-handler.js"></script>
+    <script src="/js/error-recovery.js"></script>
+    <script src="/js/error-display.js"></script>
+    <script src="/js/error-categorization.js"></script>
+    <script src="/js/network-monitor.js"></script>
+    <script src="/js/error-state-manager.js"></script>
+    <script src="/js/comprehensive-error-recovery.js"></script>
+
+    <script>
+        // Demo-specific JavaScript
+        let recoveryLogElement;
+        let autoScrollEnabled = true;
+
+        // Initialize demo when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            recoveryLogElement = document.getElementById('recovery-log');
+            
+            // Setup event listeners for recovery system
+            setupRecoveryEventListeners();
+            
+            // Start status monitoring
+            startStatusMonitoring();
+            
+            // Initialize recovery log
+            logRecoveryEvent('System initialized', 'info');
+        });
+
+        function setupRecoveryEventListeners() {
+            // Listen for error events
+            window.addEventListener('errorHandlerError', function(event) {
+                logRecoveryEvent(`Error detected: ${event.detail.error.message}`, 'error');
+            });
+
+            // Listen for recovery events
+            window.addEventListener('errorRecoveryAttempt', function(event) {
+                logRecoveryEvent(`Recovery attempt: ${event.detail.recovery.strategy}`, 'warning');
+            });
+
+            window.addEventListener('errorRecoverySuccess', function(event) {
+                logRecoveryEvent(`Recovery successful: ${event.detail.errorId}`, 'success');
+            });
+
+            window.addEventListener('errorRecoveryFailure', function(event) {
+                logRecoveryEvent(`Recovery failed: ${event.detail.reason}`, 'error');
+            });
+
+            // Listen for network events
+            window.addEventListener('networkOffline', function() {
+                logRecoveryEvent('Network connectivity lost', 'error');
+                updateNetworkStatus(false);
+            });
+
+            window.addEventListener('networkOnline', function() {
+                logRecoveryEvent('Network connectivity restored', 'success');
+                updateNetworkStatus(true);
+            });
+
+            // Listen for error state changes
+            window.addEventListener('errorStateChanged', function(event) {
+                updateErrorStats(event.detail.globalState);
+            });
+
+            // Auto-scroll checkbox
+            document.getElementById('auto-scroll').addEventListener('change', function(e) {
+                autoScrollEnabled = e.target.checked;
+            });
+        }
+
+        function startStatusMonitoring() {
+            // Update status every 5 seconds
+            setInterval(updateSystemStatus, 5000);
+            
+            // Initial update
+            updateSystemStatus();
+        }
+
+        function updateSystemStatus() {
+            // Update network status
+            if (window.networkMonitor) {
+                const status = window.networkMonitor.getConnectivityStatus();
+                updateNetworkStatus(status.isOnline);
+            }
+
+            // Update error statistics
+            if (window.errorStateManager) {
+                const stats = window.errorStateManager.getErrorStatistics();
+                updateErrorStats(window.errorStateManager.getGlobalState());
+            }
+
+            // Update recovery statistics
+            if (window.comprehensiveErrorRecovery) {
+                const stats = window.comprehensiveErrorRecovery.getRecoveryStatistics();
+                updateRecoveryStats(stats);
+            }
+        }
+
+        function updateNetworkStatus(isOnline) {
+            const statusElement = document.getElementById('network-status');
+            const indicator = statusElement.querySelector('.status-indicator');
+            const text = statusElement.querySelector('span:last-child');
+            
+            if (isOnline) {
+                indicator.className = 'status-indicator status-online';
+                text.textContent = 'Network: Online';
+            } else {
+                indicator.className = 'status-indicator status-offline';
+                text.textContent = 'Network: Offline';
+            }
+        }
+
+        function updateErrorStats(globalState) {
+            const statsElement = document.getElementById('error-stats');
+            statsElement.innerHTML = `
+                <div><strong>Active Errors:</strong> ${globalState.errorCount}</div>
+                <div><strong>Critical Errors:</strong> ${globalState.criticalErrors}</div>
+                <div><strong>System Status:</strong> ${globalState.systemDegraded ? 'Degraded' : 'Normal'}</div>
+            `;
+        }
+
+        function updateRecoveryStats(stats) {
+            const statsElement = document.getElementById('recovery-stats');
+            statsElement.innerHTML = `
+                <div><strong>Active Recoveries:</strong> ${stats.active}</div>
+                <div><strong>Successful:</strong> ${stats.successful}</div>
+                <div><strong>Failed:</strong> ${stats.failed}</div>
+                <div><strong>Avg Duration:</strong> ${Math.round(stats.averageDuration)}ms</div>
+            `;
+        }
+
+        function logRecoveryEvent(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            
+            const icon = getLogIcon(type);
+            logEntry.innerHTML = `
+                <span class="text-muted">[${timestamp}]</span>
+                <i class="${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            recoveryLogElement.appendChild(logEntry);
+            
+            // Auto-scroll if enabled
+            if (autoScrollEnabled) {
+                recoveryLogElement.scrollTop = recoveryLogElement.scrollHeight;
+            }
+            
+            // Limit log entries
+            while (recoveryLogElement.children.length > 100) {
+                recoveryLogElement.removeChild(recoveryLogElement.firstChild);
+            }
+        }
+
+        function getLogIcon(type) {
+            switch (type) {
+                case 'error': return 'fas fa-exclamation-triangle text-danger';
+                case 'warning': return 'fas fa-exclamation-circle text-warning';
+                case 'success': return 'fas fa-check-circle text-success';
+                case 'info': return 'fas fa-info-circle text-info';
+                default: return 'fas fa-circle text-secondary';
+            }
+        }
+
+        // Error simulation functions
+        function simulateNetworkError() {
+            const error = new Error('Network request timed out');
+            error.name = 'TypeError';
+            error.errorCode = 'NETWORK_TIMEOUT';
+            window.errorHandler.handleError(error, { 
+                componentId: 'demo-network',
+                retryFunction: () => Promise.reject(new Error('Simulated network failure'))
+            });
+        }
+
+        function simulateConnectionError() {
+            const error = new Error('Failed to fetch');
+            error.name = 'TypeError';
+            error.errorCode = 'CONNECTION_FAILED';
+            window.errorHandler.handleError(error, { 
+                componentId: 'demo-connection',
+                url: '/api/demo/connection'
+            });
+        }
+
+        function simulateServiceUnavailable() {
+            const error = new Error('Service temporarily unavailable');
+            error.status = 503;
+            error.errorCode = 'SERVICE_UNAVAILABLE';
+            window.errorHandler.handleError(error, { 
+                componentId: 'demo-service',
+                serviceName: 'Demo Service'
+            });
+        }
+
+        function simulateServerError() {
+            const error = new Error('Internal server error occurred');
+            error.status = 500;
+            error.errorCode = 'INTERNAL_SERVER_ERROR';
+            window.errorHandler.handleError(error, { 
+                componentId: 'demo-server'
+            });
+        }
+
+        function simulateValidationError() {
+            const error = new Error('Validation failed for multiple fields');
+            error.status = 400;
+            error.errorCode = 'VALIDATION_FAILED';
+            error.fieldErrors = [
+                {
+                    field: 'demo-name',
+                    message: 'Name is required and must be at least 2 characters',
+                    suggestions: ['Enter your full name', 'Use at least 2 characters']
+                },
+                {
+                    field: 'demo-email',
+                    message: 'Please enter a valid email address',
+                    suggestions: ['Use format: user@domain.com', 'Check for typos']
+                }
+            ];
+            window.errorHandler.handleError(error, { 
+                componentId: 'demo-form'
+            });
+        }
+
+        function simulateAuthError() {
+            const error = new Error('Your session has expired');
+            error.status = 401;
+            error.errorCode = 'AUTHENTICATION_FAILED';
+            error.suggestions = [
+                'Please log in again to continue',
+                'Your session may have timed out',
+                'Check your internet connection'
+            ];
+            window.errorHandler.handleError(error, { 
+                componentId: 'demo-auth'
+            });
+        }
+
+        function simulatePermissionError() {
+            const error = new Error('You do not have permission to perform this action');
+            error.status = 403;
+            error.errorCode = 'ACCESS_DENIED';
+            error.suggestions = [
+                'Contact your administrator for access',
+                'Make sure you are logged in with the correct account',
+                'This action may require elevated privileges'
+            ];
+            window.errorHandler.handleError(error, { 
+                componentId: 'demo-permissions'
+            });
+        }
+
+        function clearAllErrors() {
+            if (window.errorStateManager) {
+                window.errorStateManager.clearAllErrors();
+            }
+            if (window.errorDisplay) {
+                window.errorDisplay.clearAllErrors();
+            }
+            logRecoveryEvent('All errors cleared by user', 'info');
+        }
+
+        function testRecoverySystem() {
+            logRecoveryEvent('Starting recovery system test...', 'info');
+            
+            // Simulate a sequence of errors to test recovery
+            setTimeout(() => simulateNetworkError(), 500);
+            setTimeout(() => simulateServiceUnavailable(), 1500);
+            setTimeout(() => simulateValidationError(), 2500);
+            
+            logRecoveryEvent('Recovery system test initiated', 'info');
+        }
+
+        function toggleOfflineMode() {
+            // Simulate network offline/online
+            if (window.networkMonitor && window.networkMonitor.isOnline) {
+                window.dispatchEvent(new Event('offline'));
+                logRecoveryEvent('Offline mode enabled (simulated)', 'warning');
+            } else {
+                window.dispatchEvent(new Event('online'));
+                logRecoveryEvent('Online mode restored (simulated)', 'success');
+            }
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            // Simulate form processing with potential errors
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            logRecoveryEvent(`Form submitted with data: ${JSON.stringify(data)}`, 'info');
+            
+            // Randomly simulate success or validation error
+            if (Math.random() > 0.5) {
+                logRecoveryEvent('Form submission successful', 'success');
+                alert('Form submitted successfully!');
+            } else {
+                simulateValidationError();
+            }
+            
+            return false;
+        }
+
+        function triggerValidationError() {
+            simulateValidationError();
+        }
+
+        function loadPartialData() {
+            logRecoveryEvent('Loading data with partial failure simulation...', 'info');
+            
+            // Simulate partial data loading
+            const container = document.getElementById('partial-data-container');
+            container.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Partial Data Loaded</strong><br>
+                    Some data could not be retrieved due to service issues.
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Sample Data 1</td>
+                                <td><span class="badge bg-success">Available</span></td>
+                                <td>2024-01-15</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Sample Data 2</td>
+                                <td><span class="badge bg-success">Available</span></td>
+                                <td>2024-01-14</td>
+                            </tr>
+                            <tr class="table-secondary">
+                                <td>3</td>
+                                <td><em>Data unavailable</em></td>
+                                <td><span class="badge bg-secondary">Loading failed</span></td>
+                                <td><em>Unknown</em></td>
+                            </tr>
+                            <tr class="table-secondary">
+                                <td>4</td>
+                                <td><em>Data unavailable</em></td>
+                                <td><span class="badge bg-secondary">Loading failed</span></td>
+                                <td><em>Unknown</em></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2">
+                    <button class="btn btn-outline-primary btn-sm" onclick="retryDataLoad()">
+                        <i class="fas fa-sync"></i> Retry Failed Items
+                    </button>
+                </div>
+            `;
+            
+            logRecoveryEvent('Partial data displayed with 2 failed items', 'warning');
+        }
+
+        function retryDataLoad() {
+            logRecoveryEvent('Retrying failed data items...', 'info');
+            // Simulate retry success
+            setTimeout(() => {
+                logRecoveryEvent('Data retry successful', 'success');
+                alert('Failed data items loaded successfully!');
+            }, 1000);
+        }
+
+        function clearRecoveryLog() {
+            recoveryLogElement.innerHTML = '<div class="text-muted">Recovery log cleared...</div>';
+            logRecoveryEvent('Recovery log cleared by user', 'info');
+        }
+
+        function exportRecoveryLog() {
+            const logContent = recoveryLogElement.textContent;
+            const blob = new Blob([logContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `recovery-log-${new Date().toISOString().slice(0, 19)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            logRecoveryEvent('Recovery log exported', 'info');
+        }
+    </script>
+</body>
+</html>

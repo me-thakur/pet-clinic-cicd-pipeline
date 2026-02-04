@@ -2,6 +2,7 @@ package com.petclinic.backend.service;
 
 import com.petclinic.backend.model.Pet;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,13 @@ import java.util.Map;
  * Extends BaseService with Pet-specific functionality
  */
 public interface PetService extends BaseService<Pet, Long> {
+    
+    /**
+     * Find all pets with server-side pagination and sorting
+     * @param pageable Pagination and sorting parameters
+     * @return Page of pets with server-side sorting applied
+     */
+    Page<Pet> findAllWithPagination(Pageable pageable);
     
     /**
      * Find pets by owner ID
@@ -110,4 +118,27 @@ public interface PetService extends BaseService<Pet, Long> {
      * @return Map of species to count
      */
     Map<String, Long> getPetCountBySpecies();
+    
+    /**
+     * Search owners for pet form dropdown
+     * @param searchTerm Search term to match against owner name, email, or phone
+     * @param page Page number
+     * @param size Page size
+     * @return Page of owners matching search criteria
+     */
+    Page<com.petclinic.backend.model.Owner> searchOwners(String searchTerm, int page, int size);
+    
+    /**
+     * Check if owner exists
+     * @param ownerId Owner ID
+     * @return true if owner exists, false otherwise
+     */
+    boolean ownerExists(Long ownerId);
+    
+    /**
+     * Get owner by ID
+     * @param ownerId Owner ID
+     * @return Owner entity
+     */
+    com.petclinic.backend.model.Owner getOwnerById(Long ownerId);
 }

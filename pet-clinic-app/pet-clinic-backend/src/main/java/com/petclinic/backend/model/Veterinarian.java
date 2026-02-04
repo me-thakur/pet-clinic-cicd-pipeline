@@ -1,9 +1,11 @@
 package com.petclinic.backend.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import java.time.LocalDate;
@@ -50,8 +52,21 @@ public class Veterinarian {
     @Column(name = "license_number", nullable = false, unique = true, length = 20)
     private String licenseNumber;
     
+    @Pattern(regexp = "^[+]?[0-9\\s\\-\\(\\)\\.]{7,20}$", message = "Invalid telephone format")
+    @Column(name = "telephone", length = 20)
+    private String telephone;
+    
+    @Email(message = "Invalid email format")
+    @Size(max = 100, message = "Email must not exceed 100 characters")
+    @Column(name = "email", length = 100)
+    private String email;
+    
+    @Size(max = 200, message = "Address must not exceed 200 characters")
+    @Column(name = "address", length = 200)
+    private String address;
+    
     @OneToMany(mappedBy = "veterinarian", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonManagedReference("veterinarian-visits")
+    @JsonIgnoreProperties({"veterinarian"})
     private List<Visit> visits = new ArrayList<>();
     
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -124,6 +139,33 @@ public class Veterinarian {
     
     public void setLicenseNumber(String licenseNumber) {
         this.licenseNumber = licenseNumber;
+        this.updatedAt = LocalDate.now();
+    }
+    
+    public String getTelephone() {
+        return telephone;
+    }
+    
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+        this.updatedAt = LocalDate.now();
+    }
+    
+    public String getEmail() {
+        return email;
+    }
+    
+    public void setEmail(String email) {
+        this.email = email;
+        this.updatedAt = LocalDate.now();
+    }
+    
+    public String getAddress() {
+        return address;
+    }
+    
+    public void setAddress(String address) {
+        this.address = address;
         this.updatedAt = LocalDate.now();
     }
     

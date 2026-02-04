@@ -1,0 +1,186 @@
+/**
+ * Table Sorting Functionality CSS
+ * Provides styling for sortable table headers and visual indicators
+ */
+
+/* Sortable Header Styles - Enhanced visibility */
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    padding-right: 2rem !important;
+    transition: all 0.2s ease;
+    background-color: inherit;
+    color: inherit;
+    border-radius: 0.25rem;
+}
+
+.sortable-header:hover {
+    background-color: rgba(0, 0, 0, 0.08) !important;
+    color: #495057 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sortable-header:focus,
+.sortable-header:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+    background-color: rgba(13, 110, 253, 0.1);
+    z-index: 1;
+}
+
+/* Sort Indicator Container - Enhanced visibility */
+.sort-indicator {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.6;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: #6c757d;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.sortable-header:hover .sort-indicator {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.sort-indicator.active {
+    opacity: 1;
+    color: #0d6efd;
+    font-size: 1rem;
+}
+
+/* Sort Direction Arrows - Enhanced visibility */
+.sort-indicator.asc::after {
+    content: "↑";
+    color: #198754;
+    font-weight: bold;
+}
+
+.sort-indicator.desc::after {
+    content: "↓";
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.sort-indicator.neutral::after {
+    content: "⇅";
+    color: #6c757d;
+}
+
+/* Table Enhancement Styles - Improved visibility */
+.table-sortable {
+    position: relative;
+}
+
+.table-sortable thead th {
+    background-color: #f8f9fa;
+    color: #212529;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    padding: 0.75rem 0.5rem;
+    position: relative;
+    vertical-align: middle;
+    min-height: 2.5rem;
+    line-height: 1.4;
+}
+
+.table-sortable thead th.sorted {
+    background-color: rgba(13, 110, 253, 0.15);
+    color: #0d6efd;
+    border-left: 3px solid #0d6efd;
+}
+
+.table-sortable thead th.sortable {
+    position: relative;
+}
+
+/* Loading State */
+.table-sortable.sorting {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.sorting-indicator {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 0.75em;
+    color: #6c757d;
+}
+
+.sorting-indicator.loading {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Accessibility Enhancements */
+.sortable-header[aria-sort="ascending"] .sort-indicator {
+    color: #28a745;
+}
+
+.sortable-header[aria-sort="descending"] .sort-indicator {
+    color: #dc3545;
+}
+
+/* Screen Reader Only Text */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sortable-header {
+        padding-right: 20px !important;
+    }
+    
+    .sort-indicator {
+        right: 5px;
+        font-size: 0.7em;
+    }
+}
+
+/* Bootstrap Integration */
+.table-sortable.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.075);
+}
+
+.table-sortable.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Error State */
+.table-sortable.error {
+    border: 2px solid #dc3545;
+}
+
+.sort-error-message {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+.sort-error-message.show {
+    display: block;
+}

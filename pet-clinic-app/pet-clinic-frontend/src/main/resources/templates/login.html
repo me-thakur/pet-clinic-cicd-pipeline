@@ -41,7 +41,7 @@
                         </div>
                         <div class="card-body p-4">
                             <!-- Login Form -->
-                            <form th:action="@{/login}" method="post">
+                            <form th:action="@{/perform-login}" method="post">
                                 <!-- Error Messages -->
                                 <div th:if="${param.error}" class="alert alert-danger" role="alert">
                                     <i class="fas fa-exclamation-triangle"></i>
@@ -110,7 +110,7 @@
                                         <div class="card bg-light">
                                             <div class="card-body py-2">
                                                 <small class="text-muted d-block">Vet</small>
-                                                <strong>vet</strong><br>
+                                                <strong>vet1</strong><br>
                                                 <small>vet123</small>
                                             </div>
                                         </div>
@@ -119,11 +119,34 @@
                                         <div class="card bg-light">
                                             <div class="card-body py-2">
                                                 <small class="text-muted d-block">Staff</small>
-                                                <strong>staff</strong><br>
+                                                <strong>staff1</strong><br>
                                                 <small>staff123</small>
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="row text-center mt-2">
+                                    <div class="col-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body py-2">
+                                                <small class="text-muted d-block">Vet 2</small>
+                                                <strong>vet2</strong><br>
+                                                <small>vet123</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="card bg-light">
+                                            <div class="card-body py-2">
+                                                <small class="text-muted d-block">Staff 2</small>
+                                                <strong>staff2</strong><br>
+                                                <small>staff123</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-2">
+                                    <small class="text-muted">Click any demo account to auto-fill credentials</small>
                                 </div>
                             </div>
                         </div>

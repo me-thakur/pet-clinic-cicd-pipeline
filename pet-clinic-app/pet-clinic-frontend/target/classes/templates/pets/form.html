@@ -2,6 +2,100 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
 <head>
     <title th:text="${pet.id != null ? 'Edit Pet' : 'Add Pet'}">Pet Form</title>
+    <style>
+        .owner-search-results {
+            position: relative;
+            z-index: 1000;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            background: white;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .owner-search-results .list-group-item {
+            border-left: none;
+            border-right: none;
+            cursor: pointer;
+            transition: background-color 0.15s ease-in-out;
+        }
+        
+        .owner-search-results .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .owner-search-results .list-group-item:first-child {
+            border-top: none;
+            border-top-left-radius: 0.375rem;
+            border-top-right-radius: 0.375rem;
+        }
+        
+        .owner-search-results .list-group-item:last-child {
+            border-bottom: none;
+            border-bottom-left-radius: 0.375rem;
+            border-bottom-right-radius: 0.375rem;
+        }
+        
+        .owner-result-item {
+            padding: 0.75rem;
+        }
+        
+        .owner-result-name {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .owner-result-contact {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .owner-result-meta {
+            font-size: 0.75rem;
+            color: #868e96;
+            margin-top: 0.25rem;
+        }
+        
+        .current-owner-display .alert {
+            margin-bottom: 0.5rem;
+        }
+        
+        .selected-owner-display .alert {
+            margin-bottom: 0;
+        }
+        
+        .no-owner-selected .alert {
+            margin-bottom: 0;
+        }
+        
+        .owner-selection-container {
+            position: relative;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .search-no-results {
+            padding: 1rem;
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
     <div th:fragment="content">
@@ -80,18 +174,87 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="ownerId" class="form-label">Owner *</label>
-                                <select class="form-select" 
-                                        th:field="*{ownerId}" 
-                                        th:classappend="${#fields.hasErrors('ownerId')} ? 'is-invalid'" 
-                                        id="ownerId" required>
-                                    <option value="">Select Owner</option>
-                                    <option th:each="owner : ${owners}" 
-                                            th:value="${owner.id}" 
-                                            th:text="${owner.fullName + ' - ' + owner.city}">Owner Name</option>
-                                </select>
+                                <label for="ownerSearch" class="form-label">Owner *</label>
+                                
+                                <!-- Current Owner Display (for existing pets) -->
+                                <div th:if="${pet.id != null and pet.owner != null}" class="current-owner-display mb-2">
+                                    <div class="alert alert-info d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>Current Owner:</strong> 
+                                            <span th:text="${pet.owner.fullName}">Current Owner Name</span>
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-envelope"></i> <span th:text="${pet.owner.email}">email@example.com</span>
+                                                <span th:if="${pet.owner.mobileNumber}" class="ms-2">
+                                                    <i class="fas fa-phone"></i> <span th:text="${pet.owner.mobileNumber}">Phone</span>
+                                                </span>
+                                            </small>
+                                        </div>
+                                        <button type="button" class="btn btn-sm btn-outline-primary" id="changeOwnerBtn">
+                                            <i class="fas fa-edit"></i> Change Owner
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Owner Search and Selection -->
+                                <div class="owner-selection-container" th:classappend="${pet.id != null and pet.owner != null} ? 'd-none' : ''">
+                                    <!-- Search Input -->
+                                    <div class="input-group mb-2">
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="ownerSearch" 
+                                               placeholder="Search owners by name, email, or phone..."
+                                               autocomplete="off">
+                                        <button type="button" class="btn btn-outline-secondary" id="clearOwnerSearch">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Search Results Dropdown -->
+                                    <div class="owner-search-results d-none" id="ownerSearchResults">
+                                        <div class="list-group" id="ownerResultsList">
+                                            <!-- Results will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Selected Owner Display -->
+                                    <div class="selected-owner-display d-none" id="selectedOwnerDisplay">
+                                        <div class="alert alert-success">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <strong>Selected Owner:</strong>
+                                                    <div id="selectedOwnerName">Owner Name</div>
+                                                    <small class="text-muted">
+                                                        <div id="selectedOwnerContact">Contact info</div>
+                                                        <div id="selectedOwnerAddress">Address info</div>
+                                                        <div id="selectedOwnerPetCount">Pet count info</div>
+                                                    </small>
+                                                </div>
+                                                <button type="button" class="btn btn-sm btn-outline-danger" id="removeSelectedOwner">
+                                                    <i class="fas fa-times"></i> Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- No Owner Selected State -->
+                                    <div class="no-owner-selected" id="noOwnerSelected">
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <strong>No owner selected</strong>
+                                            <p class="mb-0">This pet will be created without an owner assignment. You can assign an owner later.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Hidden field for form submission -->
+                                <input type="hidden" 
+                                       th:field="*{ownerId}" 
+                                       id="selectedOwnerId">
+                                
                                 <div class="invalid-feedback" th:if="${#fields.hasErrors('ownerId')}" 
                                      th:errors="*{ownerId}">Owner error</div>
+                                
                                 <div class="form-text">
                                     Don't see the owner? <a th:href="@{/owners/new}" target="_blank">Add a new owner</a>
                                 </div>
@@ -145,5 +308,330 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        // Pet Form Owner Selection JavaScript
+        class PetFormOwnerSelector {
+            constructor() {
+                this.searchInput = document.getElementById('ownerSearch');
+                this.searchResults = document.getElementById('ownerSearchResults');
+                this.resultsList = document.getElementById('ownerResultsList');
+                this.selectedOwnerDisplay = document.getElementById('selectedOwnerDisplay');
+                this.noOwnerSelected = document.getElementById('noOwnerSelected');
+                this.selectedOwnerIdInput = document.getElementById('selectedOwnerId');
+                this.changeOwnerBtn = document.getElementById('changeOwnerBtn');
+                this.clearSearchBtn = document.getElementById('clearOwnerSearch');
+                this.removeSelectedOwnerBtn = document.getElementById('removeSelectedOwner');
+                this.ownerSelectionContainer = document.querySelector('.owner-selection-container');
+                this.currentOwnerDisplay = document.querySelector('.current-owner-display');
+                
+                this.searchTimeout = null;
+                this.selectedOwner = null;
+                
+                this.init();
+            }
+            
+            init() {
+                this.bindEvents();
+                this.updateDisplay();
+                
+                // Initialize with existing owner if editing
+                const existingOwnerId = this.selectedOwnerIdInput.value;
+                if (existingOwnerId && !this.selectedOwner) {
+                    this.loadExistingOwnerInfo(existingOwnerId);
+                }
+            }
+            
+            bindEvents() {
+                // Search input events
+                if (this.searchInput) {
+                    this.searchInput.addEventListener('input', (e) => this.handleSearchInput(e));
+                    this.searchInput.addEventListener('focus', () => this.handleSearchFocus());
+                    this.searchInput.addEventListener('blur', (e) => this.handleSearchBlur(e));
+                }
+                
+                // Button events
+                if (this.changeOwnerBtn) {
+                    this.changeOwnerBtn.addEventListener('click', () => this.showOwnerSelection());
+                }
+                
+                if (this.clearSearchBtn) {
+                    this.clearSearchBtn.addEventListener('click', () => this.clearSearch());
+                }
+                
+                if (this.removeSelectedOwnerBtn) {
+                    this.removeSelectedOwnerBtn.addEventListener('click', () => this.removeSelectedOwner());
+                }
+                
+                // Click outside to close results
+                document.addEventListener('click', (e) => this.handleDocumentClick(e));
+            }
+            
+            handleSearchInput(e) {
+                const query = e.target.value.trim();
+                
+                // Clear previous timeout
+                if (this.searchTimeout) {
+                    clearTimeout(this.searchTimeout);
+                }
+                
+                // Debounce search
+                this.searchTimeout = setTimeout(() => {
+                    if (query.length >= 2) {
+                        this.searchOwners(query);
+                    } else {
+                        this.hideSearchResults();
+                    }
+                }, 300);
+            }
+            
+            handleSearchFocus() {
+                const query = this.searchInput.value.trim();
+                if (query.length >= 2) {
+                    this.showSearchResults();
+                }
+            }
+            
+            handleSearchBlur(e) {
+                // Delay hiding results to allow for clicks
+                setTimeout(() => {
+                    if (!this.searchResults.contains(document.activeElement)) {
+                        this.hideSearchResults();
+                    }
+                }, 150);
+            }
+            
+            handleDocumentClick(e) {
+                if (!this.ownerSelectionContainer.contains(e.target)) {
+                    this.hideSearchResults();
+                }
+            }
+            
+            async searchOwners(query) {
+                try {
+                    this.showLoadingState();
+                    
+                    const response = await fetch(`/api/pets/owners/search?q=${encodeURIComponent(query)}&size=10`);
+                    if (!response.ok) {
+                        throw new Error('Search failed');
+                    }
+                    
+                    const data = await response.json();
+                    this.displaySearchResults(data.content || []);
+                    
+                } catch (error) {
+                    console.error('Owner search error:', error);
+                    this.showSearchError();
+                }
+            }
+            
+            showLoadingState() {
+                this.resultsList.innerHTML = `
+                    <div class="list-group-item">
+                        <div class="d-flex align-items-center">
+                            <div class="loading-spinner me-2"></div>
+                            <span>Searching owners...</span>
+                        </div>
+                    </div>
+                `;
+                this.showSearchResults();
+            }
+            
+            displaySearchResults(owners) {
+                if (owners.length === 0) {
+                    this.resultsList.innerHTML = `
+                        <div class="list-group-item search-no-results">
+                            No owners found matching your search
+                        </div>
+                    `;
+                } else {
+                    this.resultsList.innerHTML = owners.map(owner => this.createOwnerResultItem(owner)).join('');
+                    
+                    // Bind click events to result items
+                    this.resultsList.querySelectorAll('.owner-result-item').forEach(item => {
+                        item.addEventListener('click', (e) => {
+                            const ownerId = e.currentTarget.dataset.ownerId;
+                            const ownerData = owners.find(o => o.id.toString() === ownerId);
+                            this.selectOwner(ownerData);
+                        });
+                    });
+                }
+                
+                this.showSearchResults();
+            }
+            
+            createOwnerResultItem(owner) {
+                const contactInfo = [];
+                if (owner.email) contactInfo.push(`📧 ${owner.email}`);
+                if (owner.mobileNumber) contactInfo.push(`📱 ${owner.mobileNumber}`);
+                
+                const addressInfo = [];
+                if (owner.city) addressInfo.push(owner.city);
+                if (owner.state) addressInfo.push(owner.state);
+                
+                return `
+                    <div class="list-group-item owner-result-item" data-owner-id="${owner.id}">
+                        <div class="owner-result-name">${owner.fullName}</div>
+                        ${contactInfo.length > 0 ? `<div class="owner-result-contact">${contactInfo.join(' • ')}</div>` : ''}
+                        <div class="owner-result-meta">
+                            ${addressInfo.length > 0 ? addressInfo.join(', ') + ' • ' : ''}
+                            ${owner.petCount} pet${owner.petCount !== 1 ? 's' : ''}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            showSearchError() {
+                this.resultsList.innerHTML = `
+                    <div class="list-group-item search-no-results text-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Error searching owners. Please try again.
+                    </div>
+                `;
+                this.showSearchResults();
+            }
+            
+            selectOwner(owner) {
+                this.selectedOwner = owner;
+                this.selectedOwnerIdInput.value = owner.id;
+                
+                // Update selected owner display
+                document.getElementById('selectedOwnerName').textContent = owner.fullName;
+                
+                const contactInfo = [];
+                if (owner.email) contactInfo.push(`📧 ${owner.email}`);
+                if (owner.mobileNumber) contactInfo.push(`📱 ${owner.mobileNumber}`);
+                document.getElementById('selectedOwnerContact').innerHTML = contactInfo.join('<br>');
+                
+                const addressInfo = [];
+                if (owner.address) addressInfo.push(owner.address);
+                if (owner.city) addressInfo.push(owner.city);
+                if (owner.state) addressInfo.push(owner.state);
+                if (owner.zipCode) addressInfo.push(owner.zipCode);
+                document.getElementById('selectedOwnerAddress').textContent = addressInfo.join(', ') || 'No address on file';
+                
+                document.getElementById('selectedOwnerPetCount').textContent = 
+                    `Currently has ${owner.petCount} pet${owner.petCount !== 1 ? 's' : ''}`;
+                
+                // Clear search and hide results
+                this.searchInput.value = '';
+                this.hideSearchResults();
+                this.updateDisplay();
+                
+                // Validate owner assignment
+                this.validateOwnerAssignment();
+            }
+            
+            async validateOwnerAssignment() {
+                if (!this.selectedOwner) return;
+                
+                try {
+                    const petId = document.querySelector('input[name="id"]')?.value;
+                    const response = await fetch('/api/pets/validate-owner-assignment', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            petId: petId || null,
+                            ownerId: this.selectedOwner.id
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.warnings && result.warnings.length > 0) {
+                        this.showValidationWarnings(result.warnings);
+                    }
+                    
+                } catch (error) {
+                    console.error('Owner validation error:', error);
+                }
+            }
+            
+            showValidationWarnings(warnings) {
+                // Create or update warning display
+                let warningDiv = document.getElementById('ownerValidationWarnings');
+                if (!warningDiv) {
+                    warningDiv = document.createElement('div');
+                    warningDiv.id = 'ownerValidationWarnings';
+                    warningDiv.className = 'alert alert-warning mt-2';
+                    this.selectedOwnerDisplay.appendChild(warningDiv);
+                }
+                
+                warningDiv.innerHTML = `
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Please note:</strong>
+                    <ul class="mb-0 mt-1">
+                        ${warnings.map(warning => `<li>${warning}</li>`).join('')}
+                    </ul>
+                `;
+            }
+            
+            removeSelectedOwner() {
+                this.selectedOwner = null;
+                this.selectedOwnerIdInput.value = '';
+                this.updateDisplay();
+                
+                // Remove validation warnings
+                const warningDiv = document.getElementById('ownerValidationWarnings');
+                if (warningDiv) {
+                    warningDiv.remove();
+                }
+            }
+            
+            clearSearch() {
+                this.searchInput.value = '';
+                this.hideSearchResults();
+            }
+            
+            showOwnerSelection() {
+                if (this.currentOwnerDisplay) {
+                    this.currentOwnerDisplay.classList.add('d-none');
+                }
+                this.ownerSelectionContainer.classList.remove('d-none');
+                this.searchInput.focus();
+            }
+            
+            showSearchResults() {
+                this.searchResults.classList.remove('d-none');
+            }
+            
+            hideSearchResults() {
+                this.searchResults.classList.add('d-none');
+            }
+            
+            updateDisplay() {
+                if (this.selectedOwner) {
+                    this.selectedOwnerDisplay.classList.remove('d-none');
+                    this.noOwnerSelected.classList.add('d-none');
+                } else {
+                    this.selectedOwnerDisplay.classList.add('d-none');
+                    this.noOwnerSelected.classList.remove('d-none');
+                }
+            }
+            
+            async loadExistingOwnerInfo(ownerId) {
+                try {
+                    const response = await fetch(`/api/pets/owners/search?q=&size=1000`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const owner = data.content.find(o => o.id.toString() === ownerId.toString());
+                        if (owner) {
+                            this.selectedOwner = owner;
+                            this.updateDisplay();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error loading existing owner info:', error);
+                }
+            }
+        }
+        
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            new PetFormOwnerSelector();
+        });
+    </script>
 </body>
 </html>

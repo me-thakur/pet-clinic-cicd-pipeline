@@ -92,11 +92,47 @@ public class OwnerController {
         }
         
         try {
+            System.out.println("DEBUG: Frontend attempting to create owner: " + owner);
             Owner savedOwner = ownerService.createOwner(owner).block();
+            
+            if (savedOwner == null) {
+                System.out.println("DEBUG: savedOwner is null - this should not happen with proper error handling");
+                bindingResult.rejectValue("email", "error.owner", "Failed to create owner. Please try again.");
+                return "owners/form";
+            }
+            
+            System.out.println("DEBUG: Frontend successfully created owner: " + savedOwner);
             redirectAttributes.addFlashAttribute("success", "Owner created successfully!");
             return "redirect:/owners/" + savedOwner.getId();
         } catch (Exception e) {
-            bindingResult.rejectValue("email", "error.owner", "Failed to create owner. Please try again.");
+            System.out.println("DEBUG: Frontend error creating owner: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Handle specific error types
+            String errorMessage = e.getMessage();
+            if (errorMessage != null) {
+                if (errorMessage.contains("EMAIL_DUPLICATE")) {
+                    bindingResult.rejectValue("email", "error.owner", "An owner with this email address already exists. Please use a different email.");
+                } else if (errorMessage.contains("VALIDATION_ERROR")) {
+                    bindingResult.rejectValue("email", "error.owner", "Invalid data provided. Please check your input and try again.");
+                } else if (errorMessage.contains("AUTHENTICATION_ERROR")) {
+                    bindingResult.rejectValue("email", "error.owner", "Authentication failed. Please log in again.");
+                } else if (errorMessage.contains("AUTHORIZATION_ERROR")) {
+                    bindingResult.rejectValue("email", "error.owner", "You don't have permission to create owners.");
+                } else if (errorMessage.contains("SERVER_ERROR")) {
+                    bindingResult.rejectValue("email", "error.owner", "Server error occurred. Please try again later.");
+                } else if (errorMessage.contains("400") || errorMessage.contains("validation") || errorMessage.contains("Validation")) {
+                    bindingResult.rejectValue("email", "error.owner", "Invalid data provided. Please check your input and try again.");
+                } else if (errorMessage.contains("401") || errorMessage.contains("403")) {
+                    bindingResult.rejectValue("email", "error.owner", "Authentication failed. Please log in again.");
+                } else if (errorMessage.contains("503")) {
+                    bindingResult.rejectValue("email", "error.owner", "Backend service is temporarily unavailable. Please try again later.");
+                } else {
+                    bindingResult.rejectValue("email", "error.owner", "Failed to create owner. Please try again. Error: " + errorMessage);
+                }
+            } else {
+                bindingResult.rejectValue("email", "error.owner", "Failed to create owner. Please try again.");
+            }
             return "owners/form";
         }
     }

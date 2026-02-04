@@ -1,0 +1,203 @@
+package com.petclinic.backend.security;
+
+import com.petclinic.backend.service.AuditService;
+import com.petclinic.backend.service.SecurityAuditService;
+import com.petclinic.backend.service.impl.SecurityAuditServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+/**
+ * Test class for SecurityAuditService
+ * Tests security audit functionality and role-based access control
+ */
+@ExtendWith(MockitoExtension.class)
+class SecurityAuditServiceTest {
+
+    private SecurityAuditService securityAuditService;
+    
+    @Mock
+    private AuditService auditService;
+    
+    @Mock
+    private Authentication authentication;
+    
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        securityAuditService = new SecurityAuditServiceImpl();
+        // Use reflection to set the private field for testing
+        try {
+            java.lang.reflect.Field field = SecurityAuditServiceImpl.class.getDeclaredField("auditService");
+            field.setAccessible(true);
+            field.set(securityAuditService, auditService);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set auditService field", e);
+        }
+    }
+    
+    @Test
+    void testHasRequiredRole_WithValidRole_ReturnsTrue() {
+        // Arrange
+        List<GrantedAuthority> authorities = Arrays.asList(
+            new SimpleGrantedAuthority("ROLE_USER"),
+            new SimpleGrantedAuthority("ROLE_ADMIN")
+        );
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getAuthorities()).thenReturn((Collection<? extends GrantedAuthority>) authorities);
+        
+        // Act
+        boolean result = securityAuditService.hasRequiredRole(authentication, "ADMIN");
+        
+        // Assert
+        assertTrue(result);
+    }
+    
+    @Test
+    void testHasRequiredRole_WithInvalidRole_ReturnsFalse() {
+        // Arrange
+        List<GrantedAuthority> authorities = Arrays.asList(
+            new SimpleGrantedAuthority("ROLE_USER")
+        );
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getAuthorities()).thenReturn((Collection<? extends GrantedAuthority>) authorities);
+        when(authentication.getName()).thenReturn("testuser");
+        
+        // Act
+        boolean result = securityAuditService.hasRequiredRole(authentication, "ADMIN");
+        
+        // Assert
+        assertFalse(result);
+    }
+    
+    @Test
+    void testCanPerformBulkOperation_WithUserRole_ReturnsTrue() {
+        // Arrange
+        List<GrantedAuthority> authorities = Arrays.asList(
+            new SimpleGrantedAuthority("ROLE_USER")
+        );
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getAuthorities()).thenReturn((Collection<? extends GrantedAuthority>) authorities);
+        when(authentication.getName()).thenReturn("testuser");
+        
+        // Act
+        boolean result = securityAuditService.canPerformBulkOperation(authentication, "owners", "DELETE");
+        
+        // Assert
+        assertTrue(result);
+    }
+    
+    @Test
+    void testCanPerformBulkOperation_WithUnauthenticatedUser_ReturnsFalse() {
+        // Arrange
+        when(authentication.isAuthenticated()).thenReturn(false);
+        
+        // Act
+        boolean result = securityAuditService.canPerformBulkOperation(authentication, "owners", "DELETE");
+        
+        // Assert
+        assertFalse(result);
+    }
+    
+    @Test
+    void testCanAccessReports_WithAdminRole_ReturnsTrue() {
+        // Arrange
+        List<GrantedAuthority> authorities = Arrays.asList(
+            new SimpleGrantedAuthority("ROLE_ADMIN")
+        );
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getAuthorities()).thenReturn((Collection<? extends GrantedAuthority>) authorities);
+        when(authentication.getName()).thenReturn("admin");
+        
+        // Act
+        boolean result = securityAuditService.canAccessReports(authentication, "visits");
+        
+        // Assert
+        assertTrue(result);
+    }
+    
+    @Test
+    void testCanAccessReports_WithoutAdminRole_ReturnsFalse() {
+        // Arrange
+        List<GrantedAuthority> authorities = Arrays.asList(
+            new SimpleGrantedAuthority("ROLE_USER")
+        );
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getAuthorities()).thenReturn((Collection<? extends GrantedAuthority>) authorities);
+        when(authentication.getName()).thenReturn("user");
+        
+        // Act
+        boolean result = securityAuditService.canAccessReports(authentication, "visits");
+        
+        // Assert
+        assertFalse(result);
+    }
+    
+    @Test
+    void testSanitizeErrorMessage_WithAdminUser_ReturnsOriginalMessage() {
+        // Arrange
+        List<GrantedAuthority> authorities = Arrays.asList(
+            new SimpleGrantedAuthority("ROLE_ADMIN")
+        );
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getAuthorities()).thenReturn((Collection<? extends GrantedAuthority>) authorities);
+        
+        String originalMessage = "Database connection failed on server xyz";
+        
+        // Act
+        String result = securityAuditService.sanitizeErrorMessage(originalMessage, authentication);
+        
+        // Assert
+        assertEquals(originalMessage, result);
+    }
+    
+    @Test
+    void testSanitizeErrorMessage_WithRegularUser_ReturnsSanitizedMessage() {
+        // Arrange
+        List<GrantedAuthority> authorities = Arrays.asList(
+            new SimpleGrantedAuthority("ROLE_USER")
+        );
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getAuthorities()).thenReturn((Collection<? extends GrantedAuthority>) authorities);
+        
+        String originalMessage = "Database connection failed on server xyz";
+        
+        // Act
+        String result = securityAuditService.sanitizeErrorMessage(originalMessage, authentication);
+        
+        // Assert
+        assertEquals("A system error occurred. Please try again later.", result);
+    }
+    
+    @Test
+    void testSanitizeErrorMessage_WithSensitiveContent_RedactsContent() {
+        // Arrange
+        List<GrantedAuthority> authorities = Arrays.asList(
+            new SimpleGrantedAuthority("ROLE_ADMIN")
+        );
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getAuthorities()).thenReturn((Collection<? extends GrantedAuthority>) authorities);
+        
+        String originalMessage = "Authentication failed for password: secret123";
+        
+        // Act
+        String result = securityAuditService.sanitizeErrorMessage(originalMessage, authentication);
+        
+        // Assert
+        assertTrue(result.contains("[REDACTED]"));
+        assertFalse(result.contains("secret123"));
+    }
+}

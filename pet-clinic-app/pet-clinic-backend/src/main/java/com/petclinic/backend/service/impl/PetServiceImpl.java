@@ -141,6 +141,13 @@ public class PetServiceImpl implements PetService {
     }
     
     @Override
+    public Page<Pet> findAllWithPagination(Pageable pageable) {
+        logger.debug("Finding all pets with server-side pagination and sorting: {}", pageable);
+        // Use repository's findAll method with Pageable for server-side sorting and pagination
+        return petRepository.findAll(pageable);
+    }
+    
+    @Override
     @Caching(evict = {
         @CacheEvict(value = CacheConfig.PETS_CACHE, key = "#id"),
         @CacheEvict(value = CacheConfig.PETS_CACHE, key = "'all'"),
@@ -535,5 +542,57 @@ public class PetServiceImpl implements PetService {
                 .orElseThrow(() -> new EntityNotFoundException("Owner", updatedPet.getOwner().getId()));
             existingPet.setOwner(newOwner);
         }
+    }
+    
+    // ========================================
+    // Owner-related methods for Pet Form
+    // ========================================
+    
+    @Override
+    @Cacheable(value = CacheConfig.SEARCH_RESULTS_CACHE, key = "'owners_' + #searchTerm + '_' + #page + '_' + #size")
+    public Page<Owner> searchOwners(String searchTerm, int page, int size) {
+        logger.debug("Searching owners with term: '{}', page: {}, size: {}", searchTerm, page, size);
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("lastName", "firstName"));
+        
+        if (!StringUtils.hasText(searchTerm)) {
+            // Return all owners if no search term
+            return ownerRepository.findAll(pageable);
+        }
+        
+        // Search by name, email, or phone
+        String searchPattern = "%" + searchTerm.toLowerCase() + "%";
+        Page<Owner> owners = ownerRepository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
+            searchTerm, searchTerm, searchTerm, pageable);
+        
+        logger.debug("Found {} owners matching search term '{}'", owners.getTotalElements(), searchTerm);
+        return owners;
+    }
+    
+    @Override
+    public boolean ownerExists(Long ownerId) {
+        if (ownerId == null) {
+            return false;
+        }
+        
+        boolean exists = ownerRepository.existsById(ownerId);
+        logger.debug("Owner with ID {} exists: {}", ownerId, exists);
+        return exists;
+    }
+    
+    @Override
+    @Cacheable(value = CacheConfig.PETS_CACHE, key = "'owner_' + #ownerId")
+    public Owner getOwnerById(Long ownerId) {
+        logger.debug("Getting owner by ID: {}", ownerId);
+        
+        if (ownerId == null) {
+            throw new ValidationException("Owner ID cannot be null");
+        }
+        
+        Owner owner = ownerRepository.findById(ownerId)
+            .orElseThrow(() -> new EntityNotFoundException("Owner", ownerId));
+        
+        logger.debug("Found owner: {}", owner.getFullName());
+        return owner;
     }
 }

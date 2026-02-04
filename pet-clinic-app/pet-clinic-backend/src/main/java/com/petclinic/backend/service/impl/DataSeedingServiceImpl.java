@@ -7,6 +7,7 @@ import com.petclinic.backend.service.DataSeedingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,9 @@ public class DataSeedingServiceImpl implements DataSeedingService {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     
     @Autowired
     private DataSeedingConfig config;
@@ -144,9 +148,15 @@ public class DataSeedingServiceImpl implements DataSeedingService {
                 String address = (100 + i * 10) + " " + streets[i % streets.length];
                 String city = cities[i % cities.length];
                 String telephone = String.format("555-%04d", 101 + i);
+                String mobileNumber = String.format("+1-555-%04d", 201 + i); // Add mobile number
                 String email = firstName.toLowerCase() + "." + lastName.toLowerCase() + "@email.com";
+                String state = cities[i % cities.length].equals("New York") ? "NY" : 
+                              cities[i % cities.length].equals("Los Angeles") ? "CA" : 
+                              cities[i % cities.length].equals("Chicago") ? "IL" : 
+                              cities[i % cities.length].equals("Houston") ? "TX" : "CA";
+                String zipCode = String.format("%05d", 10001 + i);
                 
-                Owner owner = new Owner(firstName, lastName, address, city, telephone, email);
+                Owner owner = new Owner(firstName, lastName, address, city, state, zipCode, telephone, mobileNumber, email);
                 owners.add(owner);
             }
             
@@ -194,6 +204,12 @@ public class DataSeedingServiceImpl implements DataSeedingService {
                 vet.setFirstName(firstName);
                 vet.setLastName(lastName);
                 vet.setLicenseNumber(licenseNumber);
+                
+                // Add contact information
+                vet.setTelephone(String.format("555-%04d", 101 + i));
+                vet.setEmail(firstName.toLowerCase() + "." + lastName.toLowerCase() + "@petclinic.com");
+                String[] addresses = {"123 Veterinary Ave", "456 Animal Care Blvd", "789 Pet Health St", "321 Medical Center Dr"};
+                vet.setAddress(addresses[i % addresses.length]);
                 
                 // Set specialties
                 Set<Specialty> specialtySet = new HashSet<>(Arrays.asList(specialties));
@@ -362,11 +378,11 @@ public class DataSeedingServiceImpl implements DataSeedingService {
             }
             
             List<User> users = Arrays.asList(
-                new User("admin", "Admin123!", "admin@petclinic.com", "Admin", "User", Role.ADMIN),
-                new User("vet1", "Vet123!", "vet1@petclinic.com", "Alice", "Smith", Role.VET),
-                new User("vet2", "Vet123!", "vet2@petclinic.com", "Robert", "Johnson", Role.VET),
-                new User("staff1", "Staff123!", "staff1@petclinic.com", "John", "Staff", Role.STAFF),
-                new User("staff2", "Staff123!", "staff2@petclinic.com", "Jane", "Staff", Role.STAFF)
+                createUser("admin", "admin123", "admin@petclinic.com", "Admin", "User", Role.ADMIN),
+                createUser("vet1", "vet123", "vet1@petclinic.com", "Alice", "Smith", Role.VET),
+                createUser("vet2", "vet123", "vet2@petclinic.com", "Robert", "Johnson", Role.VET),
+                createUser("staff1", "staff123", "staff1@petclinic.com", "John", "Staff", Role.STAFF),
+                createUser("staff2", "staff123", "staff2@petclinic.com", "Jane", "Staff", Role.STAFF)
             );
             
             userRepository.saveAll(users);
@@ -376,6 +392,14 @@ public class DataSeedingServiceImpl implements DataSeedingService {
             logger.error("Error seeding users: {}", e.getMessage(), e);
             throw new Exception("Failed to seed users", e);
         }
+    }
+    
+    /**
+     * Helper method to create a user with encoded password
+     */
+    private User createUser(String username, String password, String email, String firstName, String lastName, Role role) {
+        User user = new User(username, passwordEncoder.encode(password), email, firstName, lastName, role);
+        return user;
     }
     
     // Helper methods (same as in DataSeeder)
